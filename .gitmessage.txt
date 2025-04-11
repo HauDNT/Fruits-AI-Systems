@@ -1,1 +1,30 @@
-[feat|fix|update|refactor|docs|test|style|chore|remove]
+# == COMMIT MESSAGE TEMPLATE ==
+
+[type] - Mô tả ngắn gọn (tối đa 72 ký tự)
+
+# Gợi ý các loại type (tiền tố):
+# Feat     : Tính năng mới
+# Fix      : Sửa lỗi
+# Update   : Cập nhật logic, mở rộng tính năng
+# Refactor : Cải tiến code không thay đổi hành vi
+# Chore    : Thay đổi lặt vặt (build, config, package)
+# Test     : Thêm hoặc sửa unit test
+# Style    : Thay đổi style code (formatting, indent...)
+# Docs     : Thêm hoặc sửa tài liệu
+# Remove   : Xóa tính năng / thành phần không còn dùng
+
+# Dòng đầu tiên phải mô tả rõ và ngắn gọn (72 ký tự trở xuống)
+
+# -----------------------------------------------------------------------
+# Các dòng bên dưới là mô tả chi tiết, có thể bỏ trống
+#
+# Mục tiêu của commit này là gì?
+# Có gì thay đổi? Có gì ảnh hưởng không?
+#
+# VD:
+# - Thêm API nhận ảnh từ Raspberry gửi lên
+# - Ghi thông tin phân loại vào bảng Fruits
+# - Giao diện NextJS hiển thị kết quả realtime
+#
+# -----------------------------------------------------------------------
+
