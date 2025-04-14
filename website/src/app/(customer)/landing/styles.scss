@@ -1,0 +1,78 @@
+.started-button {
+    background: linear-gradient(90deg, #2D6ADE 0%, #489fef 97.15%);
+    border-radius: 15px;
+
+    &:hover {
+        background: linear-gradient(180deg, #2D6ADE 0%, #489fef 97.15%);
+    }
+}
+
+// Carousels
+.slick-track
+{
+    display: flex !important;
+}
+
+.slick-slide {
+    margin: 0 10px;
+    height: inherit !important;
+}
+
+.slick-list {
+    margin: 0 -27px;
+}
+
+/* Courses Section */
+.card-b {
+    margin-top: 60px;
+    background: #fff;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    border: 1px solid #489fef;
+    border-radius: 20px;
+    position: relative;
+    transition: transform 430ms;
+    min-height: 300px;
+    cursor: grab;
+
+    &:hover {
+        filter: drop-shadow(0px 20px 5px rgba(0, 0, 0, 0.1));
+        transform: scale(1.05);
+        border: 1px solid #2D6ADE;
+    }
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    .work-img-bg {
+        background: #FFFFFF;
+        border: 1px solid #489fef;
+        top: -51px;
+        right: 39%;
+    }
+}
+
+// Feedbacks section
+.card-feedbacks {
+    margin-top: 60px;
+    padding-bottom: 40px;
+    background: #fff;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    border: 1px solid #489fef;
+    border-radius: 20px;
+    position: relative;
+    transition: transform 430ms;
+
+    &:hover {
+        filter: drop-shadow(0px 20px 5px rgba(0, 0, 0, 0.1));
+        transform: scale(1.05);
+        border: 1px solid #2D6ADE;
+    }
+
+    .card-feedbacks_avatar {
+        position: absolute;
+        right: 50%;
+        top: -25%;
+        transform: translateX(50%);
+    }
+}

@@ -1,0 +1,24 @@
+/* styles.module.css */
+.pageContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+}
+
+.otp-input {
+    width: 60px !important;
+    height: 60px;
+    text-align: center;
+    font-size: 1.6rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.otp-input:focus {
+    border-color: #007bff;
+}
