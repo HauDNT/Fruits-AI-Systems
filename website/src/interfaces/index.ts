@@ -1,4 +1,4 @@
-import { Theme} from "@/types";
+import {Theme} from "@/types";
 import React from "react";
 
 // Authen
@@ -10,20 +10,22 @@ export interface LoginResponseInterface {
 
 // Redux
 interface ReduxUserState {
-    userId: string,
-    username: string,
+    userId: string;
+    username: string;
+    email?: string;
+    role?: number;
 }
 
 export interface ReduxAuthState {
-    user: ReduxUserState | null,
-    token: string | null,
+    user: ReduxUserState | null;
+    token: string | null;
 }
 
 // Reset password forms steps
 export interface StepResetForm {
-    id: string | number,
-    name: string,
-    fieldsName: string[],
+    id: string | number;
+    name: string;
+    fieldsName: string[];
 }
 
 // Theme

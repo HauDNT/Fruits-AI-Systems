@@ -1,16 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { ReduxAuthState } from '@/interfaces'
+import { ReduxAuthState, ReduxUserState } from '@/interfaces'
 
 const initialState: ReduxAuthState = {
     user: null,
-    token: null,
+    token: undefined,
 }
 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        setReduxAuthToken: (state, action) => {
+        setReduxAuthToken: (state, action: PayloadAction<ReduxUserState>) => {
             state.user = {
                 userId: action.payload.userId,
                 username: action.payload.username ?? undefined,

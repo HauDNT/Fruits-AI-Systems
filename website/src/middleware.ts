@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
     const {pathname} = request.nextUrl;
 
     // Lấy cookie và parse nếu nó là JSON
-    const authCookie = request.cookies.get('eduflexhub-authentication')?.value;
+    const authCookie = request.cookies.get('fruitflow-authentication')?.value;
     let accessToken, role;
 
     if (authCookie) {

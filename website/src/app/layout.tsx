@@ -11,8 +11,8 @@ const webFont = localFont({
 })
 
 export const metadata: Metadata = {
-    title: "EduFlexHub",
-    description: "Nền tảng học tập trực tuyến",
+    title: "FruitFlow",
+    description: "Phân loại trái cây thông minh",
 };
 
 export default function RootLayout({children,}: Readonly<{

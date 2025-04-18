@@ -10,7 +10,7 @@ export const AuthReduxProvider: React.FC = () => {
     useEffect(() => {
         Promise
             .all([
-                getCookie('eduflexhub-authentication'),
+                getCookie('fruitflow-authentication'),
             ])
             .then((values) => {
                 if (values.length > 0 && values[0]?.value) {

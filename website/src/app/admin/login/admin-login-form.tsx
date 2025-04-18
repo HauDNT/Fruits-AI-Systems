@@ -47,7 +47,7 @@ const AdminLoginForm: React.FC = () => {
 
             const result = await axiosInstance
                 .post<LoginResponseInterface>(
-                    '/auth/admin/login',
+                    '/auth/login',
                     {...values}
                 )
                 .then(res => (
@@ -58,7 +58,7 @@ const AdminLoginForm: React.FC = () => {
                 ))
 
             if (result.payload.accessToken) {
-                await setCookie('eduflexhub-authentication', JSON.stringify({
+                await setCookie('fruitflow-authentication', JSON.stringify({
                     userId: result.payload.userId,
                     username: result.payload.username,
                     accessToken: result.payload.accessToken,
@@ -104,13 +104,13 @@ const AdminLoginForm: React.FC = () => {
                                 name="username"
                                 render={({field}) => (
                                     <FormItem>
-                                        <FormLabel>Tài khoản</FormLabel>
+                                        <FormLabel className={'text-black'}>Tài khoản</FormLabel>
                                         <FormControl>
                                             <Input
-                                                style={{ marginBottom: '12px' }}
+                                                style={{ marginBottom: '12px', color: 'black' }}
                                                 placeholder="nva@email.com" {...field} />
                                         </FormControl>
-                                        <FormMessage style={{ marginBottom: '12px' }}/>
+                                        <FormMessage style={{ marginBottom: '12px', color: 'red' }}/>
                                     </FormItem>
                                 )}
                             />
@@ -119,14 +119,15 @@ const AdminLoginForm: React.FC = () => {
                                 name="password"
                                 render={({field}) => (
                                     <FormItem>
-                                        <FormLabel>Mật khẩu</FormLabel>
+                                        <FormLabel className={'text-black'}>Mật khẩu</FormLabel>
                                         <FormControl>
                                             <Input
                                                 {...field}
                                                 type={'password'}
+                                                style={{ color: 'black' }}
                                             />
                                         </FormControl>
-                                        <FormMessage/>
+                                        <FormMessage style={{ color: 'red' }}/>
                                     </FormItem>
                                 )}
                             />

@@ -25,15 +25,15 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import axiosInstance from "@/utils/axiosInstance"
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/redux/store';
-import { removeReduxAuthToken } from '@/redux/authSlice';
+import {useSelector, useDispatch} from 'react-redux';
+import {RootState} from '@/redux/store';
+import {removeReduxAuthToken} from '@/redux/authSlice';
 import {useToast} from "@/hooks/use-toast";
 import {useRouter} from "next/navigation";
 
 const HeaderAvatar = ({uri}: { uri?: string }) => {
     const defaultAvatar = "https://img.freepik.com/premium-vector/businessman-avatar-illustration-cartoon-user-portrait-user-profile-icon_118339-5502.jpg?w=740";
-    const { user, token } = useSelector((state: RootState) => state.auth)
+    const {user, token} = useSelector((state: RootState) => state.auth)
     const dispatch = useDispatch()
     const {toast} = useToast()
     const router = useRouter()
@@ -51,7 +51,7 @@ const HeaderAvatar = ({uri}: { uri?: string }) => {
 
         if (logoutResult.status === 200) {
             dispatch(removeReduxAuthToken());
-            userRole === 'Admin' ? router.push('/admin/login') : router.push('/login')
+            router.push('/admin/login');
         } else {
             toast({
                 title: "Đăng xuất thất bại",
