@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from "react";
+import React, {useState} from "react";
 import {
     Table,
     TableBody,
@@ -15,19 +15,19 @@ import {Checkbox} from "@/components/ui/checkbox"
 import Searchbar from "@/components/common/Searchbar";
 
 export default function CustomTable({
-    tableTitle,
-    tableData,
-    onSort,
-    classname,
-    createItem,
-    deleteItem,
-    restoreItem,
-    search,
-    handleCreate,
-    handleDelete,
-    handleRestore,
-    handleSearch,
-}: CustomTableProps) {
+                                        tableTitle,
+                                        tableData,
+                                        onSort,
+                                        classname,
+                                        createItem,
+                                        deleteItem,
+                                        restoreItem,
+                                        search,
+                                        handleCreate,
+                                        handleDelete,
+                                        handleRestore,
+                                        handleSearch,
+                                    }: CustomTableProps) {
     const {columns, values} = tableData;
     const [itemSelected, setItemSelect] = useState<number[]>([]);
 
@@ -83,7 +83,8 @@ export default function CustomTable({
                 </div>
             }
         >
-            <div className={`${classname} overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]`}>
+            <div
+                className={`${classname} overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]`}>
                 <div className="max-w-full overflow-x-auto">
                     <div className="min-w-[1102px]">
                         <Table>
@@ -91,7 +92,7 @@ export default function CustomTable({
                             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
                                 <TableRow>
                                     {
-                                        (deleteItem || restoreItem) && (
+                                        ((deleteItem || restoreItem) && tableData?.columns?.length > 0) && (
                                             <TableCell
                                                 isHeader
                                                 className="px-3 pb-2 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
@@ -101,56 +102,72 @@ export default function CustomTable({
                                         )
                                     }
                                     {
-                                        columns.map((col) => (
-                                            col.key !== 'id' ? (
-                                                <TableCell
-                                                    key={col.key}
-                                                    isHeader
-                                                    onClick={() => onSort?.(col.key)}
-                                                    className="px-5 py-3 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
-                                                >
-                                                    {col.displayName}
-                                                </TableCell>
-                                            ) : null
-                                        ))
+                                        tableData?.values && tableData?.columns ? (
+                                            columns.map((col) => (
+                                                col.key !== 'id' ? (
+                                                    <TableCell
+                                                        key={col.key}
+                                                        isHeader
+                                                        onClick={() => onSort?.(col.key)}
+                                                        className="px-5 py-3 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
+                                                    >
+                                                        {col.displayName}
+                                                    </TableCell>
+                                                ) : null
+                                            ))
+                                        ) : (
+                                            <TableCell
+                                                key={1}
+                                                isHeader
+                                                className="px-5 py-3 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
+                                            >
+                                                Không có dữ liệu
+                                            </TableCell>
+                                        )
                                     }
                                 </TableRow>
                             </TableHeader>
 
                             {/* Table Body */}
-                            <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                                {values.map((row, index) => (
-                                    <TableRow key={index}>
-                                        {
-                                            (deleteItem || restoreItem) && (
-                                                row.disableCheck ? (
-                                                    <span/>
-                                                ) : (
-                                                    <TableCell
-                                                        key={index}
-                                                        onClick={() => {}}
-                                                        className="px-5 py-3 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
-                                                    >
-                                                        <Checkbox
-                                                            className={'table-select-item'}
-                                                            checked={itemSelected.includes(row.id)}
-                                                            onCheckedChange={(checked) => handleItemChecked(row.id, checked as boolean)}
-                                                        />
-                                                    </TableCell>
-                                                )
-                                            )
-                                        }
-                                        {
-                                            columns.map((col) => (
-                                                col.key !== 'id' ? (
-                                                    <TableCell key={col.key} className="px-5 py-4 sm:px-6 text-center">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={'w-full'}>
-                                                                <span className="block text-gray-600 text-center text-theme-sm">
+                            {
+                                tableData?.values?.length > 0 ? (
+                                    <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                                        {values.map((row, index) => (
+                                            <TableRow key={index}>
+                                                {
+                                                    (deleteItem || restoreItem) && (
+                                                        row.disableCheck ? (
+                                                            <span/>
+                                                        ) : (
+                                                            <TableCell
+                                                                key={index}
+                                                                onClick={() => {
+                                                                }}
+                                                                className="px-5 py-3 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
+                                                            >
+                                                                <Checkbox
+                                                                    className={'table-select-item'}
+                                                                    checked={itemSelected.includes(row.id)}
+                                                                    onCheckedChange={(checked) => handleItemChecked(row.id, checked as boolean)}
+                                                                />
+                                                            </TableCell>
+                                                        )
+                                                    )
+                                                }
+                                                {
+                                                    columns.map((col) => (
+                                                        col.key !== 'id' ? (
+                                                            <TableCell key={col.key}
+                                                                       className="px-5 py-4 sm:px-6 text-center">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={'w-full'}>
+                                                                <span
+                                                                    className="block text-gray-600 text-center text-theme-sm">
                                                                 {
                                                                     col.key === 'is_online' ?
                                                                         (
-                                                                            <div className={'w-100 flex justify-center'}>
+                                                                            <div
+                                                                                className={'w-100 flex justify-center'}>
                                                                                 {
                                                                                     row[col.key] === true ? (
                                                                                         <span
@@ -174,15 +191,17 @@ export default function CustomTable({
                                                                         )
                                                                 }
                                                                 </span>
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                ) : null
-                                            ))
-                                        }
-                                    </TableRow>
-                                ))}
-                            </TableBody>
+                                                                    </div>
+                                                                </div>
+                                                            </TableCell>
+                                                        ) : null
+                                                    ))
+                                                }
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                ) : null
+                            }
                         </Table>
                     </div>
                 </div>

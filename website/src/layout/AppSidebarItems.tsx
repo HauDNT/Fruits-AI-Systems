@@ -18,7 +18,10 @@ export const AdminSidebarItems = [
     {
         name: "Trái cây",
         icon: <TbApple size={25}/>,
-        path: "/admin/fruits",
+        subItems: [
+            {name: "Trái cây", path: "/admin/fruits"},
+            {name: "Tình trạng", path: "/admin/fruitTypes"},
+        ],
     },
     {
         name: "Lô",

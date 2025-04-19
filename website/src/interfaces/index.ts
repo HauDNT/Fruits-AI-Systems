@@ -9,7 +9,7 @@ export interface LoginResponseInterface {
 }
 
 // Redux
-interface ReduxUserState {
+export interface ReduxUserState {
     userId: string;
     username: string;
     email?: string;
@@ -38,7 +38,7 @@ export interface ThemeState {
 export interface FormInterface {
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     className?: string;
-    onClose: () => void;
+    onClose?: () => void;
 }
 
 // Model layer

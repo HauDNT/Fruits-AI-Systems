@@ -3,8 +3,8 @@ import type {NextRequest} from 'next/server';
 
 const publicPaths = ['/landing'];
 const userPaths = ['/home'];
-const adminPaths = ['/admin'];
-const authPaths = ['/login', '/register', '/admin/login'];
+const privatePaths = ['/admin'];
+const authPaths = ['/admin/login'];
 
 export function middleware(request: NextRequest) {
     const {pathname} = request.nextUrl;
@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
     }
 
     if (
-        adminPaths.some((path) => pathname.startsWith(path)) &&
+        privatePaths.some((path) => pathname.startsWith(path)) &&
         !pathname.startsWith('/admin/login') &&
         !accessToken
     ) {
@@ -38,21 +38,7 @@ export function middleware(request: NextRequest) {
 
     // 2. Nếu đã đăng nhập, ngăn truy cập trang auth
     if (authPaths.some((path) => pathname.startsWith(path)) && accessToken) {
-        if (role === 'Admin') {
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-        } else if (role === 'Teacher' || role === 'Student') {
-            return NextResponse.redirect(new URL('/home', request.url));
-        }
-    }
-
-    // 3. Ngăn user/admin truy cập nhầm dashboard
-    if (accessToken) {
-        if (userPaths.some((path) => pathname.startsWith(path)) && role === 'Admin') {
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-        }
-        if (adminPaths.some((path) => pathname.startsWith(path)) && (role === 'Teacher' || role === 'Student')) {
-            return NextResponse.redirect(new URL('/home', request.url));
-        }
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
 
     // 4. Cho phép tiếp tục nếu không vi phạm rule nào

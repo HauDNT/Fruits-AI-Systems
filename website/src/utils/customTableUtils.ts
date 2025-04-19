@@ -11,7 +11,7 @@ export const renderCellValues = (col: CustomTableColumn, value: any): string => 
         case "boolean":
             return value ? "Có" : "Không";
         case "date":
-            return value ? new Date(value).toLocaleDateString("vi-VN") : "-";
+            return value ? (new Date(value).toLocaleTimeString("vi-VN") + ' ' + new Date(value).toLocaleDateString("vi-VN")) : "-";
         case "number":
             return value !== undefined && value !== null ? value.toString() : "-";
         case "string":

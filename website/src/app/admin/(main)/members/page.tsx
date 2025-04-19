@@ -9,7 +9,7 @@ import CustomTable from "@/components/table/CustomTable";
 import {useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import CustomPagination from "@/components/common/CustomPagination";
-import CreateNewAccountForm from "@/components/forms/CreateNewAccountForm";
+import CreateNewFruitTypeForm from "@/components/forms/CreateNewFruitTypeForm";
 import ModelLayer from "@/components/common/ModelLayer";
 import {RegisterBodyType} from "@/schemas/auth.schema";
 import {RoleEnum} from "@/enums";
@@ -207,7 +207,7 @@ export default function MemberManagement() {
                 onClose={() => setCreateFormState(false)}
                 maxWidth="max-w-3xl"
             >
-                <CreateNewAccountForm
+                <CreateNewFruitTypeForm
                     onSubmit={(values: RegisterBodyType) => handleCreateUserForm(values)}
                 />
             </ModelLayer>
