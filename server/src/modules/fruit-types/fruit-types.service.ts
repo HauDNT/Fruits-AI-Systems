@@ -9,8 +9,9 @@ import {CreateFruitTypeDto} from './dto/create-fruit-type.dto';
 import {UpdateFruitTypeDto} from './dto/update-fruit-type.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
-import {IsNull, Repository, Like} from "typeorm";
+import {IsNull, Repository, Like, UpdateResult, In, DeleteResult} from "typeorm";
 import {GetFruitTypeDTO} from "@/modules/fruit-types/dto/get-fruit-type.dto";
+import {DeleteFruitTypeDto} from "@/modules/fruit-types/dto/delete-fruit-type.dto";
 
 @Injectable()
 export class FruitTypesService {
@@ -107,15 +108,22 @@ export class FruitTypesService {
         };
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} fruitType`;
-    }
+    async deleteFruitTypes(fruitTypeIds: string[]): Promise<DeleteResult> {
+        try {
+            const checkBeforeDelete = await this.fruitTypeRespository.findBy({id: In(fruitTypeIds)})
+            if (checkBeforeDelete.length) {
+                return await this.fruitTypeRespository.delete(fruitTypeIds);
+            } else {
+                throw new BadRequestException('Tình trạng trái cây không tồn tại')
+            }
+        } catch (e) {
+            console.log('Error when delete fruit types: ', e.message)
 
-    update(id: number, updateFruitTypeDto: UpdateFruitTypeDto) {
-        return `This action updates a #${id} fruitType`;
-    }
+            if (e instanceof HttpException) {
+                throw e;
+            }
 
-    remove(id: number) {
-        return `This action removes a #${id} fruitType`;
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình xoá tình trạng trái cây');
+        }
     }
 }

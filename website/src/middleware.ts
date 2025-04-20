@@ -2,7 +2,6 @@ import {NextResponse} from 'next/server';
 import type {NextRequest} from 'next/server';
 
 const publicPaths = ['/landing'];
-const userPaths = ['/home'];
 const privatePaths = ['/admin'];
 const authPaths = ['/admin/login'];
 
@@ -24,10 +23,6 @@ export function middleware(request: NextRequest) {
     }
 
     // 1. Nếu truy cập trang cần auth mà không có token
-    if (userPaths.some((path) => pathname.startsWith(path)) && !accessToken) {
-        return NextResponse.redirect(new URL('/landing', request.url));
-    }
-
     if (
         privatePaths.some((path) => pathname.startsWith(path)) &&
         !pathname.startsWith('/admin/login') &&

@@ -9,10 +9,10 @@ import CustomTable from "@/components/table/CustomTable";
 import CreateNewFruitTypeForm from "@/components/forms/CreateNewFruitTypeForm";
 import ModelLayer from "@/components/common/ModelLayer";
 import {FruitTypeBodyType} from "@/schemas/auth.schema";
+import CustomPagination from "@/components/common/CustomPagination";
 
 export default function FruitTypes() {
     const {toast} = useToast()
-    const searchParams = useSearchParams()
     const [data, setData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
@@ -93,6 +93,63 @@ export default function FruitTypes() {
         }
     }
 
+    const deleteFruitTypes = async (fruitTypeSeleted: string[]) => {
+        try {
+            if (fruitTypeSeleted.length > 0) {
+                await axiosInstance.delete(
+                    '/fruit-types/delete-types',
+                    {
+                        data: {
+                            fruitTypeIds: fruitTypeSeleted,
+                        }
+                    },
+                ).then((res) => {
+                    if (res.data.affected > 0) {
+                        if (res.data.affected < fruitTypeSeleted.length) {
+                            toast({
+                                title: `Đã ${res.data.affected} / ${fruitTypeSeleted.length} tình trạng`,
+                                variant: "success",
+                            })
+                        } else {
+                            toast({
+                                title: `Đã xoá tình trạng thành công`,
+                                variant: "success",
+                            })
+                        }
+
+                        setData((prevState) => ({
+                            ...prevState,
+                            values: prevState.values.filter(item => !fruitTypeSeleted.includes(item.id))
+                        }));
+                    } else {
+                        toast({
+                            title: "Vui lòng chọn ít nhất 1 tình trạng",
+                            variant: "warning",
+                        });
+                    }
+                })
+            }
+        } catch (error) {
+            toast({
+                title: "Xoá trạng thái thất bại",
+                description: "Hãy thử lại sau",
+                variant: "destructive",
+            });
+        }
+    }
+
+    const handleNextPage = () => {
+        if (meta.currentPage < meta.totalPages) {
+            setMeta({...meta, currentPage: +meta.currentPage + 1});
+        }
+    }
+
+    const handlePrevPage = () => {
+        if (meta.currentPage > 1) {
+            setMeta({...meta, currentPage: +meta.currentPage - 1});
+        }
+    }
+
     useEffect(() => {
         fetchFruitTypesByQuery(searchQuery, searchFields)
     }, [searchQuery, meta.currentPage])
@@ -111,10 +168,21 @@ export default function FruitTypes() {
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
-                    handleDelete={(itemSelected) => console.table(itemSelected)}
+                    handleDelete={(itemSelected) => deleteFruitTypes(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
                 />
             </div>
+
+            <CustomPagination
+                currentPage={meta.currentPage}
+                totalPages={meta.totalPages}
+                handlePreviousPage={() => handlePrevPage()}
+                handleNextPage={() => handleNextPage()}
+                handleClickPage={(page) => setMeta(prev => ({
+                    ...prev,
+                    currentPage: page
+                }))}
+            />
 
             <ModelLayer
                 isOpen={createFormState}

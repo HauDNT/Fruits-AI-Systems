@@ -69,13 +69,13 @@ const CustomPagination = ({
     return (
         <Pagination className={'my-3'}>
             <PaginationContent>
-                <PaginationItem className={'cursor-pointer hover:none'}>
+                <PaginationItem className={'cursor-pointer select-none'}>
                     <PaginationPrevious customTitle={'Trước'} onClick={handlePreviousPage} />
                 </PaginationItem>
-                <PaginationItem className={'cursor-pointer hover:none flex'}>
+                <PaginationItem className={'cursor-pointer hover:none flex select-none'}>
                     { renderPageNumbers() }
                 </PaginationItem>
-                <PaginationItem className={'cursor-pointer'}>
+                <PaginationItem className={'cursor-pointer select-none'}>
                     <PaginationNext customTitle={'Sau'} href="#" onClick={handleNextPage} />
                 </PaginationItem>
             </PaginationContent>
