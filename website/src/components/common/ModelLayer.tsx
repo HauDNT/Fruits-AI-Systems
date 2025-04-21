@@ -31,9 +31,9 @@ const ModelLayer = ({
     if (!isOpen) return null;
 
     return (
-        <div className={` ${className} fixed inset-0 flex items-center justify-center z-999999`}>
+        <div className={` ${className} fixed inset-0 flex items-center justify-center z-999999 h-full`}>
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="absolute -top-[100%] inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
             />
             <div className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full mx-4 ${maxWidth}`}>

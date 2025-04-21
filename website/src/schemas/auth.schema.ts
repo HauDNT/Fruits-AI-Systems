@@ -8,17 +8,6 @@ export const LoginBody = z
     })
     .strict()
 
-// Fruit type schema
-export const FruitTypeBody = z
-    .object({
-        type_name: z.string()
-            .min(3, 'Tên tình trạng có ít nhất 3 ký tự')
-            .max(50, 'Tên tình trạng có tối đa 50 ký tự'),
-        type_desc: z.string()
-            .min(3, 'Mô tả tình trạng có ít nhất 3 ký tự')
-            .max(50, 'Mô tả tình trạng có tối đa 50 ký tự'),
-    })
-
 // Register schema
 export const RegisterBody = z
     .object({
@@ -30,5 +19,4 @@ export const RegisterBody = z
     .strict()
 
 export type LoginBodyType = z.TypeOf<typeof LoginBody>
-export type FruitTypeBodyType = z.TypeOf<typeof FruitTypeBody>
 export type RegisterBodyType = z.TypeOf<typeof RegisterBody>

@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, Query} from '@nestjs/common';
+import {Controller, Get, Post, Body, Delete, Query} from '@nestjs/common';
 import {FruitTypesService} from './fruit-types.service';
 import {CreateFruitTypeDto} from './dto/create-fruit-type.dto';
 import {TableMetaData} from "@/interfaces/table";
@@ -14,6 +14,11 @@ export class FruitTypesController {
     @Post('create-type')
     async create(@Body() createFruitTypeDto: CreateFruitTypeDto) {
         return await this.fruitTypesService.create(createFruitTypeDto);
+    }
+
+    @Get('/all')
+    async getAllFruitTypes(): Promise<FruitType[]> {
+        return await this.fruitTypesService.getAllFruitTypes()
     }
 
     @Get()

@@ -6,18 +6,16 @@ import {
 } from '@nestjs/common';
 import {TableMetaData} from "@/interfaces/table";
 import {CreateFruitTypeDto} from './dto/create-fruit-type.dto';
-import {UpdateFruitTypeDto} from './dto/update-fruit-type.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
-import {IsNull, Repository, Like, UpdateResult, In, DeleteResult} from "typeorm";
+import {IsNull, Repository, Like, In, DeleteResult} from "typeorm";
 import {GetFruitTypeDTO} from "@/modules/fruit-types/dto/get-fruit-type.dto";
-import {DeleteFruitTypeDto} from "@/modules/fruit-types/dto/delete-fruit-type.dto";
 
 @Injectable()
 export class FruitTypesService {
     constructor(
         @InjectRepository(FruitType)
-        private fruitTypeRespository: Repository<FruitType>,
+        private fruitTypeRepository: Repository<FruitType>,
     ) {
     }
 
@@ -25,20 +23,20 @@ export class FruitTypesService {
         try {
             const {type_name, type_desc} = createFruitTypeDto;
 
-            const checkExistType = await this.fruitTypeRespository
+            const checkExistType = await this.fruitTypeRepository
                 .createQueryBuilder('fruitType')
                 .where('LOWER(fruitType.type_name) = LOWER(:type_name)', {type_name: type_name})
                 .getOne()
 
             if (!checkExistType) {
-                const newType = await this.fruitTypeRespository.create({
+                const newType = await this.fruitTypeRepository.create({
                     type_name: type_name,
                     type_desc: type_desc,
                     created_at: new Date(),
                     updated_at: new Date(),
                 })
 
-                const savedType = await this.fruitTypeRespository.save(newType);
+                const savedType = await this.fruitTypeRepository.save(newType);
 
                 return {
                     message: 'Tạo trạng thái thành công',
@@ -56,6 +54,10 @@ export class FruitTypesService {
 
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình tạo tình trạng trái cây mới');
         }
+    }
+
+    async getAllFruitTypes(): Promise<FruitType[]> {
+        return await this.fruitTypeRepository.find();
     }
 
     async getFruitTypesByQuery(data: GetFruitTypeDTO): Promise<TableMetaData<FruitType>> {
@@ -81,7 +83,7 @@ export class FruitTypesService {
             }));
         };
 
-        const [fruitTypes, total] = await this.fruitTypeRespository.findAndCount({
+        const [fruitTypes, total] = await this.fruitTypeRepository.findAndCount({
             where: searchConditions.length > 0 ? searchConditions : where,
             select: ['id', 'type_name', 'type_desc', 'created_at', 'updated_at'],
             skip,
@@ -110,9 +112,9 @@ export class FruitTypesService {
 
     async deleteFruitTypes(fruitTypeIds: string[]): Promise<DeleteResult> {
         try {
-            const checkBeforeDelete = await this.fruitTypeRespository.findBy({id: In(fruitTypeIds)})
+            const checkBeforeDelete = await this.fruitTypeRepository.findBy({id: In(fruitTypeIds)})
             if (checkBeforeDelete.length) {
-                return await this.fruitTypeRespository.delete(fruitTypeIds);
+                return await this.fruitTypeRepository.delete(fruitTypeIds);
             } else {
                 throw new BadRequestException('Tình trạng trái cây không tồn tại')
             }

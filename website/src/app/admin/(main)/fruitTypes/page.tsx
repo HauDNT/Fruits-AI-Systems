@@ -1,6 +1,5 @@
 'use client'
 import {useEffect, useState} from "react";
-import {useSearchParams} from 'next/navigation';
 import {useToast} from "@/hooks/use-toast";
 import {HttpStatusCode} from "axios";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
@@ -8,7 +7,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import CustomTable from "@/components/table/CustomTable";
 import CreateNewFruitTypeForm from "@/components/forms/CreateNewFruitTypeForm";
 import ModelLayer from "@/components/common/ModelLayer";
-import {FruitTypeBodyType} from "@/schemas/auth.schema";
+import {FruitTypeBodyType} from "@/schemas/fruit.schema";
 import CustomPagination from "@/components/common/CustomPagination";
 
 export default function FruitTypes() {
@@ -18,7 +17,6 @@ export default function FruitTypes() {
     const [searchQuery, setSearchQuery] = useState("")
     const searchFields = "type_name, type_desc"
     const [createFormState, setCreateFormState] = useState(false)
-
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
     const fetchFruitTypesByQuery = async (searchQuery: string, searchFields: string) => {

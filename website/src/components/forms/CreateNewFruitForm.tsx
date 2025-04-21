@@ -1,8 +1,9 @@
 'use client'
-import React from "react";
+import React, {useEffect, useState} from "react";
+import {useToast} from "@/hooks/use-toast";
 import {useForm} from 'react-hook-form'
 import {zodResolver} from '@hookform/resolvers/zod'
-import {FruitTypeBody, FruitTypeBodyType} from '@/schemas/fruit.schema'
+import {FruitBody, FruitBodyType} from '@/schemas/fruit.schema'
 import {
     Form,
     FormControl,
@@ -15,22 +16,48 @@ import {FormInterface} from "@/interfaces"
 import ComponentCard from "@/components/common/ComponentCard"
 import InputField from "@/components/inputs/InputField"
 import CustomButton from "@/components/buttons/CustomButton"
+import axiosInstance from "@/utils/axiosInstance";
+import ListCheck from "@/components/common/ListCheck";
 
-const CreateNewFruitTypeForm = ({
+const CreateNewFruitForm = ({
     className,
     onSubmit,
 }: FormInterface) => {
-    const handleSubmit = (values: FruitTypeBodyType) => {
+    const {toast} = useToast()
+    const [fruitTypesData, setFruitTypesData] = useState([])
+    const [storeFruitTypeChecked, setStoreFruitTypeChecked] = useState([])
+
+    const fetchAllFruitTypes = async () => {
+        const resData = (await axiosInstance.get('/fruit-types/all')).data;
+
+        if (resData.length > 0) {
+            setFruitTypesData(resData)
+        } else {
+            console.log('Error: ', e)
+            toast({
+                title: "Xảy ra lỗi khi lấy thông tin trạng thái",
+                variant: "destructive",
+            });
+        }
+    }
+
+    const handleSubmit = (values: FruitBodyType) => {
+        values.fruit_types = storeFruitTypeChecked;
         onSubmit(values);
     };
 
-    const form = useForm<FruitTypeBodyType>({
-        resolver: zodResolver(FruitTypeBody),
+    const form = useForm<FruitBodyType>({
+        resolver: zodResolver(FruitBody),
         defaultValues: {
-            type_name: '',
-            type_desc: '',
+            fruit_name: '',
+            fruit_desc: '',
+            fruit_types: [],
         }
     })
+
+    useEffect(() => {
+        fetchAllFruitTypes();
+    }, [])
 
     return (
         <ComponentCard title="Thêm trạng thái trái cây mới" className={'w-full'}>
@@ -42,14 +69,14 @@ const CreateNewFruitTypeForm = ({
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <FormField
                             control={form.control}
-                            name={"type_name"}
+                            name={"fruit_name"}
                             render={({field}) => (
                                 <FormItem className="col-span-full">
-                                    <FormLabel>Trạng thái (Tiếng Anh viết hoa chữ cái)</FormLabel>
+                                    <FormLabel>Tên trái cây (Tiếng Anh)</FormLabel>
                                     <FormControl>
                                         <InputField
                                             type="text"
-                                            placeholder="Ripe / Rot"
+                                            placeholder="Apple (Táo) / Pear (Lê) / Grapes (Nho)"
                                             {...field}
                                         />
                                     </FormControl>
@@ -59,20 +86,26 @@ const CreateNewFruitTypeForm = ({
                         />
                         <FormField
                             control={form.control}
-                            name={"type_desc"}
+                            name={"fruit_desc"}
                             render={({field}) => (
                                 <FormItem className="col-span-full">
-                                    <FormLabel>Mô tả (Chú thích tiếng Việt)</FormLabel>
+                                    <FormLabel>Mô tả</FormLabel>
                                     <FormControl>
                                         <InputField
                                             type="text"
-                                            placeholder="Chín / Thối"
+                                            placeholder="Mô tả trái cây (nếu có)"
                                             {...field}
                                         />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
                             )}
+                        />
+
+                        <ListCheck
+                            title={'Chọn tình trạng của loại trái này'}
+                            data={fruitTypesData}
+                            onCheck={(itemSelected) => setStoreFruitTypeChecked(itemSelected)}
                         />
 
                         <div className="col-span-full">
@@ -85,4 +118,4 @@ const CreateNewFruitTypeForm = ({
     )
 }
 
-export default CreateNewFruitTypeForm
+export default CreateNewFruitForm

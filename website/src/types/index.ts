@@ -18,3 +18,9 @@ export type DashboardCardItem = {
     upOrDown: boolean;
     diffRatio: number;
 }
+
+export type FruitType = {
+    id: number;
+    type_name: string;
+    type_desc: string;
+}

@@ -50,8 +50,16 @@ export interface ModelLayerInterface {
     maxWidth?: string;
 }
 
+// Search bar
 export interface SearchbarInterface {
     placeholder?: string;
     onSearch: (query: string, searchFields?: string[]) => void;
     debounceTime?: number;
+}
+
+// List check
+export interface ListCheckInterface<T> {
+    title?: string;
+    data: T[];
+    onCheck?: (itemsChecked: number[]) => void;
 }
