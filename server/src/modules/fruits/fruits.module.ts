@@ -5,10 +5,11 @@ import {TypeOrmModule} from "@nestjs/typeorm";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {FruitTypesService} from "@/modules/fruit-types/fruit-types.service";
+import {FruitImage} from "@/modules/fruit-images/entities/fruit-image.entity";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Fruit, FruitType]),
+        TypeOrmModule.forFeature([Fruit, FruitType, FruitImage]),
     ],
     controllers: [FruitsController],
     providers: [FruitsService, FruitTypesService],

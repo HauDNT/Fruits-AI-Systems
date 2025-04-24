@@ -27,7 +27,7 @@ export class FruitImage {
 
   @ManyToOne(
     () => Fruit,
-      fruit => fruit.images,
+      fruit => fruit.fruitImages,
     { onDelete: "CASCADE" }
   )
   @JoinColumn({ name: 'fruit_id' })

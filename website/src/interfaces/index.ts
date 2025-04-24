@@ -36,7 +36,7 @@ export interface ThemeState {
 
 // Form
 export interface FormInterface {
-    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+    onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<boolean>;
     className?: string;
     onClose?: () => void;
 }

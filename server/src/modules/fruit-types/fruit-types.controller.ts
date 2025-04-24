@@ -37,7 +37,7 @@ export class FruitTypesController {
     }
 
     @Delete('/delete-types')
-    async remove(
+    async deleteFruitTypes(
         @Body() data: DeleteFruitTypeDto
     ): Promise<DeleteResult | any> {
         const { fruitTypeIds } = data;

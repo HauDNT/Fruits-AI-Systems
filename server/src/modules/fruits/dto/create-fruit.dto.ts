@@ -12,5 +12,5 @@ export class CreateFruitDto {
     fruit_desc: string;
 
     @IsArray()
-    fruit_type: number[];
+    fruit_types: number[];
 }

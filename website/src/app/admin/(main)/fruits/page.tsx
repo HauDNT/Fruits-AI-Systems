@@ -6,6 +6,8 @@ import {useToast} from "@/hooks/use-toast";
 import {FruitBodyType} from "@/schemas/fruit.schema";
 import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewFruitForm from "@/components/forms/CreateNewFruitForm";
+import axiosInstance from "@/utils/axiosInstance";
+import CustomPagination from "@/components/common/CustomPagination";
 
 export default function Fruits() {
     const {toast} = useToast()
@@ -16,9 +18,129 @@ export default function Fruits() {
     const [createFormState, setCreateFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
-    useEffect(() => {
+    const fetchFruitsByQuery = async (searchQuery: string, searchFields: string) => {
+        try {
+            const resData = (await axiosInstance.get(
+                `/fruits`,
+                {
+                    params: {
+                        page: meta.currentPage,
+                        limit: meta.limit,
+                        queryString: searchQuery,
+                        searchFields: searchFields,
+                    }
+                }
+            )).data;
 
-    }, [])
+            setData({
+                columns: resData.columns,
+                values: resData.values,
+            });
+
+            // Update meta
+            setMeta({
+                ...meta,
+                currentPage: resData.meta.currentPage,
+                totalPages: resData.meta.totalPages,
+            })
+        } catch (e) {
+            console.log('Error: ', e)
+            toast({
+                title: "Xảy ra lỗi khi lấy thông tin",
+                variant: "destructive",
+            });
+        }
+    }
+
+    const createNewFruits = async (formData: FruitBodyType): Promise<boolean> => {
+        try {
+            const resData = await axiosInstance.post('/fruits/create-fruit', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            if (resData.status === 201) {
+                setCreateFormState(false);
+
+                setData(prev => ({
+                    ...prev,
+                    values: [...prev.values, resData.data.data]
+                }))
+
+                toast({ title: "Thêm trái cây thành công" , variant: "success"});
+                return true;
+            }
+        } catch (error) {
+            console.error('Thêm trái cây thất bại:', error);
+
+            toast({
+                title: "Thêm trái cây thất bại",
+                description: "Vui lòng thử lại sau",
+                variant: "destructive",
+            });
+
+            return false;
+        }
+    }
+
+    const deleteFruits = async (fruitsSeleted: string[]) => {
+        try {
+            if (fruitsSeleted.length > 0) {
+                await axiosInstance.delete(
+                    '/fruits/delete-fruits',
+                    {
+                        data: {
+                            fruitIds: fruitsSeleted,
+                        }
+                    },
+                ).then((res) => {
+                    if (res.data.affected > 0) {
+                        if (res.data.affected < fruitsSeleted.length) {
+                            toast({
+                                title: `Đã ${res.data.affected} / ${fruitsSeleted.length} trái cây`,
+                                variant: "success",
+                            })
+                        } else {
+                            toast({
+                                title: `Đã xoá trái cây thành công`,
+                                variant: "success",
+                            })
+                        }
+
+                        setData((prevState) => ({
+                            ...prevState,
+                            values: prevState.values.filter(item => !fruitsSeleted.includes(item.id))
+                        }));
+                    } else {
+                        toast({
+                            title: "Vui lòng chọn ít nhất 1 trái cây để xoá",
+                            variant: "warning",
+                        });
+                    }
+                })
+            }
+        } catch (error) {
+            toast({
+                title: "Xoá trạng thái thất bại",
+                description: "Hãy thử lại sau",
+                variant: "destructive",
+            });
+        }
+    }
+
+    const handleNextPage = () => {
+        if (meta.currentPage < meta.totalPages) {
+            setMeta({...meta, currentPage: +meta.currentPage + 1});
+        }
+    }
+
+    const handlePrevPage = () => {
+        if (meta.currentPage > 1) {
+            setMeta({...meta, currentPage: +meta.currentPage - 1});
+        }
+    }
+
+    useEffect(() => {
+        fetchFruitsByQuery(searchQuery, searchFields)
+    }, [searchQuery, meta.currentPage])
 
     return (
         <div>
@@ -34,8 +156,19 @@ export default function Fruits() {
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
-                    handleDelete={(itemSelected) => console.table(itemSelected)}
-                    handleSearch={(query) => console.log(query)}
+                    handleDelete={(itemSelected) => deleteFruits(itemSelected)}
+                    handleSearch={(query) => setSearchQuery(query)}
+                />
+
+                <CustomPagination
+                    currentPage={meta.currentPage}
+                    totalPages={meta.totalPages}
+                    handlePreviousPage={() => handlePrevPage()}
+                    handleNextPage={() => handleNextPage()}
+                    handleClickPage={(page) => setMeta(prev => ({
+                        ...prev,
+                        currentPage: page
+                    }))}
                 />
 
                 <ModelLayer
@@ -44,7 +177,7 @@ export default function Fruits() {
                     maxWidth="max-w-3xl"
                 >
                     <CreateNewFruitForm
-                        onSubmit={(values: FruitBodyType) => console.log(values)}
+                        onSubmit={(formData: FruitBodyType) => createNewFruits(formData)}
                     />
                 </ModelLayer>
             </div>

@@ -15,6 +15,7 @@ import {
 import {FormInterface} from "@/interfaces"
 import ComponentCard from "@/components/common/ComponentCard"
 import InputField from "@/components/inputs/InputField"
+import { Input } from "@/components/ui/input"
 import CustomButton from "@/components/buttons/CustomButton"
 import axiosInstance from "@/utils/axiosInstance";
 import ListCheck from "@/components/common/ListCheck";
@@ -25,35 +26,51 @@ const CreateNewFruitForm = ({
 }: FormInterface) => {
     const {toast} = useToast()
     const [fruitTypesData, setFruitTypesData] = useState([])
-    const [storeFruitTypeChecked, setStoreFruitTypeChecked] = useState([])
-
-    const fetchAllFruitTypes = async () => {
-        const resData = (await axiosInstance.get('/fruit-types/all')).data;
-
-        if (resData.length > 0) {
-            setFruitTypesData(resData)
-        } else {
-            console.log('Error: ', e)
-            toast({
-                title: "Xảy ra lỗi khi lấy thông tin trạng thái",
-                variant: "destructive",
-            });
-        }
-    }
-
-    const handleSubmit = (values: FruitBodyType) => {
-        values.fruit_types = storeFruitTypeChecked;
-        onSubmit(values);
-    };
-
+    const [storeFruitTypeChecked, setStoreFruitTypeChecked] = useState<string[]>([]);
     const form = useForm<FruitBodyType>({
         resolver: zodResolver(FruitBody),
         defaultValues: {
             fruit_name: '',
             fruit_desc: '',
             fruit_types: [],
+            fruit_image: undefined,
         }
     })
+
+    const fetchAllFruitTypes = async () => {
+        try {
+            const resData = (await axiosInstance.get('/fruit-types/all')).data;
+
+            if (resData.length > 0) {
+                setFruitTypesData(resData);
+            } else {
+                toast({
+                    title: "Không có dữ liệu loại trái cây",
+                    variant: "warning",
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching fruit types:', error);
+            toast({
+                title: "Lỗi khi lấy danh sách loại trái cây",
+                variant: "destructive",
+            });
+        }
+    }
+
+    const handleSubmit = (values: FruitBodyType) => {
+        const formData = new FormData();
+        formData.append('fruit_name', values.fruit_name);
+        formData.append('fruit_desc', values.fruit_desc);
+        formData.append('fruit_types', JSON.stringify(storeFruitTypeChecked));
+        formData.append('fruit_image', values.fruit_image);
+
+        const submitResult = onSubmit(formData);
+        if (submitResult) {
+            form.reset();
+            setStoreFruitTypeChecked([]);
+        }
+    };
 
     useEffect(() => {
         fetchAllFruitTypes();
@@ -98,6 +115,24 @@ const CreateNewFruitForm = ({
                                         />
                                     </FormControl>
                                     <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="fruit_image"
+                            render={({ field: { onChange, value, ...field } }) => (
+                                <FormItem className="col-span-full">
+                                    <FormLabel>Hình ảnh</FormLabel>
+                                    <FormControl className={'cursor-pointer'}>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            {...field}
+                                            onChange={(e) => onChange(e.target.files?.[0] || null)}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
