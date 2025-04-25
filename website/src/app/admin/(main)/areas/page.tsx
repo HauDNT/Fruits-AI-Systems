@@ -4,7 +4,6 @@ import CustomTable from "@/components/table/CustomTable";
 import {useToast} from "@/hooks/use-toast";
 import {useEffect, useState} from "react";
 import CustomPagination from "@/components/common/CustomPagination";
-import {FruitBodyType} from "@/schemas/fruit.schema";
 import ModelLayer from "@/components/common/ModelLayer";
 import axiosInstance from "@/utils/axiosInstance";
 import {AreaBodyType} from "@/schemas/area.schema";
@@ -147,7 +146,7 @@ export default function Areas() {
 
     return (
         <>
-            <PageBreadcrumb pageTitle={'Khu'}/>
+            <PageBreadcrumb pageTitle={'Khu phân loại'}/>
 
             <div className="space-y-6">
                 <CustomTable

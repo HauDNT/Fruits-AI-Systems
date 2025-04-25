@@ -26,7 +26,7 @@ export const AdminSidebarItems = [
     {
         name: "Lô",
         icon: <RiArchiveLine size={25}/>,
-        path: "#"
+        path: "/admin/batches"
     },
     {
         name: "Thiết bị",
