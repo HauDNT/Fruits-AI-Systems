@@ -73,7 +73,7 @@ export class FruitsService {
                 throw e;
             }
 
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách trái cây');
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình tạo trái cây');
         }
     }
 
@@ -113,7 +113,6 @@ export class FruitsService {
                 [field]: Like(`%${queryString}%`),
             }));
         }
-        ;
 
         const [fruits, total] = await this.fruitRepository.findAndCount({
             where: searchConditions.length > 0 ? searchConditions : where,
@@ -153,7 +152,7 @@ export class FruitsService {
     async deleteFruits(fruitIds: string[]): Promise<DeleteResult> {
         try {
             if (!Array.isArray(fruitIds) || fruitIds.length === 0) {
-                throw new BadRequestException('Danh sách fruitIds không hợp lệ');
+                throw new BadRequestException('Danh sách id trái cây không hợp lệ');
             }
 
             const fruits = await this.fruitRepository.find({
@@ -181,7 +180,7 @@ export class FruitsService {
 
             await this.fruitImageRepository.delete({ fruit: { id: In(fruitIds) } });
 
-            return  await this.fruitRepository.delete(fruitIds);
+            return await this.fruitRepository.delete(fruitIds);
         } catch (e) {
             console.log('Error when delete fruits: ', e.message)
 

@@ -1,21 +1,12 @@
 import z from 'zod'
 
 // Fruit schema
-export const FruitBody = z
+export const AreaBody = z
     .object({
-        fruit_name: z.string()
-            .min(3, 'Tên trái cây có ít nhất 3 ký tự')
-            .max(50, 'Tên trái cây có tối đa 50 ký tự'),
-        fruit_desc: z.string()
+        area_desc: z.string()
             .min(3, 'Mô tả trái cây có ít nhất 3 ký tự')
             .max(50, 'Mô tả trái cây có tối đa 50 ký tự'),
-        fruit_types: z
-            .array(z.string().min(1))
-            .refine(
-                (arr) => new Set(arr).size === arr.length,
-                { message: 'Các loại trái cây không được trùng nhau' }
-            ),
-        fruit_image: z
+        area_image: z
             .instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
             .refine(
                 (file) => file !== null,
@@ -32,15 +23,12 @@ export const FruitBody = z
     })
 
 // Fruit type schema
-export const FruitTypeBody = z
+export const AreaTypeBody = z
     .object({
-        fruit_name: z.string()
-            .min(3, 'Tên trái cây có ít nhất 3 ký tự')
-            .max(50, 'Tên trái cây có tối đa 50 ký tự'),
-        fruit_desc: z.string()
-            .min(3, 'Mô tả có ít nhất 3 ký tự')
-            .max(50, 'Mô tả có tối đa 50 ký tự'),
-        fruit_image: z
+        area_desc: z.string()
+            .min(3, 'Mô tả khu phân loại có ít nhất 3 ký tự')
+            .max(50, 'Mô tả khu phân loại có tối đa 50 ký tự'),
+        area_image: z
             .instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
             .refine(
                 (file) => file.size <= 5 * 1024 * 1024,
@@ -52,5 +40,5 @@ export const FruitTypeBody = z
             ),
     })
 
-export type FruitBodyType = z.TypeOf<typeof FruitBody>
-export type FruitTypeBodyType = z.TypeOf<typeof FruitTypeBody>
+export type AreaBodyType = z.TypeOf<typeof AreaBody>
+export type AreaTypeBodyType = z.TypeOf<typeof AreaTypeBody>

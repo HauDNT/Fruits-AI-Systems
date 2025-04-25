@@ -68,7 +68,7 @@ export class FruitsController {
             }
 
             if (!body.fruit_name || !body.fruit_desc || !body.fruit_types) {
-                throw new BadRequestException('Thiếu thông tin bắt buộc: fruit_name, fruit_desc, hoặc fruit_types');
+                throw new BadRequestException('Thiếu thông tin bắt buộc: tên trái cây, mô tả, hoặc tình trạng');
             }
 
             // Parse fruit_types từ chuỗi JSON
@@ -137,6 +137,6 @@ export class FruitsController {
         @Body() data: DeleteFruitDto
     ): Promise<DeleteResult> {
         const {fruitIds} = data
-        return this.fruitsService.deleteFruits(fruitIds);
+        return await this.fruitsService.deleteFruits(fruitIds);
     }
 }

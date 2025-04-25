@@ -13,7 +13,7 @@ export const AdminSidebarItems = [
     {
         name: "Khu",
         icon: <MdConveyorBelt size={25}/>,
-        path: "#"
+        path: "/admin/areas"
     },
     {
         name: "Trái cây",

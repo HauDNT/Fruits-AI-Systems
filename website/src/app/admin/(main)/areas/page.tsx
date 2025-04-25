@@ -1,27 +1,28 @@
 'use client'
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import {useEffect, useState} from "react";
 import CustomTable from "@/components/table/CustomTable";
 import {useToast} from "@/hooks/use-toast";
+import {useEffect, useState} from "react";
+import CustomPagination from "@/components/common/CustomPagination";
 import {FruitBodyType} from "@/schemas/fruit.schema";
 import ModelLayer from "@/components/common/ModelLayer";
-import CreateNewFruitForm from "@/components/forms/CreateNewFruitForm";
 import axiosInstance from "@/utils/axiosInstance";
-import CustomPagination from "@/components/common/CustomPagination";
+import {AreaBodyType} from "@/schemas/area.schema";
+import CreateNewAreaForm from "@/components/forms/CreateNewAreaForm";
 
-export default function Fruits() {
+export default function Areas() {
     const {toast} = useToast()
     const [data, setData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "fruit_name, fruit_desc"
+    const searchFields = "area_code, area_desc"
     const [createFormState, setCreateFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
-    const fetchFruitsByQuery = async (searchQuery: string, searchFields: string) => {
+    const fetchAreasByQuery = async (searchQuery: string, searchFields: string) => {
         try {
             const resData = (await axiosInstance.get(
-                `/fruits`,
+                '/areas',
                 {
                     params: {
                         page: meta.currentPage,
@@ -29,8 +30,7 @@ export default function Fruits() {
                         queryString: searchQuery,
                         searchFields: searchFields,
                     }
-                }
-            )).data;
+                })).data;
 
             setData({
                 columns: resData.columns,
@@ -45,17 +45,21 @@ export default function Fruits() {
         } catch (e) {
             console.log('Error: ', e)
             toast({
-                title: "Xảy ra lỗi khi lấy thông tin",
-                variant: "destructive",
-            });
+                title: 'Không thể tải lên danh sách khu',
+                variant: 'destructive',
+            })
         }
     }
 
-    const createNewFruits = async (formData: FruitBodyType): Promise<boolean> => {
+    const createNewArea = async (formData: AreaBodyType): Promise<boolean> => {
         try {
-            const resData = await axiosInstance.post('/fruits/create-fruit', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            const resData = await axiosInstance.post(
+                'areas/create-area',
+                formData,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                })
+
             if (resData.status === 201) {
                 setCreateFormState(false);
 
@@ -64,14 +68,14 @@ export default function Fruits() {
                     values: [...prev.values, resData.data.data]
                 }))
 
-                toast({ title: "Thêm trái cây thành công" , variant: "success"});
+                toast({ title: "Thêm khu thành công" , variant: "success"});
                 return true;
             }
-        } catch (error) {
-            console.error('Thêm trái cây thất bại:', error);
+        } catch (e) {
+            console.error('Thêm khu thất bại:', error);
 
             toast({
-                title: "Thêm trái cây thất bại",
+                title: "Thêm khu thất bại",
                 description: "Vui lòng thử lại sau",
                 variant: "destructive",
             });
@@ -80,37 +84,37 @@ export default function Fruits() {
         }
     }
 
-    const deleteFruits = async (fruitsSeleted: string[]) => {
+    const deleteAreas = async (areasSelected: string[]) => {
         try {
-            if (fruitsSeleted.length > 0) {
+            if (areasSelected.length > 0) {
                 await axiosInstance.delete(
-                    '/fruits/delete-fruits',
+                    '/areas/delete-areas',
                     {
                         data: {
-                            fruitIds: fruitsSeleted,
+                            areaIds: areasSelected
                         }
-                    },
+                    }
                 ).then((res) => {
                     if (res.data.affected > 0) {
-                        if (res.data.affected < fruitsSeleted.length) {
+                        if (res.data.affected < areasSelected.length) {
                             toast({
-                                title: `Đã xoá ${res.data.affected} / ${fruitsSeleted.length} trái cây`,
+                                title: `Đã xoá ${res.data.affected} / ${areasSelected.length} khu`,
                                 variant: "success",
                             })
                         } else {
                             toast({
-                                title: `Đã xoá trái cây thành công`,
+                                title: `Đã xoá khu phân loại thành công`,
                                 variant: "success",
                             })
                         }
 
                         setData((prevState) => ({
                             ...prevState,
-                            values: prevState.values.filter(item => !fruitsSeleted.includes(item.id))
+                            values: prevState.values.filter(item => !areasSelected.includes(item.id))
                         }));
                     } else {
                         toast({
-                            title: "Vui lòng chọn ít nhất 1 trái cây để xoá",
+                            title: "Vui lòng chọn ít nhất 1 khu để xoá",
                             variant: "warning",
                         });
                     }
@@ -138,16 +142,16 @@ export default function Fruits() {
     }
 
     useEffect(() => {
-        fetchFruitsByQuery(searchQuery, searchFields)
+        fetchAreasByQuery(searchQuery, searchFields)
     }, [searchQuery, meta.currentPage])
 
     return (
         <>
-            <PageBreadcrumb pageTitle={'Trái cây'}/>
+            <PageBreadcrumb pageTitle={'Khu'}/>
 
             <div className="space-y-6">
                 <CustomTable
-                    tableTitle={'Danh sách trái cây'}
+                    tableTitle={'Danh sách khu phân loại'}
                     tableData={data}
                     onSort={(key) => console.log(`Sorting by ${key}`)}
                     createItem={true}
@@ -155,7 +159,7 @@ export default function Fruits() {
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
-                    handleDelete={(itemSelected) => deleteFruits(itemSelected)}
+                    handleDelete={(itemSelected) => deleteAreas(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
                 />
 
@@ -175,8 +179,8 @@ export default function Fruits() {
                     onClose={() => setCreateFormState(false)}
                     maxWidth="max-w-3xl"
                 >
-                    <CreateNewFruitForm
-                        onSubmit={(formData: FruitBodyType) => createNewFruits(formData)}
+                    <CreateNewAreaForm
+                        onSubmit={(formData: AreaBodyType) => createNewArea(formData)}
                     />
                 </ModelLayer>
             </div>
