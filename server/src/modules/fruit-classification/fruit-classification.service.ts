@@ -3,7 +3,7 @@ import {CreateFruitClassificationDto} from './dto/create-fruit-classification.dt
 import {UpdateFruitClassificationDto} from './dto/update-fruit-classification.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
-import {IsNull, Like, Repository} from "typeorm";
+import { Repository} from "typeorm";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {FruitBatch} from "@/modules/fruit-batches/entities/fruit-batch.entity";
@@ -43,8 +43,8 @@ export class FruitClassificationService {
             const area = await this.areaRepository.findOneBy({ id: areaId })
             const batch = await this.fruitBatchRepository.findOneBy({ id: batchId })
 
-            const newClassifyResult = this.fruitClassificationRepository.create({
-                confidence_level: confidence_level,
+            let newClassifyResult = this.fruitClassificationRepository.create({
+                confidence_level,
                 fruit,
                 areaBelong: area,
                 fruitBatchBelong: batch,
@@ -55,10 +55,12 @@ export class FruitClassificationService {
 
             await this.fruitClassificationRepository.save(newClassifyResult)
 
-            return {
-                message: 'Tạo kết quả phân loại thành công',
-                data: newClassifyResult,
-            }
+            newClassifyResult = await this.fruitClassificationRepository.findOne({
+                where: {id: newClassifyResult.id},
+                relations: ['fruit', 'fruitType', 'areaBelong', 'fruitBatchBelong']
+            })
+
+            return newClassifyResult
         } catch (e) {
             console.log('Lỗi: ', e.message)
 

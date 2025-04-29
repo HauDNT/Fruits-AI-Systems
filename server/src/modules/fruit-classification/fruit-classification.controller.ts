@@ -18,13 +18,15 @@ import * as fs from 'fs/promises';
 import {extname} from "path";
 import {plainToInstance} from "class-transformer";
 import {TableMetaData} from "@/interfaces/table";
-import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
 import {FruitClassificationFlat} from "@/interfaces";
+import {FruitClassificationGateway} from "@/gateway/fruitClassification.gateway";
 
 @Controller('fruit-classification')
 export class FruitClassificationController {
-    constructor(private readonly fruitClassificationService: FruitClassificationService) {
-    }
+    constructor(
+        private readonly fruitClassificationService: FruitClassificationService,
+        private readonly classifyGateway: FruitClassificationGateway,
+    ) { }
 
     @Post('create-classify')
     @UseInterceptors(FileInterceptor('classify_image', {
@@ -32,7 +34,7 @@ export class FruitClassificationController {
             destination: async (req, file, callback) => {
                 const uploadPath = './uploads/results';
                 try {
-                    await fs.mkdir(uploadPath, { recursive: true });
+                    await fs.mkdir(uploadPath, {recursive: true});
                     callback(null, uploadPath);
                 } catch (error) {
                     console.log('==> Lỗi tạo thư mục: ', error.message)
@@ -59,9 +61,6 @@ export class FruitClassificationController {
         @UploadedFile() file: Express.Multer.File,
         @Body() body: any,
     ) {
-        console.log('File received in handler:', file);
-        console.log('Body received:', body);
-
         try {
             if (!file) {
                 throw new BadRequestException('Vui lòng gửi file ảnh');
@@ -81,7 +80,20 @@ export class FruitClassificationController {
 
             const imageUrl = `/uploads/results/${file.filename}`;
 
-            return await this.fruitClassificationService.create(createResultDto, imageUrl)
+            const createdRecord = await this.fruitClassificationService.create(createResultDto, imageUrl)
+
+            this.classifyGateway.broadcastNewClassification({
+                id: createdRecord.id,
+                fruit: createdRecord.fruit.fruit_name,
+                fruitType: createdRecord.fruitType.type_name,
+                area: createdRecord.areaBelong.area_code,
+                batch: createdRecord.fruitBatchBelong.batch_code,
+                confidence_level: createdRecord.confidence_level,
+                image_url: imageUrl,
+                created_at: createdRecord.created_at,
+            })
+
+            return createdRecord
         } catch (e) {
             console.log('Lỗi: ', e.message)
 

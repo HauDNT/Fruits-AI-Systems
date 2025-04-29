@@ -10,6 +10,7 @@ import {FruitClassifyBodyType} from "@/schemas/fruit-classify.schema";
 import axiosInstance from "@/utils/axiosInstance";
 import PreviewClassifyResult from "@/components/forms/PreviewClassifyResult";
 import {ClassifyResultInterface} from "@/interfaces";
+import { useSocketFruitClassify } from "@/hooks/useSocketFruitClassify";
 
 export default function Classification() {
     const {toast} = useToast()
@@ -97,7 +98,6 @@ export default function Classification() {
     }
 
     const handleDetail = (item: ClassifyResultInterface) => {
-        console.log("Selected item:", item);
         setDetailItemData(item)
         setDetailFormState(true)
     }
@@ -105,6 +105,21 @@ export default function Classification() {
     useEffect(() => {
         fetchClassifiesByQuery(searchQuery, searchFields)
     }, [searchQuery, meta.currentPage])
+
+    useSocketFruitClassify((newResult: ClassifyResultInterface) => {
+        console.log('Socket newFruitClassification - ON')
+
+        toast({
+            title: "Phát hiện kết quả phân loại mới",
+            description: `Loại: ${newResult.fruitType?.name || 'Không xác định'}, Độ tin cậy: ${newResult.confidence_level}%`,
+            variant: "success",
+        });
+
+        setData(prev => ({
+            ...prev,
+            values: [newResult, ...prev.values], // Thêm lên đầu bảng
+        }));
+    });
 
     return (
         <div>

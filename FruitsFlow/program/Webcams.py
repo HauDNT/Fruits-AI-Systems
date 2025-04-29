@@ -34,6 +34,9 @@ def initialize_webcam(webcam_index, webcam_name):
     print(f"Không thể mở {webcam_name}.", flush=True)
     return None
 
+def is_webcam_active(webcam):
+    return webcam is not None and webcam.isOpened()
+
 def capture_webcam_image(webcam, webcam_name):
     try:
         for _ in range(10):

@@ -1,4 +1,5 @@
 import requests
+import aiohttp
 import logging
 import os
 from typing import Dict, Optional
@@ -22,15 +23,22 @@ class ApiRaspberryCall:
         self.headers = headers or {}
         self.timeout = timeout
 
-    def POST(
+    async def POST(
         self,
         endpoint: str,
         fields: Dict[str, str],
         image_path: Optional[str] = None,
         image_field_name: str = "image"
     ) -> Dict:
-        data = fields
-        files = {}
+        data = aiohttp.FormData()
+        
+        for key, value in fields.items():
+            data.add_field(key, str(value))
+        
+        
+        
+        
+        file_handler = None
         
         if image_path:
             if not os.path.isfile(image_path):
@@ -38,27 +46,39 @@ class ApiRaspberryCall:
                 return {"error": f"File ảnh không tồn tại: {image_path}"}
             
             mime_type = "image/jpeg" if image_path.lower().endswith(".jpg") or image_path.lower().endswith(".jpeg") else "image/png"
-            files = {
-                image_field_name: (
-                    os.path.basename(image_path),
-                    open(image_path, "rb"),
-                    mime_type
-                )
-            }
-        
+            file_handler = open(image_path, "rb")
+            
+            data.add_field(
+                image_field_name,
+                file_handler,
+                filename=os.path.basename(image_path),
+                content_type=mime_type
+            )
+
         requestUrl = f"{self.base_url}{endpoint}"
         
         try:
             logger.info(f"Gửi request tới {requestUrl} với fields: {fields} và file: {image_path if image_path else 'None'}")
             
-            response = requests.post(
-                requestUrl,
-                data=data,
-                files=files if files else None,
-                headers=self.headers,
-                timeout=self.timeout
-            )
-            return self.handle_response(response)
+            # response = requests.post(
+            #     requestUrl,
+            #     data=data,
+            #     files=files if files else None,
+            #     headers=self.headers,
+            #     timeout=self.timeout
+            # )
+            # return self.handle_response(response)
+        
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    requestUrl,
+                    data=data,
+                    headers=self.headers,
+                    timeout=self.timeout
+                ) as response:
+                    # Xử lý phản hồi
+                    return await self.handle_response_async(response)
+        
         except requests.exceptions.Timeout:
             logger.error(f"Request timeout sau {self.timeout} giây: {requestUrl}")
             return {"error": "Request timeout"}
@@ -70,15 +90,15 @@ class ApiRaspberryCall:
             return {"error": f"Lỗi không xác định: {str(e)}"}
         finally:
             # Đóng file ảnh nếu có
-            if files and files.get(image_field_name):
-                files[image_field_name][1].close()
+            if file_handler:
+                file_handler.close()
 
-    def handle_response(self, response: requests.Response) -> Dict:
+    async def handle_response_async(self, response: requests.Response) -> Dict:
         try:
             response.raise_for_status()
             logger.info(f"Phản hồi thành công: {response.status_code}")
-            return response.json()
-        except requests.exceptions.HTTPError as e:
+            return await response.json()
+        except aiohttp.ClientResponseError as e:
             logger.error(f"Lỗi HTTP {response.status_code}: {str(e)}")
             return {"error": f"Lỗi HTTP {response.status_code}: {str(e)}"}
         except ValueError:
