@@ -11,6 +11,7 @@ export interface TableProps {
     search?: boolean;
     restoreItem?: boolean;
     handleCreate?: void;
+    handleDetail?: void;
     handleDelete?: void;
     handleRestore?: void;
     handleSearch?: void;

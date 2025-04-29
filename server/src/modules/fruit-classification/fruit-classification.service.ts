@@ -86,36 +86,43 @@ export class FruitClassificationService {
 
     async getClassifyByQuery(data: GetClassifyQueryParamsDto): Promise<TableMetaData<FruitClassificationFlat>> {
         const {
-            page,
-            limit,
-            queryString,
-            searchFields,
+            page = 1,
+            limit = 10,
+            queryString = '',
+            searchFields = '',
         } = data;
 
         const skip = (page - 1) * limit;
         const take = limit;
 
-        const where: any = {};
-        where.deleted_at = IsNull();
+        const query = this.fruitClassificationRepository
+            .createQueryBuilder('fc')
+            .leftJoinAndSelect('fc.fruit', 'fruit')
+            .leftJoinAndSelect('fc.fruitType', 'fruitType')
+            .leftJoinAndSelect('fc.areaBelong', 'areaBelong')
+            .leftJoinAndSelect('fc.fruitBatchBelong', 'fruitBatchBelong')
+            .where('fc.deleted_at IS NULL');
 
-        let searchConditions: any[] = [];
         if (queryString && searchFields) {
-            const fields = searchFields.split(',').map((field) => field.trim());
-            searchConditions = fields.map((field) => ({
-                ...where,
-                [field]: Like(`%${queryString}%`),
-            }));
+            const fields = searchFields.split(',').map(f => f.trim());
+
+            const conditions = fields.map(field => {
+                if (field === 'fruit') return 'fruit.fruit_name LIKE :query';
+                if (field === 'areaBelong') return 'areaBelong.area_code LIKE :query';
+                if (field === 'fruitBatchBelong') return 'fruitBatchBelong.batch_code LIKE :query';
+                return `fc.${field} LIKE :query`;
+            }).join(' OR ');
+
+            query.andWhere(`(${conditions})`, { query: `%${queryString}%` });
         }
 
-        const [results, total] = await this.fruitClassificationRepository.findAndCount({
-            where: searchConditions.length > 0 ? searchConditions : where,
-            select: ['id', 'confidence_level', 'created_at'],
-            skip,
-            take,
-            relations: ['fruit', 'fruitType', 'areaBelong', 'fruitBatchBelong']
-        })
+        const [results, total] = await query
+            .skip(skip)
+            .take(take)
+            .getManyAndCount();
 
-        const totalPages = Math.ceil(total / limit)
+        const totalPages = Math.ceil(total / limit);
+
         const formatResult: FruitClassificationFlat[] = results.map(result => ({
             id: result.id,
             confidence_level: result.confidence_level,
@@ -125,26 +132,26 @@ export class FruitClassificationService {
             area: result.areaBelong.area_code,
             batch: result.fruitBatchBelong.batch_code,
             created_at: result.created_at,
-        }))
+        }));
 
         return {
-            "columns": [
-                { "key": "id", "displayName": "ID", "type": "number" },
-                { "key": "confidence_level", "displayName": "Độ tin cậy", "type": "string" },
-                { "key": "fruit", "displayName": "Loại trái cây", "type": "string" },
-                { "key": "fruitType", "displayName": "Loại", "type": "string" },
-                { "key": "area", "displayName": "Khu vực", "type": "string" },
-                { "key": "batch", "displayName": "Mã lô", "type": "string" },
-                { "key": "created_at", "displayName": "Thời gian", "type": "date" },
+            columns: [
+                { key: 'id', displayName: 'ID', type: 'number' },
+                { key: 'confidence_level', displayName: 'Độ tin cậy', type: 'string' },
+                { key: 'fruit', displayName: 'Loại trái cây', type: 'string' },
+                { key: 'fruitType', displayName: 'Loại', type: 'string' },
+                { key: 'area', displayName: 'Khu vực', type: 'string' },
+                { key: 'batch', displayName: 'Mã lô', type: 'string' },
+                { key: 'created_at', displayName: 'Thời gian', type: 'date' },
             ],
-            "values": formatResult,
-            "meta": {
-                "totalItems": total,
-                "currentPage": page,
-                "totalPages": totalPages,
-                "limit": limit,
+            values: formatResult,
+            meta: {
+                totalItems: total,
+                currentPage: page,
+                totalPages,
+                limit,
             },
-        }
+        };
     }
 
     findOne(id: number) {

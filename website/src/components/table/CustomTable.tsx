@@ -7,6 +7,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/table/index";
+import { MdMore } from "react-icons/md";
 import {CustomTableProps} from "@/interfaces/table";
 import {renderCellValues} from "@/utils/customTableUtils";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -15,19 +16,21 @@ import {Checkbox} from "@/components/ui/checkbox"
 import Searchbar from "@/components/common/Searchbar";
 
 export default function CustomTable({
-                                        tableTitle,
-                                        tableData,
-                                        onSort,
-                                        classname,
-                                        createItem,
-                                        deleteItem,
-                                        restoreItem,
-                                        search,
-                                        handleCreate,
-                                        handleDelete,
-                                        handleRestore,
-                                        handleSearch,
-                                    }: CustomTableProps) {
+    tableTitle,
+    tableData,
+    onSort,
+    classname,
+    createItem,
+    deleteItem,
+    restoreItem,
+    detailItem,
+    search,
+    handleCreate,
+    handleDetail,
+    handleDelete,
+    handleRestore,
+    handleSearch,
+}: CustomTableProps) {
     const {columns, values} = tableData;
     const [itemSelected, setItemSelect] = useState<number[]>([]);
 
@@ -125,6 +128,18 @@ export default function CustomTable({
                                             </TableCell>
                                         )
                                     }
+                                    {
+                                        (detailItem) && (
+                                            <TableCell
+                                                isHeader
+                                                className="px-3 pb-2 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
+                                            >
+                                               <span>
+                                                    Chi tiết
+                                               </span>
+                                            </TableCell>
+                                        )
+                                    }
                                 </TableRow>
                             </TableHeader>
 
@@ -156,7 +171,7 @@ export default function CustomTable({
                                                 }
                                                 {
                                                     columns.map((col) => (
-                                                        col.key !== 'id' ? (
+                                                        col.key !== 'id' && col.key !== 'image_url' ? (
                                                             <TableCell key={col.key}
                                                                        className="px-5 py-4 sm:px-6 text-center">
                                                                 <div className="flex items-center gap-3">
@@ -196,6 +211,22 @@ export default function CustomTable({
                                                             </TableCell>
                                                         ) : null
                                                     ))
+                                                }
+                                                {
+                                                    (detailItem) && (
+                                                        <TableCell
+                                                            isHeader
+                                                            className="px-3 pb-2 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
+                                                        >
+                                                            <span className={'w-full block'}>
+                                                                <MdMore
+                                                                    size={20}
+                                                                    className={'dark:white m-auto cursor-pointer'}
+                                                                    onClick={() => handleDetail(row)}
+                                                                />
+                                                            </span>
+                                                        </TableCell>
+                                                    )
                                                 }
                                             </TableRow>
                                         ))}

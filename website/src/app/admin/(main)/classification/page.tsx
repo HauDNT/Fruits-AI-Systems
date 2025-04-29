@@ -8,14 +8,18 @@ import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewFruitClassifyForm from "@/components/forms/CreateNewFruitClassifyForm";
 import {FruitClassifyBodyType} from "@/schemas/fruit-classify.schema";
 import axiosInstance from "@/utils/axiosInstance";
+import PreviewClassifyResult from "@/components/forms/PreviewClassifyResult";
+import {ClassifyResultInterface} from "@/interfaces";
 
 export default function Classification() {
     const {toast} = useToast()
     const [data, setData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "batch_code, batch_desc"
+    const searchFields = "fruit, fruitBatchBelong, areaBelong, confidence_level";
     const [createFormState, setCreateFormState] = useState(false)
+    const [detailItemData, setDetailItemData] = useState<ClassifyResultInterface>(null);
+    const [detailFormState, setDetailFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
     const fetchClassifiesByQuery = async (searchQuery: string, searchFields: string) => {
@@ -92,26 +96,32 @@ export default function Classification() {
         }
     }
 
+    const handleDetail = (item: ClassifyResultInterface) => {
+        console.log("Selected item:", item);
+        setDetailItemData(item)
+        setDetailFormState(true)
+    }
+
     useEffect(() => {
         fetchClassifiesByQuery(searchQuery, searchFields)
     }, [searchQuery, meta.currentPage])
 
     return (
-        <>
+        <div>
             <PageBreadcrumb pageTitle={'Kết quả phân loại'}/>
 
             <div className="space-y-6">
-                <img src={'http://localhost:8080/uploads/results/classify_image-1745854504762-267787356.jpg'} />
-
                 <CustomTable
                     tableTitle={'Danh sách kết quả phân loại'}
                     tableData={data}
                     onSort={(key) => console.log(`Sorting by ${key}`)}
                     createItem={true}
+                    detailItem={true}
                     deleteItem={true}
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
+                    handleDetail={(item) => handleDetail(item)}
                     handleDelete={(itemSelected) => console.log(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
                 />
@@ -136,7 +146,15 @@ export default function Classification() {
                         onSubmit={(formData: FruitClassifyBodyType) => createNewClassify(formData)}
                     />
                 </ModelLayer>
+
+                <ModelLayer
+                    isOpen={detailFormState}
+                    onClose={() => setDetailFormState(false)}
+                    maxWidth="max-w-3xl"
+                >
+                    <PreviewClassifyResult data={detailItemData} />
+                </ModelLayer>
             </div>
-        </>
+        </div>
     )
 }
