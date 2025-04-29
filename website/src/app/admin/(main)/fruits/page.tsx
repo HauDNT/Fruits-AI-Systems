@@ -56,6 +56,7 @@ export default function Fruits() {
             const resData = await axiosInstance.post('/fruits/create-fruit', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
+
             if (resData.status === 201) {
                 setCreateFormState(false);
 

@@ -1,7 +1,7 @@
-import {IsString, IsOptional, IsInt, Min} from 'class-validator';
-import { Type } from 'class-transformer';
+import {IsInt, IsOptional, IsString, Min} from "class-validator";
+import {Type} from "class-transformer";
 
-export class GetFruitByQueryParamsDto {
+export class GetClassifyQueryParamsDto {
     @IsOptional()
     @IsString()
     queryString?: string;

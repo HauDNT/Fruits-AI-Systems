@@ -44,7 +44,7 @@ export class Device {
   @JoinColumn({ name: 'status_id' })
   deviceStatus: DeviceStatus;
 
-  // Devices <-> Areas
+  // Devices <-> Batches
   @ManyToOne(() => Area, area => area.device)
   @JoinColumn({ name: 'area_id' })
   areaBelong: Area;

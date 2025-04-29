@@ -36,15 +36,15 @@ export class Area {
   @DeleteDateColumn({ type: "timestamp" })
   deleted_at: Date | null;
 
-  // Areas <-> Devices
+  // Batches <-> Devices
   @OneToMany(() => Device, device => device.deviceType)
   device: Device;
 
-  // Areas <-> Employees
+  // Batches <-> Employees
   @OneToMany(() => Employee, employee => employee.areaWorkAt)
   employee: Employee;
 
-  // Areas <-> Fruit Classification
+  // Batches <-> Fruit Classification
   @OneToMany(() => FruitClassification, classify => classify.areaBelong)
   fruitClassified: FruitClassification;
 }

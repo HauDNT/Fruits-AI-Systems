@@ -5,7 +5,7 @@ export interface TableColumn {
     valueMapping?: Record<string, string>;
 }
 
-export interface TableMetaData<T> {
+export interface TableMetaData<T = any> {
     columns: TableColumn[];
     values: T[];
     meta?: any;

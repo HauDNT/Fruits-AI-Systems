@@ -36,6 +36,6 @@ export const AdminSidebarItems = [
     {
         name: "Lịch sử phân loại",
         icon: <RiHistoryLine size={25}/>,
-        path: "#"
+        path: "/admin/classification"
     },
 ];
