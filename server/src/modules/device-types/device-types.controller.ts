@@ -2,6 +2,7 @@ import {Controller, Get, Post, Body, Patch, Param, Delete} from '@nestjs/common'
 import {DeviceTypesService} from './device-types.service';
 import {CreateDeviceTypeDto} from './dto/create-device-type.dto';
 import {UpdateDeviceTypeDto} from './dto/update-device-type.dto';
+import {omitFields} from "@/utils/omitFields";
 
 @Controller('device-types')
 export class DeviceTypesController {
@@ -10,12 +11,12 @@ export class DeviceTypesController {
 
     @Post()
     async create(@Body() createDeviceTypeDto: CreateDeviceTypeDto) {
-        return this.deviceTypesService.create(createDeviceTypeDto);
+        return await this.deviceTypesService.create(createDeviceTypeDto);
     }
 
-    @Get()
-    findAll() {
-        return this.deviceTypesService.findAll();
+    @Get('/all')
+    async findAll() {
+        return await this.deviceTypesService.findAll();
     }
 
     @Get(':id')

@@ -4,6 +4,7 @@ import {UpdateDeviceTypeDto} from './dto/update-device-type.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
 import {Repository} from "typeorm";
+import {omitFields} from "@/utils/omitFields";
 
 @Injectable()
 export class DeviceTypesService {
@@ -49,8 +50,23 @@ export class DeviceTypesService {
         }
     }
 
-    findAll() {
-        return `This action returns all deviceTypes`;
+    async findAll() {
+        try {
+            const deviceTypes = await this.deviceTypeRepository.find();
+            deviceTypes.forEach((type, index) => {
+                deviceTypes[index] = omitFields(type, ['created_at', 'updated_at', 'deleted_at'])
+            })
+
+            return deviceTypes
+        } catch (e) {
+            console.log('Lỗi: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách loại thiết bị');
+        }
     }
 
     findOne(id: number) {

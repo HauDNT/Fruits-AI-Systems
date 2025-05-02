@@ -25,7 +25,8 @@ export class DevicesService {
 
     async create(createDeviceDto: CreateDeviceDto, image_url: string) {
         try {
-            const { type_id, status_id, area_id } = createDeviceDto
+            const allowedDuplicateDevices = ['VL53L0X', 'Webcam']
+            const {type_id, status_id, area_id} = createDeviceDto
             const areaBelong = await this.areaRepository.findOneBy({id: area_id})
             const deviceType = await this.deviceTypeRepository.findOneBy({id: type_id})
             const deviceStatus = await this.deviceStatusRepository.findOneBy({id: status_id})
@@ -34,12 +35,23 @@ export class DevicesService {
                 throw new BadRequestException('Khu phân loại, trạng thái thiết bị hoặc loại thiết bị không tồn tại')
             }
 
+            const existDevice = await this.deviceRepository.findOne({
+                where: {
+                    deviceType: {id: deviceType.id},
+                    areaBelong: {id: areaBelong.id},
+                },
+            });
+
+            if (existDevice && !allowedDuplicateDevices.includes(deviceType.type_name)) {
+                throw new BadRequestException('Thiết bị đã tồn tại')
+            }
+
             let device_code: string
             let deviceCodeExist
 
             do {
                 device_code = generateUniqueCode("Device", 6)
-                deviceCodeExist = await this.deviceRepository.findOneBy({ device_code: device_code })
+                deviceCodeExist = await this.deviceRepository.findOneBy({device_code: device_code})
             } while (deviceCodeExist)
 
             const newDevice = await this.deviceRepository.create({

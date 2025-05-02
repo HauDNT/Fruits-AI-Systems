@@ -6,6 +6,9 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import CustomTable from "@/components/table/CustomTable";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
+import {DeviceBodyType} from '@/schemas/device.schema';
+import CreateNewDeviceForm from "@/components/forms/CreateNewDeviceForm";
+import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 
 export default function Devices() {
     const {toast} = useToast()
@@ -28,8 +31,34 @@ export default function Devices() {
         }
     }
 
+    const handleCreateNewDevice = async (formData: DeviceBodyType) => {
+        try {
+            const resData = await axiosInstance.post('/devices/create-device', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            })
+
+            if (resData.status === 201) {
+                setCreateFormState(false)
+
+                toast({ title: "Thêm thiết bị thành công" , variant: "success"})
+                return true
+            }
+        }  catch (error) {
+            const errorMessage = handleAxiosError(error);
+            console.log('Thêm thiết bị thất bại: ', error)
+
+            toast({
+                title: "Thêm thiết bị thất bại",
+                description: errorMessage,
+                variant: "destructive",
+            })
+
+            return false
+        }
+    }
+
     useEffect(() => {
-        // fetchAreasByQuery(searchQuery, searchFields)
+
     }, [searchQuery, meta.currentPage])
 
     return (
@@ -66,7 +95,10 @@ export default function Devices() {
                     onClose={() => setCreateFormState(false)}
                     maxWidth="max-w-3xl"
                 >
-                    <>Create form</>
+                    <CreateNewDeviceForm
+                        onSubmit={(formData: DeviceBodyType) => handleCreateNewDevice(formData)}
+                        onClose={() => setCreateFormState(false)}
+                    />
                 </ModelLayer>
             </div>
         </>

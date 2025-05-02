@@ -74,8 +74,8 @@ export class AreasController {
     }
 
     @Get('/all')
-    findAll() {
-        return this.areasService.findAll();
+    async findAll() {
+        return await this.areasService.findAll();
     }
 
     @Get()

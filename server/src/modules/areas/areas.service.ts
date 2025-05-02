@@ -9,6 +9,7 @@ import {TableMetaData} from "@/interfaces/table";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {GetAreaByQueryDto} from "@/modules/areas/dto/get-area-query-params.dto";
 import {generateUniqueCode} from "@/utils/generateUniqueCode";
+import {omitFields} from "@/utils/omitFields";
 
 @Injectable()
 export class AreasService {
@@ -56,8 +57,24 @@ export class AreasService {
         }
     }
 
-    findAll() {
-        return `This action returns all areas`;
+    async findAll() {
+        try {
+            const areas = await this.areaRepository.find()
+
+            areas.forEach((area, index) => {
+                areas[index] = omitFields(area, ['image_url', 'created_at', 'updated_at', 'deleted_at'])
+            })
+
+            return areas
+        } catch (e) {
+            console.log('Lỗi: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách khu phân loại');
+        }
     }
 
     async getAreasByQuery(data: GetAreaByQueryDto): Promise<TableMetaData<Area>> {

@@ -2,6 +2,7 @@ import {Controller, Get, Post, Body, Patch, Param, Delete} from '@nestjs/common'
 import {DeviceStatusService} from './device-status.service';
 import {CreateDeviceStatusDto} from './dto/create-device-status.dto';
 import {UpdateDeviceStatusDto} from './dto/update-device-status.dto';
+import {DeviceStatus} from "@/modules/device-status/entities/device-status.entity";
 
 @Controller('device-status')
 export class DeviceStatusController {
@@ -13,9 +14,9 @@ export class DeviceStatusController {
         return await this.deviceStatusService.create(createDeviceStatusDto);
     }
 
-    @Get()
-    findAll() {
-        return this.deviceStatusService.findAll();
+    @Get('/all')
+    async findAll(): Promise<DeviceStatus[]> {
+        return await this.deviceStatusService.findAll();
     }
 
     @Get(':id')

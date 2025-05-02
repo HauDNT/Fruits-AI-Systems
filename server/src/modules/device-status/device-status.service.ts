@@ -4,6 +4,7 @@ import {UpdateDeviceStatusDto} from './dto/update-device-status.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeviceStatus} from "@/modules/device-status/entities/device-status.entity";
 import {Repository} from "typeorm";
+import {omitFields} from "@/utils/omitFields";
 
 @Injectable()
 export class DeviceStatusService {
@@ -48,8 +49,24 @@ export class DeviceStatusService {
         }
     }
 
-    findAll() {
-        return `This action returns all deviceStatus`;
+    async findAll(): Promise<DeviceStatus[]> {
+        try {
+            const deviceStatuses = await this.deviceStatusRepository.find();
+
+            deviceStatuses.forEach((status, index) => {
+                deviceStatuses[index] = omitFields(status, ['created_at', 'updated_at', 'deleted_at'])
+            })
+
+            return deviceStatuses
+        } catch (e) {
+            console.log('Lỗi: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách trạng thái thiết bị');
+        }
     }
 
     findOne(id: number) {
