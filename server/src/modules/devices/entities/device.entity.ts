@@ -4,7 +4,7 @@ import {
     DeleteDateColumn,
     Entity, JoinColumn,
     ManyToOne,
-    PrimaryGeneratedColumn,
+    PrimaryGeneratedColumn, Unique,
     UpdateDateColumn
 } from "typeorm";
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
@@ -18,7 +18,8 @@ export class Device {
 
     @Column({
         type: "varchar",
-        length: 100
+        length: 100,
+        unique: true,
     })
     device_code: string;
 

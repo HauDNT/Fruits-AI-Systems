@@ -3,9 +3,10 @@ import React from "react";
 
 interface BreadcrumbProps {
     pageTitle: string;
+    pageTitleSmall?: string;
 }
 
-const PageBreadcrumb: React.FC<BreadcrumbProps> = ({pageTitle}) => {
+const PageBreadcrumb: React.FC<BreadcrumbProps> = ({pageTitle, pageTitleSmall}) => {
     return (
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h2
@@ -41,7 +42,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({pageTitle}) => {
                         </Link>
                     </li>
                     <li className="text-sm text-gray-800 dark:text-white/90">
-                        {pageTitle}
+                        {pageTitleSmall || pageTitle}
                     </li>
                 </ol>
             </nav>

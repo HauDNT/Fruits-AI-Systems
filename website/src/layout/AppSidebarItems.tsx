@@ -35,6 +35,7 @@ export const AdminSidebarItems = [
             {name: "Thiết bị", path: "/admin/devices"},
             {name: "Loại thiết bị", path: "/admin/deviceTypes"},
             {name: "Trạng thái thiết bị", path: "/admin/deviceStatuses"},
+            {name: "Cấu hình máy chủ Raspberry", path: "/admin/raspberryConfig"},
         ],
     },
     {

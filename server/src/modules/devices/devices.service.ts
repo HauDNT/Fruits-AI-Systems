@@ -8,6 +8,8 @@ import {DeviceStatus} from "@/modules/device-status/entities/device-status.entit
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {generateUniqueCode} from "@/utils/generateUniqueCode";
+import {DeviceEnum} from "@/database/enums/DeviceEnum";
+import {omitFields} from "@/utils/omitFields";
 
 @Injectable()
 export class DevicesService {
@@ -85,8 +87,33 @@ export class DevicesService {
         return `This action returns all devices`;
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} device`;
+    async findAllRaspberry() {
+        try {
+            const raspType = await this.deviceTypeRepository
+                .createQueryBuilder('raspberry')
+                .where('LOWER(raspberry.type_name) LIKE LOWER(:type_name)', {type_name: `%${DeviceEnum[DeviceEnum.Raspberry]}%`})
+                .getOne()
+
+            const raspberries = await this.deviceRepository.find({
+                where: {
+                    deviceType: raspType
+                }
+            })
+
+            raspberries.forEach((rasp, index) => {
+                raspberries[index] = omitFields(rasp, ['image_url', 'created_at', 'updated_at', 'deleted_at'])
+            })
+
+            return raspberries
+        } catch (e) {
+            console.log('Lỗi: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách Raspberry');
+        }
     }
 
     update(id: number, updateDeviceDto: UpdateDeviceDto) {

@@ -131,9 +131,9 @@ export class DevicesController {
         return this.devicesService.findAll();
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.devicesService.findOne(+id);
+    @Get('/raspberry-all')
+    async findAllRaspberry() {
+        return await this.devicesService.findAllRaspberry();
     }
 
     @Patch(':id')
