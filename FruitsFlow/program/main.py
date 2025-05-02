@@ -5,6 +5,7 @@ from typing import Dict
 import VL53L0X
 import FruitRecognitionCNNModel
 import Webcams
+import MachineLearningMethod
 from API import ApiRaspberryCall
 
 MAX_DISTANCE = 85
@@ -41,14 +42,7 @@ if not vl53Sensor:
 if not webcam_1 and not webcam_2:
     print("Không thể khởi tạo bất kỳ webcam nào. Huỷ chương trình", flush=True)
     exit(1)
-
-def process_recognition(webcam, webcam_name, interpreter, labels):
-    image = Webcams.capture_webcam_image(webcam, webcam_name)
-    if image is not None:
-        idx, label, confidence = FruitRecognitionCNNModel.model_run_inference(interpreter, image, labels)
-        return image, idx, label, confidence
-    return None, None, None, None
-
+    
 async def main_loop():
     lastDistanceRecorded = time.time()
     
@@ -89,8 +83,8 @@ async def main_loop():
                 
                 try:
                     print("1. Chụp ảnh vật thể: ", flush=True)
-                    imageWebcam1, firstResult_idx, firstResult_label, firstResult_confidence = process_recognition(webcam_1, WEBCAMS_NAME[0], interpreter, labels)
-                    imageWebcam2, secondResult_idx, secondResult_label, secondResult_confidence = process_recognition(webcam_2, WEBCAMS_NAME[1], interpreter, labels)
+                    imageWebcam1, firstResult_label, firstResult_confidence = MachineLearningMethod.process_recognition(webcam_1, WEBCAMS_NAME[0], interpreter, labels)
+                    imageWebcam2, secondResult_label, secondResult_confidence = MachineLearningMethod.process_recognition(webcam_2, WEBCAMS_NAME[1], interpreter, labels)
                     logger.info("Chụp ảnh hoàn tất")
                     print("==> Chụp vật thể hoàn tất!", flush=True)
                     

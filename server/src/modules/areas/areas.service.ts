@@ -8,6 +8,7 @@ import {UpdateAreaDto} from './dto/update-area.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {GetAreaByQueryDto} from "@/modules/areas/dto/get-area-query-params.dto";
+import {generateUniqueCode} from "@/utils/generateUniqueCode";
 
 @Injectable()
 export class AreasService {
@@ -17,19 +18,6 @@ export class AreasService {
     ) {
     }
 
-    generateUniqueAreaCode(): string {
-        const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        const codeLength = 6;
-
-        let codeGenerated = '';
-        for (let i = 0; i < codeLength; i++) {
-            const randomIndex = Math.floor(Math.random() * charset.length);
-            codeGenerated += charset[randomIndex];
-        }
-
-        return `#AR-${codeGenerated}`;
-    }
-
     async create(createAreaDto: CreateAreaDto, imageUrl: string) {
         try {
             const {area_desc} = createAreaDto;
@@ -37,7 +25,7 @@ export class AreasService {
             let areaCodeExist;
 
             do {
-                areaCode = this.generateUniqueAreaCode();
+                areaCode = generateUniqueCode("Area", 6)
                 areaCodeExist = await this.areaRepository.findOneBy({
                     area_code: areaCode,
                 });

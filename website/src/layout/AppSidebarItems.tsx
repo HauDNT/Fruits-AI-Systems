@@ -29,9 +29,13 @@ export const AdminSidebarItems = [
         path: "/admin/batches"
     },
     {
-        name: "Thiết bị",
+        name: "Quản lý thiết bị",
         icon: <LuCircuitBoard size={25}/>,
-        path: "#"
+        subItems: [
+            {name: "Thiết bị", path: "/admin/devices"},
+            {name: "Loại thiết bị", path: "/admin/deviceTypes"},
+            {name: "Trạng thái thiết bị", path: "/admin/deviceStatuses"},
+        ],
     },
     {
         name: "Lịch sử phân loại",

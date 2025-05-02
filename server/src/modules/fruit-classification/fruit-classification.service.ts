@@ -103,7 +103,8 @@ export class FruitClassificationService {
             .leftJoinAndSelect('fc.fruitType', 'fruitType')
             .leftJoinAndSelect('fc.areaBelong', 'areaBelong')
             .leftJoinAndSelect('fc.fruitBatchBelong', 'fruitBatchBelong')
-            .where('fc.deleted_at IS NULL');
+            .where('fc.deleted_at IS NULL')
+            .addOrderBy('fc.created_at', 'DESC')
 
         if (queryString && searchFields) {
             const fields = searchFields.split(',').map(f => f.trim());
