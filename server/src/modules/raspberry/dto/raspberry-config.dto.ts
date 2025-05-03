@@ -4,11 +4,15 @@ import {FruitTypeIdsDto} from "@/modules/raspberry/dto/fruit-type-ids.dto";
 export class RaspberryConfigDto {
     @IsNumber()
     @IsNotEmpty()
-    deviceId: number;
+    id: number;
+
+    @IsNumber()
+    @IsNotEmpty()
+    device_id: number;
 
     @IsString()
     @IsNotEmpty()
-    deviceCode: string;
+    device_code: string;
 
     @IsArray()
     @IsNotEmpty()

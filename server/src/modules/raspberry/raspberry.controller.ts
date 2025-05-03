@@ -11,13 +11,15 @@ export class RaspberryController {
         return await this.raspberryService.getAvailableMapIds()
     }
 
-    @Get('/config/:deviceCode')
+    @Get('/config/:device_code')
     async getConfigByRaspCode(
-        @Param('deviceCode') deviceCode: string,
+        @Param('device_code') device_code: string,
         @Query('isParseJSON') isParseJSON: string
     ) {
+        console.log('Device code: ', device_code)
+
         const parseJSON = isParseJSON === 'true';
-        const config = await this.raspberryService.getConfigByDeviceId(deviceCode, parseJSON);
+        const config = await this.raspberryService.getConfigByDeviceId(device_code, parseJSON);
 
         if (!config) {
             throw new HttpException('Không tìm thấy cấu hình cho thiết bị này', HttpStatus.NOT_FOUND);
@@ -40,6 +42,9 @@ export class RaspberryController {
     async updateRaspberryConfig(
         @Body() data: RaspberryConfigDto
     ) {
+        console.log('--> Data: ', data)
+        console.log('Device ID: ', data.device_id)
+        console.log('Device Code: ', data.device_code)
         return await this.raspberryService.updateRaspberryConfig(data)
     }
 }

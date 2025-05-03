@@ -81,7 +81,7 @@ export class RaspberryService {
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình tạo nhãn từ trái và tình trạng cho Raspberry');
         }
     }
-    
+
     async getRaspberryAccessToken(device_code: string) {
         try {
             const getRaspberry = await this.deviceRepository.findOneBy({device_code: device_code})
@@ -146,29 +146,19 @@ export class RaspberryService {
     }
 
     async updateRaspberryConfig(data: RaspberryConfigDto) {
-        /*
-            {
-                "deviceId": 8,
-                "deviceCode": "#DV-JMAW5A",
-                "labels": [
-                    { "fruit_id": 9, "type_id": 22 },
-                    { "fruit_id": 9, "type_id": 24 },
-                    { "fruit_id": 10, "type_id": 22 },
-                    { "fruit_id": 10, "type_id": 24 }
-                ]
-            }
-        */
         try {
-            const {deviceId, deviceCode, labels} = data
-            const raspberry = await this.deviceRepository.findOneBy({id: deviceId})
+            const {device_id, device_code, labels} = data
+
+            const raspberry = await this.deviceRepository.findOneBy({id: device_id})
 
             if (!raspberry) {
                 throw new BadRequestException('Raspberry không tồn tại')
             }
 
-            const accessToken = this.jwtService.sign({deviceId, deviceCode})
+            const accessToken = this.jwtService.sign({device_id: device_id, device_code: device_code})
             const labelsString = JSON.stringify(labels);
             const configData = {
+                id: data.id,
                 device_id: raspberry.id,
                 labels: labelsString,
                 raspAccessToken: accessToken,
@@ -177,7 +167,7 @@ export class RaspberryService {
             return await this.raspberryRepository.upsert(
                 configData,
                 {
-                    conflictPaths: ['device_id'],
+                    conflictPaths: ['id', 'device_id'],
                     skipUpdateIfNoValuesChanged: true,
                 }
             )

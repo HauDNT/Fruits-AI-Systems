@@ -39,7 +39,7 @@ const CustomButton: React.FC<ButtonProps> = ({
 
     return (
         <button
-            className={`inline-flex items-center justify-center font-medium gap-2 rounded-md transition ${className} ${
+            className={`inline-flex items-center justify-center text-[16px] font-bold gap-2 rounded-md transition ${className} ${
                 sizeClasses[size]
             } ${variantClasses[variant]} ${
                 disabled ? "cursor-not-allowed opacity-50" : ""
