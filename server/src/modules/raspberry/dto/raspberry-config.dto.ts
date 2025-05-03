@@ -1,4 +1,5 @@
-import {IsNotEmpty, IsNumber, IsString, Length} from "class-validator";
+import {IsArray, IsNotEmpty, IsNumber, IsString, Length} from "class-validator";
+import {FruitTypeIdsDto} from "@/modules/raspberry/dto/fruit-type-ids.dto";
 
 export class RaspberryConfigDto {
     @IsNumber()
@@ -9,7 +10,7 @@ export class RaspberryConfigDto {
     @IsNotEmpty()
     deviceCode: string;
 
-    @IsString()
+    @IsArray()
     @IsNotEmpty()
-    labels: string;
+    labels: FruitTypeIdsDto[];
 }

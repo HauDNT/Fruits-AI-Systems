@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, Param, HttpException, HttpStatus} from '@nestjs/common';
+import {Controller, Get, Post, Body, Param, Query, HttpException, HttpStatus} from '@nestjs/common';
 import {RaspberryService} from './raspberry.service';
 import {RaspberryConfigDto} from "@/modules/raspberry/dto/raspberry-config.dto";
 @Controller('raspberry')
@@ -6,11 +6,19 @@ export class RaspberryController {
     constructor(private readonly raspberryService: RaspberryService) {
     }
 
-    @Get(':deviceCode')
+    @Get('/raspberry-fruit-types')
+    async getRaspFruitTypesMap() {
+        return await this.raspberryService.getAvailableMapIds()
+    }
+
+    @Get('/config/:deviceCode')
     async getConfigByRaspCode(
-        @Param('deviceCode') deviceCode: string
+        @Param('deviceCode') deviceCode: string,
+        @Query('isParseJSON') isParseJSON: string
     ) {
-        const config = await this.raspberryService.getConfigByDeviceId(deviceCode);
+        const parseJSON = isParseJSON === 'true';
+        const config = await this.raspberryService.getConfigByDeviceId(deviceCode, parseJSON);
+
         if (!config) {
             throw new HttpException('Không tìm thấy cấu hình cho thiết bị này', HttpStatus.NOT_FOUND);
         }

@@ -10,6 +10,7 @@ import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 export default function RaspberryConfig() {
     const {toast} = useToast()
     const [raspberries, setRaspberries] = useState([])
+    const [raspberryData, setRaspberryData] = useState(null)
 
     const fetchRaspberryList = async () => {
         try {
@@ -28,7 +29,6 @@ export default function RaspberryConfig() {
             })
         }
     }
-
 
     useEffect(() => {
         fetchRaspberryList()
