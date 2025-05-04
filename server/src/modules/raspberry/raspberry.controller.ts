@@ -16,8 +16,6 @@ export class RaspberryController {
         @Param('device_code') device_code: string,
         @Query('isParseJSON') isParseJSON: string
     ) {
-        console.log('Device code: ', device_code)
-
         const parseJSON = isParseJSON === 'true';
         const config = await this.raspberryService.getConfigByDeviceId(device_code, parseJSON);
 
@@ -42,9 +40,6 @@ export class RaspberryController {
     async updateRaspberryConfig(
         @Body() data: RaspberryConfigDto
     ) {
-        console.log('--> Data: ', data)
-        console.log('Device ID: ', data.device_id)
-        console.log('Device Code: ', data.device_code)
         return await this.raspberryService.updateRaspberryConfig(data)
     }
 }

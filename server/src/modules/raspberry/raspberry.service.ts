@@ -127,9 +127,6 @@ export class RaspberryService {
             const labelsArray = raspConfig.labels ? JSON.parse(raspConfig.labels) as FruitTypeIdsDto[] : [];
             if (isParseJSON === true) {
                 const labels = await this.generateLabelsFromFruitAndTypeIds(labelsArray);
-
-                console.log('Labels: ', labels)
-
                 raspConfig.labels = JSON.stringify(labels);
             }
 
@@ -148,7 +145,6 @@ export class RaspberryService {
     async updateRaspberryConfig(data: RaspberryConfigDto) {
         try {
             const {device_id, device_code, labels} = data
-
             const raspberry = await this.deviceRepository.findOneBy({id: device_id})
 
             if (!raspberry) {

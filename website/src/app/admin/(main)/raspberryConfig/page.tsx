@@ -12,10 +12,20 @@ import {HttpStatusCode} from "axios";
 
 export default function RaspberryConfig() {
     const {toast} = useToast()
-    const [raspberries, setRaspberries] = useState([])
-    const [raspberryCode, setRaspberryCode] = useState(null)
-    const [raspberryConfig, setRaspberryConfig] = useState(null)
     const [labels, setLabels] = useState([])
+    const [raspberries, setRaspberries] = useState([])
+    const [raspberrySelected, setRaspberrySelected] = useState({
+        id: null,
+        device_code: null,
+    })
+    const [raspberryConfig, setRaspberryConfig] = useState(null)
+    const defaultConfig = {
+        id: null,
+        device_id: null,
+        device_code: null,
+        labels: null,
+        updatedAt: new Date(),
+    }
 
     const fetchRaspberryList = async () => {
         try {
@@ -55,11 +65,9 @@ export default function RaspberryConfig() {
 
     const getRaspberryConfig = async () => {
         try {
-            const resData = await axiosInstance.get(`/raspberry/config/${encodeURIComponent(raspberryCode)}?isParseJSON=false`)
+            const config = (await axiosInstance.get(`/raspberry/config/${encodeURIComponent(raspberrySelected.device_code)}?isParseJSON=false`)).data
 
-            if (resData) {
-                const config = resData.data
-
+            if (config && config.id) {
                 if (typeof config.labels === 'string') {
                     try {
                         config.labels = JSON.parse(config.labels)
@@ -72,16 +80,37 @@ export default function RaspberryConfig() {
                     }
                 }
                 setRaspberryConfig(config)
+            } else {
+                setRaspberryConfig({
+                    id: raspberrySelected.id,
+                    device_id: raspberrySelected.id,
+                    device_code: raspberrySelected.device_code,
+                    labels: [],
+                    updatedAt: new Date(),
+                })
             }
         } catch (error) {
-            const errorMessage = handleAxiosError(error);
-            console.log('Tải cấu hình Raspberry thất bại: ', error)
-
-            toast({
-                title: "Tải cấu hình Raspberry thất bại",
-                description: errorMessage,
-                variant: "destructive",
-            })
+            if (error.response?.status === 400) {
+                // Không có cấu hình => tạo mặc định
+                setRaspberryConfig({
+                    id: raspberrySelected.id,
+                    device_id: raspberrySelected.id,
+                    device_code: raspberrySelected.device_code,
+                    labels: [],
+                    updatedAt: new Date(),
+                });
+                toast({
+                    title: `Không có cấu hình Raspberry ${raspberrySelected.device_code}. Tiến hành tạo cấu hình mới`,
+                    variant: "info",
+                });
+            } else {
+                const errorMessage = handleAxiosError(error);
+                toast({
+                    title: `Tải cấu hình Raspberry thất bại`,
+                    description: errorMessage,
+                    variant: "destructive",
+                });
+            }
         }
     }
 
@@ -118,7 +147,7 @@ export default function RaspberryConfig() {
         try {
             const data = {
                 ...raspberryConfig,
-                device_code: raspberryCode,
+                device_code: raspberrySelected.device_code,
             }
             const resData = await axiosInstance.post(
                 `/raspberry/update-config`,
@@ -143,16 +172,20 @@ export default function RaspberryConfig() {
         }
     }
 
+    const resetRaspberryConfigWindows = async () => {
+        setRaspberryConfig(null)
+    }
+
     useEffect(() => {
         fetchRaspberryList()
         getAvailableLabels()
     }, [])
 
     useEffect(() => {
-        if (raspberryCode) {
+        if (raspberrySelected.id !== null) {
             getRaspberryConfig()
         }
-    }, [raspberryCode])
+    }, [raspberrySelected])
 
     return (
         <>
@@ -170,10 +203,11 @@ export default function RaspberryConfig() {
                                 height={295}
                             />
                             <Select
-                                onValueChange={(value) => {
+                                onValueChange={async (value) => {
                                     const selectedRasp = raspberries.find(rasp => rasp.id === value);
                                     if (selectedRasp) {
-                                        setRaspberryCode(selectedRasp.device_code)
+                                        await resetRaspberryConfigWindows()
+                                        setRaspberrySelected(selectedRasp)
                                     }
                                 }}
                             >
@@ -200,23 +234,29 @@ export default function RaspberryConfig() {
                         </div>
                         <div className="col-span-8">
                             {
-                                raspberryCode ? (
-                                    <h1 className={'text-xl'}>Raspberry: {raspberryCode}</h1>
+                                raspberrySelected ? (
+                                    <h1 className={'text-xl'}>Raspberry: {raspberrySelected.device_code}</h1>
                                 ) : (
                                     <h1 className={'text-xl'}>Chọn Raspberry để cấu hình</h1>
                                 )
                             }
                             {
-                                labels && Array.isArray(labels) && raspberryConfig && raspberryConfig.labels ? (
+                                labels && Array.isArray(labels) ? (
                                     <div className="mt-4 space-y-2">
-                                        <h1 className={'text-md font-bold'}>Chọn các nhãn chính xác để sử dụng cho mô hình máy học trên Raspberry</h1>
+                                        <h1 className={'text-md font-bold'}>
+                                            Chọn các nhãn chính xác để sử dụng cho mô hình máy học trên Raspberry
+                                        </h1>
                                         {labels.map((label, index) => {
-                                            const isChecked = Array.isArray(raspberryConfig?.labels) &&
-                                                raspberryConfig.labels.some(
-                                                    (item) =>
-                                                        item.fruit_id === label.fruit_id &&
-                                                        item.type_id === label.type_id
-                                                );
+                                            let isChecked = undefined
+
+                                            if (raspberryConfig && raspberryConfig.labels) {
+                                                isChecked = Array.isArray(raspberryConfig?.labels) &&
+                                                    raspberryConfig.labels.some(
+                                                        (item) =>
+                                                            item.fruit_id === label.fruit_id &&
+                                                            item.type_id === label.type_id
+                                                    );
+                                            }
 
                                             const checkboxValue = `${label.fruit_id}-${label.type_id}`;
 
@@ -224,7 +264,7 @@ export default function RaspberryConfig() {
                                                 <div key={index} className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id={checkboxValue}
-                                                        checked={isChecked}
+                                                        checked={isChecked || false}
                                                         onCheckedChange={(checked) =>
                                                             handleCheckboxChange(checked, label)
                                                         }
