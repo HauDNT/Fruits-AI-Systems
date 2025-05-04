@@ -2,11 +2,10 @@ import {
     Column,
     CreateDateColumn,
     DeleteDateColumn,
-    Entity, JoinColumn, ManyToOne, OneToMany,
+    Entity, JoinColumn, ManyToOne,
     PrimaryGeneratedColumn
 } from "typeorm";
 import {Area} from "@/modules/areas/entities/area.entity";
-import {FruitBatch} from "@/modules/fruit-batches/entities/fruit-batch.entity";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 
@@ -41,9 +40,4 @@ export class FruitClassification {
     @ManyToOne(() => Area, area => area.fruitClassified)
     @JoinColumn({name: 'area_id'})
     areaBelong: Area;
-
-    // Fruit Classification <-> Batches
-    @ManyToOne(() => FruitBatch, batch => batch.fruitClassified)
-    @JoinColumn({name: 'batch_id'})
-    fruitBatchBelong: FruitBatch;
 }

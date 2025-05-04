@@ -12,7 +12,6 @@ import {FruitsModule} from './modules/fruits/fruits.module';
 import {FruitTypesModule} from './modules/fruit-types/fruit-types.module';
 import {FruitImagesModule} from './modules/fruit-images/fruit-images.module';
 import {AreasModule} from './modules/areas/areas.module';
-import {FruitBatchesModule} from './modules/fruit-batches/fruit-batches.module';
 import {DeviceTypesModule} from './modules/device-types/device-types.module';
 import {DeviceStatusModule} from './modules/device-status/device-status.module';
 import {DevicesModule} from './modules/devices/devices.module';
@@ -37,7 +36,6 @@ import { RaspberryModule } from './modules/raspberry/raspberry.module';
         FruitTypesModule,
         FruitImagesModule,
         AreasModule,
-        FruitBatchesModule,
         DeviceTypesModule,
         DeviceStatusModule,
         DevicesModule,

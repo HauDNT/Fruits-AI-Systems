@@ -11,7 +11,6 @@ export interface FruitClassificationFlat {
     fruit: string;
     fruitType: string;
     area: string;
-    batch: string;
     created_at: Date;
 }
 

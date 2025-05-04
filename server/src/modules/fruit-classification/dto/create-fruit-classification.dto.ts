@@ -1,18 +1,15 @@
-import {IsNumber} from "class-validator";
+import {IsNotEmpty, IsNumber, IsString} from "class-validator";
 
 export class CreateFruitClassificationDto {
     @IsNumber()
+    @IsNotEmpty()
     confidence_level: number;
 
-    @IsNumber()
-    fruitId: number;
+    @IsString()
+    @IsNotEmpty()
+    result: string;
 
     @IsNumber()
-    typeId: number;
-
-    @IsNumber()
+    @IsNotEmpty()
     areaId: number;
-
-    @IsNumber()
-    batchId: number;
 }

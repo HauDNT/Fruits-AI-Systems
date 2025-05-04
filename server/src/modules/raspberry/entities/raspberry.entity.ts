@@ -20,5 +20,5 @@ export class Raspberry {
     raspAccessToken: string;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
-    updatedAt: Date;
+    updatedAt: Date | string;
 }

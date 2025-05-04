@@ -6,7 +6,6 @@ import {FruitClassification} from "@/modules/fruit-classification/entities/fruit
 import { Repository} from "typeorm";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {Area} from "@/modules/areas/entities/area.entity";
-import {FruitBatch} from "@/modules/fruit-batches/entities/fruit-batch.entity";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {TableMetaData} from "@/interfaces/table";
 import {GetClassifyQueryParamsDto} from "@/modules/fruit-classification/dto/get-classify-query-params.dto";
@@ -23,31 +22,38 @@ export class FruitClassificationService {
         private fruitTypeRepository: Repository<FruitType>,
         @InjectRepository(Area)
         private areaRepository: Repository<Area>,
-        @InjectRepository(FruitBatch)
-        private fruitBatchRepository: Repository<FruitBatch>,
     ) {
+    }
+
+    splitLabelFromResult(label: string): { fruit_name: string; type_name: string } {
+        const parts = label.trim().split(' ');
+        if (parts.length !== 2) {
+            throw new Error(`Kết quả "${label}" không hợp lệ`);
+        }
+
+        const type_name = parts.pop();
+        const fruit_name = parts.join(' ');
+
+        return { fruit_name, type_name };
     }
 
     async create(createFruitClassificationDto: CreateFruitClassificationDto, imageUrl: string) {
         try {
             const {
                 confidence_level,
-                fruitId,
+                result,
                 areaId,
-                batchId,
-                typeId,
             } = createFruitClassificationDto
 
-            const fruit = await this.fruitRepository.findOneBy({ id: fruitId })
-            const type = await this.fruitTypeRepository.findOneBy({ id: typeId })
+            const { fruit_name, type_name } = this.splitLabelFromResult(result)
+            const fruit = await this.fruitRepository.findOneBy({ fruit_name })
+            const type = await this.fruitTypeRepository.findOneBy({ type_name })
             const area = await this.areaRepository.findOneBy({ id: areaId })
-            const batch = await this.fruitBatchRepository.findOneBy({ id: batchId })
 
             let newClassifyResult = this.fruitClassificationRepository.create({
                 confidence_level,
                 fruit,
                 areaBelong: area,
-                fruitBatchBelong: batch,
                 image_url: imageUrl,
                 fruitType: type,
                 created_at: new Date(),
@@ -57,7 +63,7 @@ export class FruitClassificationService {
 
             newClassifyResult = await this.fruitClassificationRepository.findOne({
                 where: {id: newClassifyResult.id},
-                relations: ['fruit', 'fruitType', 'areaBelong', 'fruitBatchBelong']
+                relations: ['fruit', 'fruitType', 'areaBelong']
             })
 
             return newClassifyResult
@@ -102,7 +108,6 @@ export class FruitClassificationService {
             .leftJoinAndSelect('fc.fruit', 'fruit')
             .leftJoinAndSelect('fc.fruitType', 'fruitType')
             .leftJoinAndSelect('fc.areaBelong', 'areaBelong')
-            .leftJoinAndSelect('fc.fruitBatchBelong', 'fruitBatchBelong')
             .where('fc.deleted_at IS NULL')
             .addOrderBy('fc.created_at', 'DESC')
 
@@ -112,7 +117,6 @@ export class FruitClassificationService {
             const conditions = fields.map(field => {
                 if (field === 'fruit') return 'fruit.fruit_name LIKE :query';
                 if (field === 'areaBelong') return 'areaBelong.area_code LIKE :query';
-                if (field === 'fruitBatchBelong') return 'fruitBatchBelong.batch_code LIKE :query';
                 return `fc.${field} LIKE :query`;
             }).join(' OR ');
 
@@ -132,8 +136,7 @@ export class FruitClassificationService {
             image_url: result.image_url,
             fruit: result.fruit.fruit_name,
             fruitType: result.fruitType.type_name,
-            area: result.areaBelong.area_code,
-            batch: result.fruitBatchBelong.batch_code,
+            area: `${result.areaBelong.area_code} - ${result.areaBelong.area_desc}`,
             created_at: result.created_at,
         }));
 
@@ -144,7 +147,6 @@ export class FruitClassificationService {
                 { key: 'fruit', displayName: 'Loại trái cây', type: 'string' },
                 { key: 'fruitType', displayName: 'Loại', type: 'string' },
                 { key: 'area', displayName: 'Khu vực', type: 'string' },
-                { key: 'batch', displayName: 'Mã lô', type: 'string' },
                 { key: 'created_at', displayName: 'Thời gian', type: 'date' },
             ],
             values: formatResult,

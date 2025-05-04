@@ -1,40 +1,53 @@
 import time
 import asyncio
 import logging
+import json
 from typing import Dict
 import VL53L0X
 import FruitRecognitionCNNModel
 import Webcams
 import MachineLearningMethod
 from API import ApiRaspberryCall
+import RaspberryConfig
 
 MAX_DISTANCE = 85
 MIN_DISTANCE = 50
 LIMIT_DISTANCE_RECORD = 3.5
-MAX_SENSOR_RETRIES = 3  # Number of retries for sensor reading
+MAX_SENSOR_RETRIES = 3
 
-# Init logger
+# ---------------------------- Cấu hình và Máy học ---------------------------------
+# Cập nhật cấu hình mới nhất cho Raspberry từ Server
+asyncio.run(RaspberryConfig.load_remote_config_from_server_and_update())
+
+# Lấy cấu hình
+raspberry_config = RaspberryConfig.load_raspberry_config_in_memory()
+
+# Parse nhãn cho mô hình máy học
+labels = json.loads(raspberry_config["labels"])
+
+# Tải mô hình học máy
+interpreter = FruitRecognitionCNNModel.load_cnn_model()
+
+# ----------------------------- Các thành phân khác --------------------------------
+# Logger
 logger = logging.getLogger(__name__)
 
-# VL53L0X sensor
+# VL53L0X
 lastDistanceRecorded = time.time()
 vl53Sensor = VL53L0X.initialize_vl53l0x()
-
-# Model
-interpreter, labels = FruitRecognitionCNNModel.load_model_and_labels()
 
 # Webcams
 WEBCAMS_NAME = ["Webcam 1", "Webcam 2"]
 webcam_1 = Webcams.initialize_webcam(0, WEBCAMS_NAME[0])
 webcam_2 = Webcams.initialize_webcam(2, WEBCAMS_NAME[1])
 
-# Init API Caller
+# API Caller
 apiCaller = ApiRaspberryCall(
-    headers={"Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoidXNlcm5hbWUxIiwiaWF0IjoxNzQ1MTQ4MTA4LCJleHAiOjE3NDUyMzQ1MDh9.EGGt0ZUUJGZRzu8J1nzDDVUP3Y8tZ4lVECgDuYKsZ3U"},
+    base_url=raspberry_config["api_endpoint"],
+    headers={"Authorization": raspberry_config["raspAccessToken"]},
     timeout=10
 )
 
-# Kiểm tra khởi tạo
 if not vl53Sensor:
     print("Không thể khởi tạo cảm biến VL53L0X. Huỷ chương trình", flush=True)
     exit(1)
@@ -42,10 +55,10 @@ if not vl53Sensor:
 if not webcam_1 and not webcam_2:
     print("Không thể khởi tạo bất kỳ webcam nào. Huỷ chương trình", flush=True)
     exit(1)
-    
+
 async def main_loop():
     lastDistanceRecorded = time.time()
-    
+
     try:
         while True:
             if not Webcams.is_webcam_active(webcam_1) or not Webcams.is_webcam_active(webcam_2):
@@ -69,12 +82,12 @@ async def main_loop():
                     logger.warning(f"Attempt {attempt + 1}: VL53L0X returned None")
                 except Exception as e:
                     logger.error(f"Attempt {attempt + 1}: VL53L0X error - {e}")
-                await asyncio.sleep(0.1)  # Small delay between retries
+                await asyncio.sleep(0.1)
             
             if distance is None:
                 logger.error("Không thể lấy khoảng cách từ VL53L0X sau nhiều lần thử")
                 print("Không thể lấy khoảng cách từ VL53L0X. Bỏ qua vòng lặp...", flush=True)
-                await asyncio.sleep(0.5)  # Wait before retrying the loop
+                await asyncio.sleep(0.5)
                 continue
             
             if MIN_DISTANCE < distance < MAX_DISTANCE:
@@ -82,37 +95,29 @@ async def main_loop():
                 print("-----Bắt đầu nhận diện-----", flush=True)
                 
                 try:
-                    print("1. Chụp ảnh vật thể: ", flush=True)
-                    imageWebcam1, firstResult_label, firstResult_confidence = MachineLearningMethod.process_recognition(webcam_1, WEBCAMS_NAME[0], interpreter, labels)
-                    imageWebcam2, secondResult_label, secondResult_confidence = MachineLearningMethod.process_recognition(webcam_2, WEBCAMS_NAME[1], interpreter, labels)
+                    print("1. Chụp ảnh vật thể và chạy suy luận: ", flush=True)
+                    imageWebcam1, firstResultIdx, firstResult_label, firstResult_confidence = MachineLearningMethod.process_recognition(webcam_1, WEBCAMS_NAME[0], interpreter, labels)
+                    imageWebcam2, secondResultIdx, secondResult_label, secondResult_confidence = MachineLearningMethod.process_recognition(webcam_2, WEBCAMS_NAME[1], interpreter, labels)
                     logger.info("Chụp ảnh hoàn tất")
                     print("==> Chụp vật thể hoàn tất!", flush=True)
                     
-                    print("2. Chạy suy luận: ", flush=True)
-                    logger.info("Hoàn tất nhận diện")
-                    print("==> Hoàn tất nhận diện", flush=True)
-                    
-                    print("3. Lưu ảnh vào bộ nhớ tạm thời: ", flush=True)
+                    print("2. Lưu ảnh vào bộ nhớ tạm thời: ", flush=True)
                     webcam1_image_path = Webcams.save_image(imageWebcam1, WEBCAMS_NAME[0], firstResult_label) if imageWebcam1 is not None else None
                     webcam2_image_path = Webcams.save_image(imageWebcam2, WEBCAMS_NAME[1], secondResult_label) if imageWebcam2 is not None else None
                     logger.info("Hoàn tất lưu ảnh")
                     print("==> Hoàn tất lưu ảnh", flush=True)
                     
-                    print("4. Gửi API đến Server: ", flush=True)
+                    print("3. Gửi API đến Server: ", flush=True)
                     fieldsData1 = {
                         "confidence_level": f"{firstResult_confidence:.10f}" if firstResult_confidence is not None else "0.0",
-                        "fruitId": "9",
-                        "typeId": "22",
-                        "areaId": "4",
-                        "batchId": "1"
+                        "result": f"{firstResult_label}",
+                        "areaId": f"{raspberry_config['areaId']}"
                     }
 
                     fieldsData2 = {
                         "confidence_level": f"{secondResult_confidence:.10f}" if secondResult_confidence is not None else "0.0",
-                        "fruitId": "9",
-                        "typeId": "22",
-                        "areaId": "4",
-                        "batchId": "1"
+                        "result": f"{secondResult_label}",
+                        "areaId": f"{raspberry_config['areaId']}"
                     }
                     
                     try:
@@ -142,7 +147,7 @@ async def main_loop():
                         logger.error(f"Lỗi khi gửi kết quả phân loại: {error}")
                         print(f"Lỗi khi gửi kết quả phân loại: {error}", flush=True)
                     finally:
-                        print("5. Xoá ảnh trong bộ nhớ", flush=True)
+                        print("4. Xoá ảnh trong bộ nhớ", flush=True)
                         if webcam1_image_path:
                             Webcams.delete_image(webcam1_image_path)
                         if webcam2_image_path:

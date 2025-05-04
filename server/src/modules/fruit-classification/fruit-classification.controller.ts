@@ -66,16 +66,14 @@ export class FruitClassificationController {
                 throw new BadRequestException('Vui lòng gửi file ảnh');
             }
 
-            if (!body.confidence_level || !body.fruitId || !body.areaId || !body.batchId || !body.typeId) {
-                throw new BadRequestException('Thiếu thông tin bắt buộc: độ tin cậy, trái cây, khu vực, lô, tình trạng');
+            if (!body.confidence_level || !body.result || !body.areaId) {
+                throw new BadRequestException('Thiếu thông tin bắt buộc: độ tin cậy, kết quả, khu vực');
             }
 
             const createResultDto = plainToInstance(CreateFruitClassificationDto, {
                 confidence_level: body.confidence_level,
-                fruitId: body.fruitId,
+                result: body.result,
                 areaId: body.areaId,
-                batchId: body.batchId,
-                typeId: body.typeId,
             })
 
             const imageUrl = `/uploads/results/${file.filename}`;
@@ -84,11 +82,10 @@ export class FruitClassificationController {
 
             this.classifyGateway.broadcastNewClassification({
                 id: createdRecord.id,
+                confidence_level: createdRecord.confidence_level,
                 fruit: createdRecord.fruit.fruit_name,
                 fruitType: createdRecord.fruitType.type_name,
-                area: createdRecord.areaBelong.area_code,
-                batch: createdRecord.fruitBatchBelong.batch_code,
-                confidence_level: createdRecord.confidence_level,
+                area: `${createdRecord.areaBelong.area_code} - ${createdRecord.areaBelong.area_desc}`,
                 image_url: imageUrl,
                 created_at: createdRecord.created_at,
             })

@@ -54,6 +54,7 @@ export default function FruitTypes() {
     }
 
     const handleAddNewFruitType = async (newType: FruitTypeBodyType) => {
+        console.log(data)
         try {
             if (!newType) {
                 toast({

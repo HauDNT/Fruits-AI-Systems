@@ -1,0 +1,10 @@
+{
+  "device_code": "#DV-447CH5",
+  "api_endpoint": "http://192.168.59.138:8080",
+  "id": 2,
+  "device_id": 2,
+  "labels": "[\"Apple Ripe\",\"Apple Rot\",\"Grapes Ripe\",\"Grapes Rot\",\"Pear Ripe\",\"Pear Rot\"]",
+  "raspAccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VfaWQiOjIsImRldmljZV9jb2RlIjoiI0RWLTQ0N0NINSIsImlhdCI6MTc0NjM2NjM1MiwiZXhwIjoxNzQ2MzY5OTUyfQ.VTHsJMTX3QdCQu-HxOpDuIYWioWsa48IZ0wrQNVb0eA",
+  "updatedAt": "04/05/2025 20:45:52",
+  "areaId": 1
+}

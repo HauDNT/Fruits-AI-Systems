@@ -6,6 +6,8 @@ import {Device} from "@/modules/devices/entities/device.entity";
 import {JwtService} from "@nestjs/jwt";
 import {RaspberryConfigDto} from "@/modules/raspberry/dto/raspberry-config.dto";
 import {FruitTypeIdsDto} from "@/modules/raspberry/dto/fruit-type-ids.dto";
+import * as dayjs from "dayjs";
+import {Area} from "@/modules/areas/entities/area.entity";
 
 @Injectable()
 export class RaspberryService {
@@ -14,6 +16,8 @@ export class RaspberryService {
         private raspberryRepository: Repository<Raspberry>,
         @InjectRepository(Device)
         private deviceRepository: Repository<Device>,
+        @InjectRepository(Area)
+        private areaRepository: Repository<Area>,
         private dataSource: DataSource,
         private jwtService: JwtService,
     ) {
@@ -46,33 +50,36 @@ export class RaspberryService {
         }
     }
 
-    // Chuyển từ mảng JSON [{fruit_id:..., type_id:...}] thành nhãn
     async generateLabelsFromFruitAndTypeIds(ids: FruitTypeIdsDto[]) {
         try {
             if (!ids || ids.length === 0) {
                 return [];
             }
 
-            let mappings = []
-            for (const map of ids) {
-                const typeMap = await this.dataSource.query(
-                    'SELECT ' +
-                    'f.fruit_name, ' +
-                    'ft.type_name ' +
-                    'FROM fruit_types_map ftm ' +
-                    'JOIN fruits f ON ftm.fruit_id = f.id ' +
-                    'JOIN fruit_types ft ON ftm.type_id = ft.id ' +
-                    `WHERE ftm.fruit_id = ${map.fruit_id} ` +
-                    `AND ftm.type_id = ${map.type_id} ` +
-                    'AND f.deleted_at IS NULL ' +
-                    'AND ft.deleted_at IS NULL'
-                )
-                mappings.push(typeMap[0])
-            }
+            // Truy vấn 1 lần thay vì nhiều lần
+            const fruitTypeIds = ids.map(map => `(${map.fruit_id}, ${map.type_id})`).join(', ');
+            const query = `
+                SELECT f.fruit_name, ft.type_name
+                FROM fruit_types_map ftm
+                JOIN fruits f ON ftm.fruit_id = f.id
+                JOIN fruit_types ft ON ftm.type_id = ft.id
+                WHERE (ftm.fruit_id, ftm.type_id) IN (${fruitTypeIds})
+                AND f.deleted_at IS NULL
+                AND ft.deleted_at IS NULL
+            `;
 
-            return mappings.map(mapping => `${mapping.fruit_name} ${mapping.type_name}`);
+            // Lấy kết quả trong 1 lần
+            const typeMaps = await this.dataSource.query(query);
+
+            // Sắp xếp theo Alphabet
+            const sortedMappings = typeMaps.sort((a, b) =>
+                `${a.fruit_name} ${a.type_name}`.toLowerCase().localeCompare(`${b.fruit_name} ${b.type_name}`.toLowerCase())
+            );
+
+            // Trả về mảng nhãn
+            return sortedMappings.map(m => `${m.fruit_name} ${m.type_name}`);
         } catch (e) {
-            console.log('Lỗi: ', e.message)
+            console.log('Lỗi: ', e.message);
 
             if (e instanceof HttpException) {
                 throw e;
@@ -81,6 +88,7 @@ export class RaspberryService {
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình tạo nhãn từ trái và tình trạng cho Raspberry');
         }
     }
+
 
     async getRaspberryAccessToken(device_code: string) {
         try {
@@ -112,35 +120,48 @@ export class RaspberryService {
         }
     }
 
-    async getConfigByDeviceId(deviceCode: string, isParseJSON: boolean): Promise<Raspberry> {
+    async getConfigByRaspCode(deviceCode: string, isRaspberry: boolean): Promise<any> {
         try {
-            const raspberry = await this.deviceRepository.findOneBy({device_code: deviceCode})
+            const raspberry = await this.deviceRepository.findOne({
+                where: { device_code: deviceCode },
+                relations: ['areaBelong'],
+            });
+
             if (!raspberry) {
-                throw new BadRequestException(`Mã thiết bị ${deviceCode} không tồn tại`)
+                throw new BadRequestException(`Mã thiết bị ${deviceCode} không tồn tại`);
             }
 
-            const raspConfig = await this.raspberryRepository.findOneBy({device_id: raspberry.id})
+            const raspConfig = await this.raspberryRepository.findOneBy({ device_id: raspberry.id });
             if (!raspConfig) {
-                throw new BadRequestException(`Không tìm thấy cấu hình`)
+                throw new BadRequestException(`Không tìm thấy cấu hình`);
             }
 
             const labelsArray = raspConfig.labels ? JSON.parse(raspConfig.labels) as FruitTypeIdsDto[] : [];
-            if (isParseJSON === true) {
+
+            if (isRaspberry === true) {
+                const area = raspberry.areaBelong;
+                const formattedUpdatedAt = dayjs(raspConfig.updatedAt).format("DD/MM/YYYY HH:mm:ss");
                 const labels = await this.generateLabelsFromFruitAndTypeIds(labelsArray);
+
                 raspConfig.labels = JSON.stringify(labels);
+                raspConfig.updatedAt = formattedUpdatedAt;
+
+                return {
+                    ...raspConfig,
+                    areaId: area?.id ?? null,
+                };
             }
 
-            return raspConfig
+            return raspConfig;
         } catch (e) {
-            console.log('Lỗi: ', e.message)
-
+            console.log('Lỗi: ', e.message);
             if (e instanceof HttpException) {
                 throw e;
             }
-
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy cấu hình cho Raspberry');
         }
     }
+
 
     async updateRaspberryConfig(data: RaspberryConfigDto) {
         try {

@@ -34,22 +34,12 @@ export const FruitBody = z
 // Fruit type schema
 export const FruitTypeBody = z
     .object({
-        fruit_name: z.string()
-            .min(3, 'Tên trái cây có ít nhất 3 ký tự')
-            .max(50, 'Tên trái cây có tối đa 50 ký tự'),
-        fruit_desc: z.string()
+        type_name: z.string()
+            .min(3, 'Tình trạng trái cây có ít nhất 3 ký tự')
+            .max(50, 'Tình trạng cây có tối đa 50 ký tự'),
+        type_desc: z.string()
             .min(3, 'Mô tả có ít nhất 3 ký tự')
             .max(50, 'Mô tả có tối đa 50 ký tự'),
-        fruit_image: z
-            .instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
-            .refine(
-                (file) => file.size <= 5 * 1024 * 1024,
-                { message: 'Ảnh phải nhỏ hơn 5MB' }
-            )
-            .refine(
-                (file) => ['image/jpeg', 'image/png', 'image/gif'].includes(file.type),
-                { message: 'Chỉ chấp nhận định dạng JPG, PNG hoặc GIF' }
-            ),
     })
 
 export type FruitBodyType = z.TypeOf<typeof FruitBody>

@@ -22,6 +22,25 @@ class ApiRaspberryCall:
         self.base_url = base_url.rstrip('/')
         self.headers = headers or {}
         self.timeout = timeout
+        
+    async def GET(self, endpoint: str, params: Optional[Dict[str, str]] = None) -> Dict:
+        requestUrl = f"{self.base_url}{endpoint}"
+        
+        try:
+            logger.info(f"Gửi GET tới {requestUrl} với params: {params}")
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    requestUrl,
+                    params=params,
+                    headers=self.headers,
+                    timeout=self.timeout
+                ) as response:
+                    return await self.handle_response_async(response)
+
+        except aiohttp.ClientError as e:
+            logger.error(f"Lỗi kết nối GET: {str(e)}")
+            return {"error": str(e)}
 
     async def POST(
         self,
@@ -34,9 +53,6 @@ class ApiRaspberryCall:
         
         for key, value in fields.items():
             data.add_field(key, str(value))
-        
-        
-        
         
         file_handler = None
         
@@ -60,15 +76,6 @@ class ApiRaspberryCall:
         try:
             logger.info(f"Gửi request tới {requestUrl} với fields: {fields} và file: {image_path if image_path else 'None'}")
             
-            # response = requests.post(
-            #     requestUrl,
-            #     data=data,
-            #     files=files if files else None,
-            #     headers=self.headers,
-            #     timeout=self.timeout
-            # )
-            # return self.handle_response(response)
-        
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     requestUrl,
@@ -93,14 +100,18 @@ class ApiRaspberryCall:
             if file_handler:
                 file_handler.close()
 
-    async def handle_response_async(self, response: requests.Response) -> Dict:
+    async def handle_response_async(self, response: aiohttp.ClientResponse) -> Dict:
         try:
-            response.raise_for_status()
-            logger.info(f"Phản hồi thành công: {response.status_code}")
-            return await response.json()
+            if response.status == 200:
+                logger.info(f"Phản hồi thành công: {response.status}")
+                return await response.json()
+            else:
+                logger.error(f"Lỗi HTTP {response.status}")
+                return {"error": f"Lỗi HTTP {response.status}"}
         except aiohttp.ClientResponseError as e:
-            logger.error(f"Lỗi HTTP {response.status_code}: {str(e)}")
-            return {"error": f"Lỗi HTTP {response.status_code}: {str(e)}"}
-        except ValueError:
-            logger.error("Phản hồi không phải JSON hợp lệ")
-            return {"error": "Phản hồi không phải JSON hợp lệ"}
+            logger.error(f"Lỗi HTTP {response.status}: {str(e)}")
+            return {"error": f"Lỗi HTTP {response.status}: {str(e)}"}
+        except Exception as e:
+            logger.error(f"Phản hồi không phải JSON hợp lệ: {str(e)}")
+            return {"error": f"Phản hồi không phải JSON hợp lệ: {str(e)}"}
+

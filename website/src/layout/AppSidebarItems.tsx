@@ -24,11 +24,6 @@ export const AdminSidebarItems = [
         ],
     },
     {
-        name: "Lô",
-        icon: <RiArchiveLine size={25}/>,
-        path: "/admin/batches"
-    },
-    {
         name: "Quản lý thiết bị",
         icon: <LuCircuitBoard size={25}/>,
         subItems: [

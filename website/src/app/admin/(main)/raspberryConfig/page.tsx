@@ -65,7 +65,7 @@ export default function RaspberryConfig() {
 
     const getRaspberryConfig = async () => {
         try {
-            const config = (await axiosInstance.get(`/raspberry/config/${encodeURIComponent(raspberrySelected.device_code)}?isParseJSON=false`)).data
+            const config = (await axiosInstance.get(`/raspberry/config?device_code=${encodeURIComponent(raspberrySelected.device_code)}&isRaspberry=false`)).data
 
             if (config && config.id) {
                 if (typeof config.labels === 'string') {

@@ -11,13 +11,13 @@ export class RaspberryController {
         return await this.raspberryService.getAvailableMapIds()
     }
 
-    @Get('/config/:device_code')
+    @Get('/config')
     async getConfigByRaspCode(
-        @Param('device_code') device_code: string,
-        @Query('isParseJSON') isParseJSON: string
+        @Query('device_code') device_code: string,
+        @Query('isRaspberry') isRaspberry: string
     ) {
-        const parseJSON = isParseJSON === 'true';
-        const config = await this.raspberryService.getConfigByDeviceId(device_code, parseJSON);
+        const parseIsRaspberry = isRaspberry === 'true';
+        const config = await this.raspberryService.getConfigByRaspCode(device_code, parseIsRaspberry);
 
         if (!config) {
             throw new HttpException('Không tìm thấy cấu hình cho thiết bị này', HttpStatus.NOT_FOUND);

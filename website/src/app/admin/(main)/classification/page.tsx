@@ -5,8 +5,6 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import CustomTable from "@/components/table/CustomTable";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
-import CreateNewFruitClassifyForm from "@/components/forms/CreateNewFruitClassifyForm";
-import {FruitClassifyBodyType} from "@/schemas/fruit-classify.schema";
 import axiosInstance from "@/utils/axiosInstance";
 import PreviewClassifyResult from "@/components/forms/PreviewClassifyResult";
 import {ClassifyResultInterface} from "@/interfaces";
@@ -15,13 +13,11 @@ import { useSocketFruitClassify } from "@/hooks/useSocketFruitClassify";
 export default function Classification() {
     const {toast} = useToast()
     const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 5})
+    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 15})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "fruit, fruitBatchBelong, areaBelong, confidence_level";
-    const [createFormState, setCreateFormState] = useState(false)
+    const searchFields = "fruit, areaBelong, confidence_level";
     const [detailItemData, setDetailItemData] = useState<ClassifyResultInterface>(null);
     const [detailFormState, setDetailFormState] = useState(false)
-    const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
     const fetchClassifiesByQuery = async (searchQuery: string, searchFields: string) => {
         try {
@@ -67,36 +63,6 @@ export default function Classification() {
         }
     }
 
-    const createNewClassify = async (formData: FruitClassifyBodyType): Promise<boolean> => {
-        try {
-            const resData = await axiosInstance.post('/fruit-classification/create-classify', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-
-            if (resData.status === 201) {
-                setCreateFormState(false);
-
-                setData(prev => ({
-                    ...prev,
-                    values: [...prev.values, resData.data.data]
-                }))
-
-                toast({ title: "Thêm kết quả thành công" , variant: "success"});
-                return true;
-            }
-        } catch (error) {
-            console.log('Thêm kết quả thất bại: ', error.message)
-
-            toast({
-                title: "Thêm kết quả thất bại",
-                description: "Vui lòng thử lại sau",
-                variant: "destructive",
-            })
-
-            return false
-        }
-    }
-
     const handleDetail = (item: ClassifyResultInterface) => {
         setDetailItemData(item)
         setDetailFormState(true)
@@ -111,7 +77,10 @@ export default function Classification() {
 
         toast({
             title: "Phát hiện kết quả phân loại mới",
-            description: `Loại: ${newResult.fruitType?.name || 'Không xác định'}, Độ tin cậy: ${newResult.confidence_level}%`,
+            description: `
+                Loại: ${newResult.fruit} - ${newResult.fruitType}, 
+                Độ tin cậy: ${parseFloat(newResult.confidence_level * 100).toFixed(2)} %
+            `,
             variant: "success",
         });
 
@@ -130,12 +99,11 @@ export default function Classification() {
                     tableTitle={'Danh sách kết quả phân loại'}
                     tableData={data}
                     onSort={(key) => console.log(`Sorting by ${key}`)}
-                    createItem={true}
+                    createItem={false}
                     detailItem={true}
                     deleteItem={true}
                     search={true}
                     searchFields={searchFields}
-                    handleCreate={toggleCreateFormState}
                     handleDetail={(item) => handleDetail(item)}
                     handleDelete={(itemSelected) => console.log(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
@@ -151,16 +119,6 @@ export default function Classification() {
                         currentPage: page
                     }))}
                 />
-
-                <ModelLayer
-                    isOpen={createFormState}
-                    onClose={() => setCreateFormState(false)}
-                    maxWidth="max-w-3xl"
-                >
-                    <CreateNewFruitClassifyForm
-                        onSubmit={(formData: FruitClassifyBodyType) => createNewClassify(formData)}
-                    />
-                </ModelLayer>
 
                 <ModelLayer
                     isOpen={detailFormState}

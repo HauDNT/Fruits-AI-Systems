@@ -5,21 +5,9 @@ from ai_edge_litert.interpreter import Interpreter          # type: ignore
 from PIL import Image
 
 CNN_MODEL_PATH = "/home/dell/Workspace/FruitsFlow/models/cnn/FruitsClassify_23042025.tflite"
-LABEL_PATH = "/home/dell/Workspace/FruitsFlow/labels/labels6.txt"
 INPUT_SIZE = (224, 224)
 
-def load_model_labels(label_path):
-    try:
-        with open(label_path, "r") as f:
-            labels = [line.strip() for line in f.readlines()]
-        
-        print("--> Tải nhãn cho mô hình thành công!", flush=True)
-        return labels
-    except Exception as error:
-        print(f"Lỗi khi tải nhãn cho mô hình CNN: {error}", flush=True)
-        return None
-
-def load_cnn_model(cnn_model_path):
+def load_cnn_model(cnn_model_path = CNN_MODEL_PATH):
     try:        
         interpreter = Interpreter(model_path=cnn_model_path)
         interpreter.allocate_tensors()
@@ -37,12 +25,6 @@ def preprocess_image_for_cnn(sourceImage, input_size):
     image_np_arr = np.expand_dims(image_np_arr, axis=0)
 
     return image_np_arr
-
-def load_model_and_labels():
-    interpreter = load_cnn_model(CNN_MODEL_PATH)
-    labels = load_model_labels(LABEL_PATH)
-    
-    return interpreter, labels
     
 def model_run_inference(interpreter, image, labels):
     try:
