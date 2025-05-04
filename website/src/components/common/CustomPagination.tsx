@@ -3,7 +3,6 @@ import React from "react";
 import {
     Pagination,
     PaginationContent,
-    PaginationEllipsis,
     PaginationItem,
     PaginationLink,
     PaginationNext,
@@ -11,76 +10,52 @@ import {
 } from "@/components/ui/pagination"
 
 const CustomPagination = ({
-    currentPage,
-    totalPages,
-    handleNextPage,
-    handlePreviousPage,
-    handleClickPage,
-    displayLimit = 10,
-}) => {
+                              currentPage,
+                              totalPages,
+                              handleNextPage,
+                              handlePreviousPage,
+                              handleClickPage,
+                              displayLimit = 10,
+                          }) => {
     const renderPageNumbers = () => {
-        const pageNumbers = [];
+        const pages = [];
 
-        if (totalPages <= displayLimit) {
-            for (let i = 1; i <= totalPages; i++) {
-                pageNumbers.push(
-                    <PaginationLink
-                        key={i}
-                        onClick={() => handleClickPage(i)}
-                        className={i === currentPage ? 'border-2 border-blue-300' : null}
-                    >
-                        {i}
-                    </PaginationLink>
-                );
-            }
-        }
-        else {
-            // Hiển thị 3 trang đầu
-            for (let i = 1; i <= 3; i++) {
-                pageNumbers.push(
-                    <PaginationLink
-                        key={i}
-                        onClick={() => handleClickPage(i)}
-                        disabled={i === currentPage}
-                    >
-                        {i}
-                    </PaginationLink>
-                );
-            }
+        // Nếu tổng số trang <= 1 thì không cần phân trang
+        if (totalPages <= 1) return pages;
 
-            pageNumbers.push(<PaginationEllipsis/>)
-
-            for (let i = totalPages - 2; i <= totalPages; i++) {
-                pageNumbers.push(
-                    <PaginationLink
-                        key={i}
-                        onClick={() => handleClickPage(i)}
-                        disabled={i === currentPage}
-                    >
-                        {i}
-                    </PaginationLink>
-                );
-            }
+        // Tạo danh sách tất cả các trang
+        for (let i = 1; i <= totalPages; i++) {
+            pages.push(
+                <PaginationLink
+                    key={i}
+                    onClick={() => handleClickPage(i)}
+                    className={i === currentPage ? 'border-2 border-blue-300' : ''}
+                >
+                    {i}
+                </PaginationLink>
+            );
         }
 
-        return pageNumbers;
+        return pages;
     };
 
     return (
         <Pagination className={'my-3'}>
-            <PaginationContent>
+            <PaginationContent className={'flex overflow-x-auto'}>
                 <PaginationItem className={'cursor-pointer select-none'}>
                     <PaginationPrevious customTitle={'Trước'} onClick={handlePreviousPage} />
                 </PaginationItem>
-                <PaginationItem className={'cursor-pointer hover:none flex select-none'}>
-                    { renderPageNumbers() }
-                </PaginationItem>
+                <div className={`${totalPages >= 20 ? 'w-[1000px]' : null} flex overflow-x-auto`}>
+                    <PaginationItem className={`cursor-pointer select-none ${totalPages >= 20 ? 'flex pb-3' : null}`}>
+                        {renderPageNumbers()}
+                    </PaginationItem>
+                </div>
                 <PaginationItem className={'cursor-pointer select-none'}>
-                    <PaginationNext customTitle={'Sau'} href="#" onClick={handleNextPage} />
+                    <PaginationNext customTitle={'Sau'} onClick={handleNextPage} />
                 </PaginationItem>
             </PaginationContent>
         </Pagination>
-    )
-}
+    );
+};
 
-export default CustomPagination
+export default CustomPagination;

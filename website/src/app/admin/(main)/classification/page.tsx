@@ -15,7 +15,7 @@ import { useSocketFruitClassify } from "@/hooks/useSocketFruitClassify";
 export default function Classification() {
     const {toast} = useToast()
     const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
+    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 5})
     const [searchQuery, setSearchQuery] = useState("")
     const searchFields = "fruit, fruitBatchBelong, areaBelong, confidence_level";
     const [createFormState, setCreateFormState] = useState(false)
