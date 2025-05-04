@@ -14,3 +14,13 @@ export interface FruitClassificationFlat {
     batch: string;
     created_at: Date;
 }
+
+export interface DeviceClassificationFlat {
+    id: number;
+    device_code: string;
+    image_url: string;
+    deviceType: string;       
+    deviceStatus: string;
+    area: string;
+    created_at: Date;
+}

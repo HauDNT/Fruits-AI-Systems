@@ -8,7 +8,7 @@ import {
     Delete,
     UseInterceptors,
     UploadedFile,
-    HttpException, InternalServerErrorException, BadRequestException
+    HttpException, InternalServerErrorException, BadRequestException, Query
 } from '@nestjs/common';
 import {DevicesService} from './devices.service';
 import {CreateDeviceDto} from './dto/create-device.dto';
@@ -18,6 +18,9 @@ import {diskStorage} from "multer";
 import * as fs from 'fs/promises';
 import {extname} from "path";
 import {plainToInstance} from "class-transformer";
+import {TableMetaData} from "@/interfaces/table";
+import {Device} from "@/modules/devices/entities/device.entity";
+import {DeviceClassificationFlat} from "@/interfaces";
 
 @Controller('devices')
 export class DevicesController {
@@ -127,8 +130,18 @@ export class DevicesController {
     }
 
     @Get()
-    findAll() {
-        return this.devicesService.findAll();
+    async getDevicesByQuery(
+        @Query('page') page: number,
+        @Query('limit') limit: number,
+        @Query('queryString') queryString: string,
+        @Query('searchFields') searchFields: string,
+    ): Promise<TableMetaData<DeviceClassificationFlat>> {
+        return await this.devicesService.getDevicesByQuery({
+            page,
+            limit,
+            queryString,
+            searchFields,
+        });
     }
 
     @Get('/raspberry-all')

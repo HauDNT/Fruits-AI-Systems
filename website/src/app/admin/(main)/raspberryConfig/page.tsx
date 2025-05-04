@@ -145,6 +145,15 @@ export default function RaspberryConfig() {
 
     const handleUpdateRaspberryConfig = async () => {
         try {
+            if (!raspberrySelected.id || !raspberrySelected.device_code) {
+                toast({
+                    title: "Hãy chọn Raspberry để cấu hình",
+                    variant: "info",
+                })
+
+                return
+            }
+
             const data = {
                 ...raspberryConfig,
                 device_code: raspberrySelected.device_code,

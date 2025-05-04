@@ -3,13 +3,16 @@ import {CreateDeviceDto} from './dto/create-device.dto';
 import {UpdateDeviceDto} from './dto/update-device.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {Device} from "@/modules/devices/entities/device.entity";
-import {Repository} from "typeorm";
+import {IsNull, Like, Repository} from "typeorm";
 import {DeviceStatus} from "@/modules/device-status/entities/device-status.entity";
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {generateUniqueCode} from "@/utils/generateUniqueCode";
 import {DeviceEnum} from "@/database/enums/DeviceEnum";
 import {omitFields} from "@/utils/omitFields";
+import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
+import {DeviceClassificationFlat} from "@/interfaces";
+import {TableMetaData} from "@/interfaces/table";
 
 @Injectable()
 export class DevicesService {
@@ -83,8 +86,86 @@ export class DevicesService {
         }
     }
 
-    findAll() {
-        return `This action returns all devices`;
+    async getDevicesByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<DeviceClassificationFlat>> {
+        try {
+            const {
+                page,
+                limit,
+                queryString,
+                searchFields,
+            } = data;
+
+            const skip = (page - 1) * limit;
+            const take = limit;
+
+            const query = this.deviceRepository
+                .createQueryBuilder('device')
+                .leftJoinAndSelect('device.deviceType', 'deviceType')
+                .leftJoinAndSelect('device.deviceStatus', 'deviceStatus')
+                .leftJoinAndSelect('device.areaBelong', 'areaBelong')
+                .where('device.deleted_at IS NULL')
+
+            if (queryString && searchFields) {
+                const fields = searchFields.split(',').map(f => f.trim());
+
+                const conditions = fields.map(field => {
+                    if (field === 'device_code') return 'device.device_code LIKE :query';
+                    if (field === 'deviceType') return 'deviceType.type_name LIKE :query';
+                    if (field === 'deviceStatus') return 'deviceStatus.status_name LIKE :query';
+                    if (field === 'areaBelong') {
+                        return '(areaBelong.area_code LIKE :query OR areaBelong.area_desc LIKE :query)';
+                    }
+                    if (field === 'areaDesc') return 'areaBelong.area_desc LIKE :query';
+                    return `device.${field} LIKE :query`;
+                }).join(' OR ');
+
+
+                query.andWhere(`(${conditions})`, { query: `%${queryString}%`})
+            }
+
+            const [results, total] = await query
+                .skip(skip)
+                .take(take)
+                .getManyAndCount();
+
+            const totalPages = Math.ceil(total / limit);
+
+            const formatResult: DeviceClassificationFlat[] = results.map(result => ({
+                id: result.id,
+                device_code: result.device_code,
+                image_url: result.image_url,
+                deviceType: result.deviceType.type_name,
+                deviceStatus: result.deviceStatus.status_name,
+                area: `${result.areaBelong.area_code} - ${result.areaBelong.area_desc}`,
+                created_at: new Date(),
+            }))
+
+            return {
+                columns: [
+                    { key: 'id', displayName: 'ID', type: 'number' },
+                    { key: 'device_code', displayName: 'Mã thiết bị', type: 'string' },
+                    { key: 'deviceType', displayName: 'Loại thiết bị', type: 'string' },
+                    { key: 'deviceStatus', displayName: 'Trạng thái', type: 'string' },
+                    { key: 'area', displayName: 'Khu vực', type: 'string' },
+                    { key: 'created_at', displayName: 'Thời điểm lắp đặt', type: 'date' },
+                ],
+                values: formatResult,
+                meta: {
+                    totalItems: total,
+                    currentPage: page,
+                    totalPages,
+                    limit,
+                },
+            };
+        } catch (e) {
+            console.log('Lỗi: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách thiết bị');
+        }
     }
 
     async findAllRaspberry() {

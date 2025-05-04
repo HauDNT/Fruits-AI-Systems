@@ -15,7 +15,7 @@ export default function Devices() {
     const [data, setData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "device_name"
+    const searchFields = "device_code, deviceType, deviceStatus, areaBelong"
     const [createFormState, setCreateFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
@@ -28,6 +28,39 @@ export default function Devices() {
     const handlePrevPage = () => {
         if (meta.currentPage > 1) {
             setMeta({...meta, currentPage: +meta.currentPage - 1});
+        }
+    }
+
+    const fetchDevicesByQueryParams = async (searchQuery: string, searchFields: string) => {
+        try {
+            const resData = (await axiosInstance.get(
+                '/devices',
+                {
+                    params: {
+                        page: meta.currentPage,
+                        limit: meta.limit,
+                        queryString: searchQuery,
+                        searchFields: searchFields,
+                    }
+                }
+            )).data;
+
+            setData({
+                columns: resData.columns,
+                values: resData.values,
+            });
+
+            setMeta({
+                ...meta,
+                currentPage: resData.meta.currentPage,
+                totalPages: resData.meta.totalPages,
+            })
+        } catch (e) {
+            console.log('Error: ', e)
+            toast({
+                title: 'Không thể tải lên danh sách thiết bị',
+                variant: 'destructive',
+            })
         }
     }
 
@@ -58,7 +91,7 @@ export default function Devices() {
     }
 
     useEffect(() => {
-
+        fetchDevicesByQueryParams(searchQuery, searchFields)
     }, [searchQuery, meta.currentPage])
 
     return (
