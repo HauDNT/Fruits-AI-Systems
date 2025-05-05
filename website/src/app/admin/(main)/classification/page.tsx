@@ -73,8 +73,6 @@ export default function Classification() {
     }, [searchQuery, meta.currentPage])
 
     useSocketFruitClassify((newResult: ClassifyResultInterface) => {
-        console.log('Socket newFruitClassification - ON')
-
         toast({
             title: "Phát hiện kết quả phân loại mới",
             description: `
