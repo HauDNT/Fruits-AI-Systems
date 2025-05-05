@@ -13,26 +13,23 @@ import {
 import {FormInterface} from "@/interfaces"
 import ComponentCard from "@/components/common/ComponentCard"
 import InputField from "@/components/inputs/InputField"
-import { Input } from "@/components/ui/input"
 import CustomButton from "@/components/buttons/CustomButton"
-import {AreaBody, AreaBodyType} from "@/schemas/area.schema"
+import { DeviceTypeBody, DeviceTypeBodyType } from "@/schemas/device.schema"
 
-const CreateNewAreaForm = ({
+const CreateNewDeviceTypeForm = ({
     className,
     onSubmit,
 }: FormInterface) => {
-    const form = useForm<AreaBodyType>({
-        resolver: zodResolver(AreaBody),
+    const form = useForm<DeviceTypeBodyType>({
+        resolver: zodResolver(DeviceTypeBody),
         defaultValues: {
-            area_desc: '',
-            area_image: undefined,
+            type_name: '',
         }
     })
 
-    const handleSubmit = (values: AreaBodyType) => {
+    const handleSubmit = (values: DeviceTypeBodyType) => {
         const formData = new FormData();
-        formData.append('area_desc', values.area_desc);
-        formData.append('area_image', values.area_image);
+        formData.append('type_name', values.type_name);
 
         const submitResult = onSubmit(formData);
         if (submitResult) {
@@ -41,7 +38,7 @@ const CreateNewAreaForm = ({
     };
 
     return (
-        <ComponentCard title="Thêm khu phân loại mới" className={'w-full'}>
+        <ComponentCard title="Thêm loại thiết bị mới" className={'w-full'}>
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(handleSubmit)}
@@ -50,36 +47,18 @@ const CreateNewAreaForm = ({
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <FormField
                             control={form.control}
-                            name={"area_desc"}
+                            name={"type_name"}
                             render={({field}) => (
                                 <FormItem className="col-span-full">
-                                    <FormLabel>Mô tả khu</FormLabel>
+                                    <FormLabel>Tên loại</FormLabel>
                                     <FormControl>
                                         <InputField
                                             type="text"
-                                            placeholder="VD: Khu phân loại số 1"
+                                            placeholder="VD: Băng chuyền, ESP32,..."
                                             {...field}
                                         />
                                     </FormControl>
                                     <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="area_image"
-                            render={({ field: { onChange, value, ...field } }) => (
-                                <FormItem className="col-span-full">
-                                    <FormLabel>Hình ảnh</FormLabel>
-                                    <FormControl className={'cursor-pointer'}>
-                                        <Input
-                                            type="file"
-                                            accept="image/*"
-                                            {...field}
-                                            onChange={(e) => onChange(e.target.files?.[0] || null)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -94,4 +73,4 @@ const CreateNewAreaForm = ({
     )
 }
 
-export default CreateNewAreaForm
+export default CreateNewDeviceTypeForm

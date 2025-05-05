@@ -3,14 +3,19 @@ import {CreateDeviceTypeDto} from './dto/create-device-type.dto';
 import {UpdateDeviceTypeDto} from './dto/update-device-type.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
-import {Repository} from "typeorm";
+import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
 import {omitFields} from "@/utils/omitFields";
+import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
+import {TableMetaData} from "@/interfaces/table";
+import {Device} from "@/modules/devices/entities/device.entity";
 
 @Injectable()
 export class DeviceTypesService {
     constructor(
         @InjectRepository(DeviceType)
-        private deviceTypeRepository: Repository<DeviceType>
+        private deviceTypeRepository: Repository<DeviceType>,
+        @InjectRepository(Device)
+        private deviceRepository: Repository<Device>
     ) {
     }
 
@@ -69,15 +74,98 @@ export class DeviceTypesService {
         }
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} deviceType`;
+    async getDeviceTypesByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<DeviceType>> {
+        try {
+            const {
+                page,
+                limit,
+                queryString,
+                searchFields,
+            } = data;
+
+            const skip = (page - 1) * limit;
+            const take = limit;
+
+            const where: any = {};
+            where.deleted_at = IsNull();
+
+            let searchConditions: any[] = [];
+            if (queryString && searchFields) {
+                const fields = searchFields.split(',').map((field) => field.trim());
+                searchConditions = fields.map((field) => ({
+                    ...where,
+                    [field]: Like(`%${queryString}%`),
+                }));
+            }
+
+            const [types, total] = await this.deviceTypeRepository.findAndCount({
+                where: searchConditions.length > 0 ? searchConditions : where,
+                select: ['id', 'type_name', 'created_at', 'updated_at'],
+                skip,
+                take,
+            })
+
+            const totalPages = Math.ceil(total / limit)
+
+            return {
+                "columns": [
+                    {"key": "id", "displayName": "ID", "type": "number"},
+                    {"key": "type_name", "displayName": "Loại thiết bị", "type": "string"},
+                    {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
+                    {"key": "updated_at", "displayName": "Ngày cập nhật", "type": "date"},
+                ],
+                "values": types,
+                "meta": {
+                    "totalItems": total,
+                    "currentPage": page,
+                    "totalPages": totalPages,
+                    "limit": limit,
+                },
+            };
+        } catch (e) {
+            console.log('Lỗi: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách loại thiết bị');
+        }
     }
 
-    update(id: number, updateDeviceTypeDto: UpdateDeviceTypeDto) {
-        return `This action updates a #${id} deviceType`;
-    }
+    async deleteDeviceTypes(typeIds: string[]): Promise<DeleteResult> {
+        try {
+            if (!Array.isArray(typeIds) || typeIds.length === 0) {
+                throw new BadRequestException('Danh sách id loại thiết bị không hợp lệ');
+            }
 
-    remove(id: number) {
-        return `This action removes a #${id} deviceType`;
+            const types = await this.deviceTypeRepository.find({
+                where: {id: In(typeIds)}
+            })
+
+            if (types.length !== typeIds.length) {
+                throw new BadRequestException('Một hoặc nhiều loại thiết bị không tồn tại');
+            }
+
+            for (const type of types) {
+                const checkDeviceLink = await this.deviceRepository.findOne({
+                    where: { deviceType: { id: type.id } },
+                });
+
+                if (checkDeviceLink) {
+                    throw new BadRequestException(`Loại thiết bị ${type.type_name} đang được liên kết với thiết bị. Vui lòng chuyển hoặc xoá thiết bị trước.`);
+                }
+            }
+
+            return await this.deviceTypeRepository.delete(typeIds)
+        } catch (e) {
+            console.log('Error when delete device types: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình xoá loại thiết bị');
+        }
     }
 }

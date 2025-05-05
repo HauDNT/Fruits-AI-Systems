@@ -5,7 +5,7 @@ import {useToast} from "@/hooks/use-toast";
 import {useEffect, useState} from "react";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
-import axiosInstance from "@/utils/axiosInstance";
+import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import {AreaBodyType} from "@/schemas/area.schema";
 import CreateNewAreaForm from "@/components/forms/CreateNewAreaForm";
 
@@ -70,12 +70,13 @@ export default function Areas() {
                 toast({ title: "Thêm khu thành công" , variant: "success"});
                 return true;
             }
-        } catch (e) {
+        } catch (error) {
+            const errorMessage = handleAxiosError(error);
             console.error('Thêm khu thất bại:', error);
 
             toast({
                 title: "Thêm khu thất bại",
-                description: "Vui lòng thử lại sau",
+                description: errorMessage,
                 variant: "destructive",
             });
 
@@ -120,9 +121,12 @@ export default function Areas() {
                 })
             }
         } catch (error) {
+            const errorMessage = handleAxiosError(error);
+            console.log("Xoá trạng thái thất bại")
+
             toast({
                 title: "Xoá trạng thái thất bại",
-                description: "Hãy thử lại sau",
+                description: errorMessage,
                 variant: "destructive",
             });
         }

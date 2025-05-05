@@ -19,7 +19,6 @@ import * as fs from 'fs/promises';
 import {extname} from "path";
 import {plainToInstance} from "class-transformer";
 import {TableMetaData} from "@/interfaces/table";
-import {Device} from "@/modules/devices/entities/device.entity";
 import {DeviceClassificationFlat} from "@/interfaces";
 
 @Controller('devices')
@@ -58,7 +57,6 @@ export class DevicesController {
     }))
     async create(
         @UploadedFile() file: Express.Multer.File,
-        // @Body() createDeviceDto: CreateDeviceDto
         @Body() body: any,
     ) {
         try {
@@ -77,47 +75,7 @@ export class DevicesController {
             })
             const imageUrl = `uploads/devices/${file.filename}`
 
-            const createdResult = await this.devicesService.create(createDeviceDto, imageUrl)
-
-            // this.classifyGateway
-            /*
-            {
-              "message": "Tạo thiết bị mới thành công",
-              "data": {
-                "device_code": "#DV-6TN2I2",
-                "image_url": "",
-                "created_at": "2025-05-02T04:40:07.300Z",
-                "updated_at": "2025-05-02T04:40:07.300Z",
-                "deviceType": {
-                  "id": 1,
-                  "type_name": "Băng chuyền",
-                  "created_at": "2025-05-02T04:06:05.880Z",
-                  "updated_at": "2025-05-02T04:06:05.880Z",
-                  "deleted_at": null
-                },
-                "deviceStatus": {
-                  "id": 1,
-                  "status_name": "Hoạt động",
-                  "created_at": "2025-05-02T04:16:20.841Z",
-                  "updated_at": "2025-05-02T04:16:20.841Z",
-                  "deleted_at": null
-                },
-                "areaBelong": {
-                  "id": 9,
-                  "area_code": "#AR-0IWG9H",
-                  "area_desc": "Khu phân loại số 5",
-                  "image_url": "/uploads/areas/area_image-1745572734306-321321490.jpg",
-                  "created_at": "2025-04-25T09:18:54.309Z",
-                  "updated_at": "2025-04-25T09:18:54.309Z",
-                  "deleted_at": null
-                },
-                "id": 1,
-                "deleted_at": null
-              }
-            }
-            */
-
-            return createdResult
+            return await this.devicesService.create(createDeviceDto, imageUrl)
         } catch (e) {
             console.log('Lỗi: ', e.message)
 

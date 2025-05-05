@@ -21,4 +21,10 @@ export const DeviceBody = z
             ),
     })
 
+export const DeviceTypeBody = z
+    .object({
+        type_name: z.string().min(3, { message: 'Vui lòng nhập tên loại thiết bị' })
+    })
+
 export type DeviceBodyType = z.TypeOf<typeof DeviceBody>
+export type DeviceTypeBodyType = z.TypeOf<typeof DeviceTypeBody>

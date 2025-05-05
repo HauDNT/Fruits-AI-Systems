@@ -7,9 +7,9 @@ import {CreateAreaDto} from './dto/create-area.dto';
 import {UpdateAreaDto} from './dto/update-area.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {Area} from "@/modules/areas/entities/area.entity";
-import {GetAreaByQueryDto} from "@/modules/areas/dto/get-area-query-params.dto";
 import {generateUniqueCode} from "@/utils/generateUniqueCode";
 import {omitFields} from "@/utils/omitFields";
+import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 
 @Injectable()
 export class AreasService {
@@ -77,7 +77,7 @@ export class AreasService {
         }
     }
 
-    async getAreasByQuery(data: GetAreaByQueryDto): Promise<TableMetaData<Area>> {
+    async getAreasByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<Area>> {
         const {
             page,
             limit,
