@@ -15,7 +15,7 @@ export class DeviceTypesService {
         @InjectRepository(DeviceType)
         private deviceTypeRepository: Repository<DeviceType>,
         @InjectRepository(Device)
-        private deviceRepository: Repository<Device>
+        private deviceRepository: Repository<Device>,
     ) {
     }
 

@@ -97,7 +97,7 @@ export default function DeviceTypes() {
                 ).then((res) => {
                     if (res.data.affected > 0) {
                         toast({
-                            title: 'Đã xoá khu phân loại thành công',
+                            title: 'Đã xoá loại thiết bị thành công',
                             variant: "success",
                         })
 

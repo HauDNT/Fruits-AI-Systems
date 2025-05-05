@@ -26,5 +26,11 @@ export const DeviceTypeBody = z
         type_name: z.string().min(3, { message: 'Vui lòng nhập tên loại thiết bị' })
     })
 
+export const DeviceStatusBody = z
+    .object({
+        status_name: z.string().min(3, { message: 'Vui lòng nhập tên trạng thái thiết bị' })
+    })
+
 export type DeviceBodyType = z.TypeOf<typeof DeviceBody>
 export type DeviceTypeBodyType = z.TypeOf<typeof DeviceTypeBody>
+export type DeviceStatusBodyType = z.TypeOf<typeof DeviceStatusBody>
