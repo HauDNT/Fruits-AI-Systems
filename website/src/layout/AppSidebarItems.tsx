@@ -1,5 +1,5 @@
 import {TbApple} from "react-icons/tb"
-import {RiArchiveLine, RiHistoryLine, RiUser3Line, RiDashboard3Line} from "react-icons/ri"
+import { RiHistoryLine, RiUser3Line, RiDashboard3Line} from "react-icons/ri"
 import {LuCircuitBoard} from "react-icons/lu"
 import { MdConveyorBelt } from "react-icons/md"
 
@@ -8,7 +8,7 @@ export const AdminSidebarItems = [
     {
         name: "Nhân viên",
         icon: <RiUser3Line size={25}/>,
-        path: "#"
+        path: "/admin/users"
     },
     {
         name: "Khu",

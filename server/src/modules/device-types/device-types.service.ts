@@ -150,7 +150,7 @@ export class DeviceTypesService {
             for (const type of types) {
                 const checkDeviceLink = await this.deviceRepository.findOne({
                     where: { deviceType: { id: type.id } },
-                });
+                })
 
                 if (checkDeviceLink) {
                     throw new BadRequestException(`Loại thiết bị ${type.type_name} đang được liên kết với thiết bị. Vui lòng chuyển hoặc xoá thiết bị trước.`);

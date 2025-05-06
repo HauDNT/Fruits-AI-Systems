@@ -78,53 +78,63 @@ export class AreasService {
     }
 
     async getAreasByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<Area>> {
-        const {
-            page,
-            limit,
-            queryString,
-            searchFields,
-        } = data;
+        try {
+            const {
+                page,
+                limit,
+                queryString,
+                searchFields,
+            } = data;
 
-        const skip = (page - 1) * limit;
-        const take = limit;
+            const skip = (page - 1) * limit;
+            const take = limit;
 
-        const where: any = {};
-        where.deleted_at = IsNull();
+            const where: any = {};
+            where.deleted_at = IsNull();
 
-        let searchConditions: any[] = [];
-        if (queryString && searchFields) {
-            const fields = searchFields.split(',').map((field) => field.trim());
-            searchConditions = fields.map((field) => ({
-                ...where,
-                [field]: Like(`%${queryString}%`),
-            }));
+            let searchConditions: any[] = [];
+            if (queryString && searchFields) {
+                const fields = searchFields.split(',').map((field) => field.trim());
+                searchConditions = fields.map((field) => ({
+                    ...where,
+                    [field]: Like(`%${queryString}%`),
+                }));
+            }
+
+            const [areas, total] = await this.areaRepository.findAndCount({
+                where: searchConditions.length > 0 ? searchConditions : where,
+                select: ['id', 'area_code', 'area_desc', 'created_at', 'updated_at'],
+                skip,
+                take,
+            })
+
+            const totalPages = Math.ceil(total / limit)
+
+            return {
+                "columns": [
+                    {"key": "id", "displayName": "ID", "type": "number"},
+                    {"key": "area_code", "displayName": "Mã khu", "type": "string"},
+                    {"key": "area_desc", "displayName": "Mô tả", "type": "string"},
+                    {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
+                    {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
+                ],
+                "values": areas,
+                "meta": {
+                    "totalItems": total,
+                    "currentPage": page,
+                    "totalPages": totalPages,
+                    "limit": limit,
+                },
+            };
+        } catch (e) {
+            console.log('Lỗi: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách khu');
         }
-
-        const [areas, total] = await this.areaRepository.findAndCount({
-            where: searchConditions.length > 0 ? searchConditions : where,
-            select: ['id', 'area_code', 'area_desc', 'created_at', 'updated_at'],
-            skip,
-            take,
-        })
-
-        const totalPages = Math.ceil(total / limit)
-
-        return {
-            "columns": [
-                {"key": "id", "displayName": "ID", "type": "number"},
-                {"key": "area_code", "displayName": "Mã khu", "type": "string"},
-                {"key": "area_desc", "displayName": "Mô tả", "type": "string"},
-                {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
-                {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
-            ],
-            "values": areas,
-            "meta": {
-                "totalItems": total,
-                "currentPage": page,
-                "totalPages": totalPages,
-                "limit": limit,
-            },
-        };
     }
 
     findOne(id: number) {

@@ -41,6 +41,6 @@ export class FruitTypesController {
         @Body() data: DeleteFruitTypeDto
     ): Promise<DeleteResult | any> {
         const { fruitTypeIds } = data;
-        return  await this.fruitTypesService.deleteFruitTypes(fruitTypeIds);
+        return await this.fruitTypesService.deleteFruitTypes(fruitTypeIds);
     }
 }

@@ -1,8 +1,7 @@
 'use client'
-import React from "react";
+import React from "react"
 import {useForm} from 'react-hook-form'
 import {zodResolver} from '@hookform/resolvers/zod'
-import {FruitTypeBody, FruitTypeBodyType} from '@/schemas/fruit.schema'
 import {
     Form,
     FormControl,
@@ -15,12 +14,21 @@ import {FormInterface} from "@/interfaces"
 import ComponentCard from "@/components/common/ComponentCard"
 import InputField from "@/components/inputs/InputField"
 import CustomButton from "@/components/buttons/CustomButton"
+import {UserBody, UserBodyType} from "@/schemas/user.schema"
 
-const CreateNewFruitTypeForm = ({
+const CreateNewUserForm = ({
     className,
     onSubmit,
 }: FormInterface) => {
-    const handleSubmit = (values: FruitTypeBodyType) => {
+    const form = useForm<UserBodyType>({
+        resolver: zodResolver(UserBody),
+        defaultValues: {
+            username: '',
+            password: '',
+        }
+    })
+
+    const handleSubmit = (values: UserBodyType) => {
         const submitResult = onSubmit(values);
 
         if (submitResult) {
@@ -28,16 +36,8 @@ const CreateNewFruitTypeForm = ({
         }
     };
 
-    const form = useForm<FruitTypeBodyType>({
-        resolver: zodResolver(FruitTypeBody),
-        defaultValues: {
-            type_name: '',
-            type_desc: '',
-        }
-    })
-
     return (
-        <ComponentCard title="Thêm trạng thái trái cây mới" className={'w-full'}>
+        <ComponentCard title="Thêm tài khoản người dùng mới" className={'w-full'}>
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(handleSubmit)}
@@ -46,14 +46,13 @@ const CreateNewFruitTypeForm = ({
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <FormField
                             control={form.control}
-                            name={"type_name"}
+                            name={"username"}
                             render={({field}) => (
                                 <FormItem className="col-span-full">
-                                    <FormLabel>Trạng thái (Tiếng Anh viết hoa chữ cái)</FormLabel>
+                                    <FormLabel>Tên tải khoản</FormLabel>
                                     <FormControl>
                                         <InputField
                                             type="text"
-                                            placeholder="Ripe / Rot"
                                             {...field}
                                         />
                                     </FormControl>
@@ -63,14 +62,13 @@ const CreateNewFruitTypeForm = ({
                         />
                         <FormField
                             control={form.control}
-                            name={"type_desc"}
+                            name={"password"}
                             render={({field}) => (
                                 <FormItem className="col-span-full">
-                                    <FormLabel>Mô tả (Chú thích tiếng Việt)</FormLabel>
+                                    <FormLabel>Mật khẩu</FormLabel>
                                     <FormControl>
                                         <InputField
                                             type="text"
-                                            placeholder="Chín / Thối"
                                             {...field}
                                         />
                                     </FormControl>
@@ -89,4 +87,4 @@ const CreateNewFruitTypeForm = ({
     )
 }
 
-export default CreateNewFruitTypeForm
+export default CreateNewUserForm
