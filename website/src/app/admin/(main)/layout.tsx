@@ -6,9 +6,7 @@ export default function AdminLayout({children}: Readonly<{ children: React.React
     return (
         <main>
             <div className="min-h-screen xl:flex bg-white dark:bg-gray-900">
-                {/* Sidebar */}
                 <AppSidebar/>
-                {/* Main Content Area */}
                 <ContentPage>
                     {children}
                 </ContentPage>

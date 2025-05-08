@@ -9,7 +9,7 @@ import {CreateFruitTypeDto} from './dto/create-fruit-type.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {IsNull, Repository, Like, In, DeleteResult} from "typeorm";
-import {GetFruitTypeDTO} from "@/modules/fruit-types/dto/get-fruit-type.dto";
+import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 
 @Injectable()
 export class FruitTypesService {
@@ -60,7 +60,7 @@ export class FruitTypesService {
         return await this.fruitTypeRepository.find();
     }
 
-    async getFruitTypesByQuery(data: GetFruitTypeDTO): Promise<TableMetaData<FruitType>> {
+    async getFruitTypesByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<FruitType>> {
         const {
             page,
             limit,

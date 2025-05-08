@@ -8,8 +8,8 @@ import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {TableMetaData} from "@/interfaces/table";
-import {GetClassifyQueryParamsDto} from "@/modules/fruit-classification/dto/get-classify-query-params.dto";
 import {FruitClassificationFlat} from "@/interfaces";
+import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 
 @Injectable()
 export class FruitClassificationService {
@@ -92,7 +92,7 @@ export class FruitClassificationService {
         }
     }
 
-    async getClassifyByQuery(data: GetClassifyQueryParamsDto): Promise<TableMetaData<FruitClassificationFlat>> {
+    async getClassifyByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<FruitClassificationFlat>> {
         const {
             page = 1,
             limit = 10,

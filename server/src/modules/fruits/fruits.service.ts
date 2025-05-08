@@ -6,10 +6,10 @@ import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {TableMetaData} from "@/interfaces/table";
-import {GetFruitByQueryParamsDto} from "@/modules/fruits/dto/get-fruit-query-params-dto";
 import {FruitImage} from "@/modules/fruit-images/entities/fruit-image.entity";
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 
 @Injectable()
 export class FruitsService {
@@ -91,7 +91,7 @@ export class FruitsService {
         }
     }
 
-    async getFruitsByQuery(data: GetFruitByQueryParamsDto): Promise<TableMetaData<Fruit>> {
+    async getFruitsByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<Fruit>> {
         const {
             page,
             limit,

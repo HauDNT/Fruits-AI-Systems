@@ -17,7 +17,7 @@ export default function ContentPage({children}: { children: React.ReactNode }) {
     return (
         <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
             <AppHeader/>
-            <div className="p-4 mx-auto max-w-screen-2xl md:p-6 bg-gray-50 dark:bg-gray-900">
+            <div className="h-full p-4 mx-auto max-w-screen-2xl md:p-6 bg-gray-50 dark:bg-gray-900">
                 {children}
             </div>
         </div>
