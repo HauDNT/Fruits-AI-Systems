@@ -1,7 +1,7 @@
 import {TbApple} from "react-icons/tb"
-import { RiHistoryLine, RiUser3Line, RiDashboard3Line} from "react-icons/ri"
-import {LuCircuitBoard} from "react-icons/lu"
-import { MdConveyorBelt } from "react-icons/md"
+import {RiHistoryLine, RiUser3Line, RiDashboard3Line} from "react-icons/ri"
+import {LuCircuitBoard, LuBrainCircuit} from "react-icons/lu"
+import {MdConveyorBelt} from "react-icons/md"
 
 export const AdminSidebarItems = [
     {icon: <RiDashboard3Line size={25}/>, name: "Dashboard", path: "/admin/dashboard"},
@@ -30,7 +30,14 @@ export const AdminSidebarItems = [
             {name: "Thiết bị", path: "/admin/devices"},
             {name: "Loại thiết bị", path: "/admin/deviceTypes"},
             {name: "Trạng thái thiết bị", path: "/admin/deviceStatuses"},
-            {name: "Cấu hình máy chủ Raspberry", path: "/admin/raspberryConfig"},
+        ],
+    },
+    {
+        name: "Cấu hình học máy",
+        icon: <LuBrainCircuit size={25}/>,
+        subItems: [
+            {name: "Máy chủ Raspberry", path: "/admin/raspberryConfig"},
+            {name: "Mô hình máy học", path: "#"},
         ],
     },
     {

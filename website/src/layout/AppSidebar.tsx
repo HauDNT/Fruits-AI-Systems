@@ -1,5 +1,5 @@
 "use client";
-import React, {useEffect, useRef, useState, useCallback, useMemo} from "react";
+import React, {useEffect, useRef, useState, useCallback} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {usePathname} from "next/navigation";
@@ -7,7 +7,6 @@ import {
     ChevronDownIcon,
     HorizontaLDots,
 } from "@/assets/icons";
-import AppSidebarWidget from "./AppSidebarWidget";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/redux/store";
 import {setIsHovered} from "@/redux/sidebarSlice";
@@ -252,25 +251,26 @@ const AppSidebar: React.FC = () => {
                         <>
                             <Image
                                 className="dark:hidden"
-                                src="/images/logo/logo.svg"
+                                src="/images/logo/Logo_Light.png"
                                 alt="Logo"
-                                width={150}
-                                height={40}
+                                width={187.5}
+                                height={50}
                             />
                             <Image
                                 className="hidden dark:block"
-                                src="/images/logo/logo-dark.svg"
+                                src="/images/logo/Logo_Dark.png"
                                 alt="Logo"
-                                width={150}
-                                height={40}
+                                width={187.5}
+                                height={50}
                             />
                         </>
                     ) : (
                         <Image
-                            src="/images/logo/logo-icon.svg"
+                            className={'rounded-md'}
+                            src="/images/logo/Logo_Icon.png"
                             alt="Logo"
-                            width={32}
-                            height={32}
+                            width={64}
+                            height={64}
                         />
                     )}
                 </Link>
