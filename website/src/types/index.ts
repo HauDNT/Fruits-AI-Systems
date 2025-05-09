@@ -15,7 +15,7 @@ export type DashboardCardItem = {
     name: string;
     number: number;
     icon: React.ReactNode;
-    upOrDown: boolean;
+    upOrDown?: boolean;
     diffRatio: number;
 }
 

@@ -1,8 +1,15 @@
-import {UserCircleIcon} from "@/assets/icons"
+"use client"
+import {
+    UserCircle,
+    Apple,
+    Cpu,
+    Users,
+    HeartPulse,
+    ScanEye,
+    Computer,
+    Zap,
+} from "lucide-react";
 import DashboardCard from "@/components/cards/DashboardCard"
-import MonthlyTargetChart from "@/components/charts/MonthlyTargetChart";
-import MonthlyAccountCreatedChart from "@/components/charts/MonthlyAccountCreatedChart";
-import StatisticsChart from "@/components/charts/StatisticsChart";
 import ClassifiResultsChart from "@/components/charts/ClassifiResultsChart";
 
 export default function AdminDashboard() {
@@ -19,38 +26,62 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-4 gap-4 md:gap-4">
                     <DashboardCard
                         item={{
+                            name: "Tài khoản",
+                            number: 5,
+                            icon: UserCircle,
+                        }}
+                    />
+                    <DashboardCard
+                        item={{
+                            name: "Loại trái cây",
+                            number: 4,
+                            icon: Apple,
+                        }}
+                    />
+                    <DashboardCard
+                        className="border-[3px] border-blue-500 p-5 dark:border-yellow-300"
+                        item={{
+                            name: "Số lượng đã phân loại",
+                            number: 4,
+                            icon: ScanEye,
+                        }}
+                    />
+                    <DashboardCard
+                        item={{
+                            name: "Thiết bị",
+                            number: 18,
+                            icon: Cpu,
+                        }}
+                    />
+                </div>
+
+                <div className="grid grid-cols-4 gap-4 md:gap-4">
+                    <DashboardCard
+                        item={{
                             name: "Nhân viên",
-                            number: 1000,
-                            icon: UserCircleIcon,
-                            upOrDown: true,
-                            diffRatio: 11.31,
+                            number: 10,
+                            icon: Users,
                         }}
                     />
                     <DashboardCard
                         item={{
-                            name: "Khu",
-                            number: 1000,
-                            icon: UserCircleIcon,
-                            upOrDown: false,
-                            diffRatio: 12.53,
+                            name: "Tình trạng trái cây",
+                            number: 4,
+                            icon: HeartPulse,
                         }}
                     />
                     <DashboardCard
                         item={{
-                            name: "Khu",
-                            number: 1000,
-                            icon: UserCircleIcon,
-                            upOrDown: false,
-                            diffRatio: 12.53,
+                            name: "Khu vực",
+                            number: 4,
+                            icon: Computer,
                         }}
                     />
                     <DashboardCard
                         item={{
-                            name: "Khu",
-                            number: 1000,
-                            icon: UserCircleIcon,
-                            upOrDown: false,
-                            diffRatio: 12.53,
+                            name: "Trạng thái thiết bị",
+                            number: 2,
+                            icon: Zap,
                         }}
                     />
                 </div>

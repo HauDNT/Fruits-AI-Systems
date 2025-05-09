@@ -92,53 +92,63 @@ export class FruitsService {
     }
 
     async getFruitsByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<Fruit>> {
-        const {
-            page,
-            limit,
-            queryString,
-            searchFields,
-        } = data;
+        try {
+            const {
+                page,
+                limit,
+                queryString,
+                searchFields,
+            } = data;
 
-        const skip = (page - 1) * limit;
-        const take = limit;
+            const skip = (page - 1) * limit;
+            const take = limit;
 
-        const where: any = {};
-        where.deleted_at = IsNull();
+            const where: any = {};
+            where.deleted_at = IsNull();
 
-        let searchConditions: any[] = [];
-        if (queryString && searchFields) {
-            const fields = searchFields.split(',').map((field) => field.trim());
-            searchConditions = fields.map((field) => ({
-                ...where,
-                [field]: Like(`%${queryString}%`),
-            }));
+            let searchConditions: any[] = [];
+            if (queryString && searchFields) {
+                const fields = searchFields.split(',').map((field) => field.trim());
+                searchConditions = fields.map((field) => ({
+                    ...where,
+                    [field]: Like(`%${queryString}%`),
+                }));
+            }
+
+            const [fruits, total] = await this.fruitRepository.findAndCount({
+                where: searchConditions.length > 0 ? searchConditions : where,
+                select: ['id', 'fruit_name', 'fruit_desc', 'created_at', 'updated_at'],
+                skip,
+                take,
+            })
+
+            const totalPages = Math.ceil(total / limit);
+
+            return {
+                "columns": [
+                    {"key": "id", "displayName": "ID", "type": "number"},
+                    {"key": "fruit_name", "displayName": "Tên trái cây", "type": "string"},
+                    {"key": "fruit_desc", "displayName": "Mô tả", "type": "string"},
+                    {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
+                    {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
+                ],
+                "values": fruits,
+                "meta": {
+                    "totalItems": total,
+                    "currentPage": page,
+                    "totalPages": totalPages,
+                    "limit": limit,
+                },
+            };
+        } catch (e) {
+            console.log('Error when get list fruits: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách trái cây');
         }
-
-        const [fruits, total] = await this.fruitRepository.findAndCount({
-            where: searchConditions.length > 0 ? searchConditions : where,
-            select: ['id', 'fruit_name', 'fruit_desc', 'created_at', 'updated_at'],
-            skip,
-            take,
-        })
-
-        const totalPages = Math.ceil(total / limit);
-
-        return {
-            "columns": [
-                {"key": "id", "displayName": "ID", "type": "number"},
-                {"key": "fruit_name", "displayName": "Tên trái cây", "type": "string"},
-                {"key": "fruit_desc", "displayName": "Mô tả", "type": "string"},
-                {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
-                {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
-            ],
-            "values": fruits,
-            "meta": {
-                "totalItems": total,
-                "currentPage": page,
-                "totalPages": totalPages,
-                "limit": limit,
-            },
-        };
     }
 
     findOne(id: number) {

@@ -48,9 +48,4 @@ export class Employee {
     @ManyToOne(() => Area, area => area.employee)
     @JoinColumn({name: 'area_id'})
     areaWorkAt: Area;
-
-    // Employee (Profile) <-> User
-    @OneToOne(() => User)
-    @JoinColumn({name: 'user_id'})
-    user: User
 }
