@@ -9,7 +9,20 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
     ssr: false,
 });
 
-export default function StatisticsChart() {
+interface ClassifiResultsChartSeriesInterface {
+    name: string,
+    data: number[],
+}
+
+interface ClassifiResultsChartInterface {
+    chartName?: string,
+    series: ClassifiResultsChartSeriesInterface[],
+}
+
+export default function ClassifiResultsChart({
+    chartName = 'Kết quả phân loại trái cây',
+    series,
+}: ClassifiResultsChartInterface) {
     const options: ApexOptions = {
         legend: {
             show: false, // Hide legend
@@ -108,41 +121,54 @@ export default function StatisticsChart() {
         },
     };
 
-    const series = [
-        {
-            name: "Táo chín",
-            data: [168, 450, 201, 298, 187, 550, 291, 110, 215, 390, 280, 120],
-        },
-        {
-            name: "Táo thối",
-            data: [68, 90, 101, 198, 57, 50, 35, 20, 25, 39, 20, 20],
-        },
-    ];
     return (
-        <div
-            className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-            <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
-                <div className="w-full">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        Kết quả phân loại
-                    </h3>
+        series.length > 0 ? (
+            <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
+                <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
+                    <div className="w-full">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                            { chartName }
+                        </h3>
+                    </div>
+                    <div className="flex items-start w-full gap-3 sm:justify-end">
+                        <ChartTab
+                            options = {['Táo', 'Nho', 'Lê']}
+                            onTabClicked={(optionSelected) => console.log(optionSelected)}
+                        />
+                        <ChartTab
+                            options = {['Ngày', 'Tuần', 'Tháng']}
+                            onTabClicked={(optionSelected) => console.log(optionSelected)}
+                        />
+                    </div>
                 </div>
-                <div className="flex items-start w-full gap-3 sm:justify-end">
-                    <ChartTab/>
-                    <ChartTab/>
-                </div>
-            </div>
 
-            <div className="max-w-full overflow-x-auto custom-scrollbar">
-                <div className="min-w-[1000px] xl:min-w-full">
-                    <ReactApexChart
-                        options={options}
-                        series={series}
-                        type="area"
-                        height={310}
-                    />
+                <div className="max-w-full overflow-x-auto custom-scrollbar">
+                    <div className="min-w-[1000px] xl:min-w-full">
+                        <ReactApexChart
+                            options={options}
+                            series={series}
+                            type="area"
+                            height={310}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        ) : (
+            <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
+                <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
+                    <div className="w-full">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                            { chartName }
+                        </h3>
+                    </div>
+                </div>
+
+                <div className="max-w-full overflow-x-auto custom-scrollbar">
+                    <div className="min-w-[1000px] xl:min-w-full">
+                        Không có dữ liệu
+                    </div>
+                </div>
+            </div>
+        )
     );
 }

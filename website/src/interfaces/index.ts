@@ -74,3 +74,8 @@ export interface ClassifyResultInterface {
     fruitType: string;
     created_at: string;
 }
+
+export interface ChartTabInterface {
+    options: string[];
+    onTabClicked?: (option: string) => void;
+}

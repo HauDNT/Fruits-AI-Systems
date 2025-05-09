@@ -1,41 +1,38 @@
 import React, {useState} from "react";
+import {ChartTabInterface} from "@/interfaces";
 
-const ChartTab: React.FC = () => {
-    const [selected, setSelected] = useState<"optionOne" | "optionTwo" | "optionThree">("optionOne");
+const ChartTab: React.FC = ({
+    options = [],
+    onTabClicked,
+}: ChartTabInterface) => {
+    const [selected, setSelected] = useState(options[0]);
 
-    const getButtonClass = (option: "optionOne" | "optionTwo" | "optionThree") =>
+    const getButtonClass = (option: options) =>
         selected === option
             ? "shadow-theme-xs text-gray-900 dark:text-white bg-white dark:bg-gray-800"
             : "text-gray-500 dark:text-gray-400";
 
+    const handleSelectOption = async (option: string) => {
+        setSelected(option)
+        onTabClicked(option)
+    }
+
     return (
         <div className="flex items-center gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-900">
-            <button
-                onClick={() => setSelected("optionOne")}
-                className={`px-3 py-2 font-medium w-full rounded-md text-theme-sm hover:text-gray-900   dark:hover:text-white ${getButtonClass(
-                    "optionOne"
-                )}`}
-            >
-                Táo
-            </button>
-
-            <button
-                onClick={() => setSelected("optionTwo")}
-                className={`px-3 py-2 font-medium w-full rounded-md text-theme-sm hover:text-gray-900   dark:hover:text-white ${getButtonClass(
-                    "optionTwo"
-                )}`}
-            >
-                Lê
-            </button>
-
-            <button
-                onClick={() => setSelected("optionThree")}
-                className={`px-3 py-2 font-medium w-full rounded-md text-theme-sm hover:text-gray-900   dark:hover:text-white ${getButtonClass(
-                    "optionThree"
-                )}`}
-            >
-                Nho
-            </button>
+            {
+                options.length > 0 ? (
+                    options.map(option => (
+                        <button
+                            onClick={() => handleSelectOption(option)}
+                            className={`px-3 py-2 font-medium w-full rounded-md text-theme-sm hover:text-gray-900 dark:hover:text-white ${getButtonClass(
+                                option
+                            )}`}
+                        >
+                            {option}
+                        </button>
+                    ))
+                ) : 'Không có tuỳ chọn'
+            }
         </div>
     );
 };
