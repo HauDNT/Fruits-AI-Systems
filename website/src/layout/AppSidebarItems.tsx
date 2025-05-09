@@ -4,7 +4,7 @@ import {LuCircuitBoard, LuBrainCircuit} from "react-icons/lu"
 import {MdConveyorBelt} from "react-icons/md"
 
 export const AdminSidebarItems = [
-    {icon: <RiDashboard3Line size={25}/>, name: "Dashboard", path: "/admin/dashboard"},
+    {icon: <RiDashboard3Line size={25}/>, name: "Bảng điều khiển", path: "/admin/dashboard"},
     {
         name: "Nhân viên",
         icon: <RiUser3Line size={25}/>,

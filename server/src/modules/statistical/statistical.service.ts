@@ -159,4 +159,22 @@ export class StatisticalService {
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy số lượng thiết bị');
         }
     }
+
+    async getAmountDeviceTypes() {
+        try {
+            return await this.deviceTypeRepository.count({
+                where: {
+                    deleted_at: null
+                }
+            })
+        } catch (e) {
+            console.log('Error when get amount device types: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy số lượng loại thiết bị');
+        }
+    }
 }

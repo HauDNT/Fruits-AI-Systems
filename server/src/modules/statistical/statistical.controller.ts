@@ -40,4 +40,9 @@ export class StatisticalController {
     async getAmountDevices() {
         return await this.statisticalService.getAmountDevices()
     }
+
+    @Get('/amount-device-types')
+    async getAmountDeviceTypes() {
+        return await this.statisticalService.getAmountDeviceTypes()
+    }
 }

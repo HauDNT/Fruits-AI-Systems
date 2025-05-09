@@ -19,13 +19,6 @@ export default function RaspberryConfig() {
         device_code: null,
     })
     const [raspberryConfig, setRaspberryConfig] = useState(null)
-    const defaultConfig = {
-        id: null,
-        device_id: null,
-        device_code: null,
-        labels: null,
-        updatedAt: new Date(),
-    }
 
     const fetchRaspberryList = async () => {
         try {

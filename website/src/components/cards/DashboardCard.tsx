@@ -19,7 +19,6 @@ const DashboardCard: React.FC<{ item: DashboardCardItem, className: string }> = 
             </span>
                         <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
                             <CountUp end={item.number} duration={3} />
-                            {/*{item.number}*/}
                         </h4>
                     </div>
                     {/*<Badge color={item.upOrDown ? "success" : "error"}>*/}
