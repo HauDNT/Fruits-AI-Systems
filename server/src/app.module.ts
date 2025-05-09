@@ -20,6 +20,7 @@ import {FruitClassificationModule} from './modules/fruit-classification/fruit-cl
 import {AuthModule} from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { RaspberryModule } from './modules/raspberry/raspberry.module';
+import { StatisticalModule } from './modules/statistical/statistical.module';
 
 @Module({
     imports: [
@@ -44,6 +45,7 @@ import { RaspberryModule } from './modules/raspberry/raspberry.module';
         AuthModule,
         UserModule,
         RaspberryModule,
+        StatisticalModule,
     ],
     controllers: [AppController],
     providers: [
