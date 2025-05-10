@@ -1,4 +1,6 @@
 "use client"
+import {useEffect, useState} from "react";
+import {useToast} from "@/hooks/use-toast";
 import {
     UserCircle,
     Apple,
@@ -11,9 +13,9 @@ import {
 } from "lucide-react";
 import DashboardCard from "@/components/cards/DashboardCard"
 import ClassifyResultsChart from "@/components/charts/ClassifyResultsChart";
-import {useEffect, useState} from "react";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
-import {useToast} from "@/hooks/use-toast";
+import { useSocketFruitClassify } from "@/hooks/useSocketFruitClassify";
+import {ClassifyResultInterface} from "@/interfaces";
 
 export default function AdminDashboard() {
     const {toast} = useToast()
@@ -31,10 +33,54 @@ export default function AdminDashboard() {
     const [classifyChartData, setClassifyChartData] = useState([])
     const [classifyChartTab, setClassifyChartTab] = useState({
         fruit: fruits[0],
-        timeFrame: 'Tuần',
+        timeFrame: "Tuần",
     })
+    const dashboardCartItems = [
+        {
+            name: "Tài khoản",
+            number: cardData.amountAccounts,
+            icon: UserCircle
+        },
+        {
+            name: "Loại trái cây",
+            number: cardData.amountFruits,
+            icon: Apple,
+        },
+        {
+            name: "Số lượng đã phân loại",
+            number: cardData.amountResults,
+            icon: ScanEye,
+            className: "border-[3px] border-blue-500 p-5 dark:border-yellow-300",
+            disableAnimation: true,
+        },
+        {
+            name: "Thiết bị",
+            number: cardData.amountDevices,
+            icon: Cpu,
+        },
+        {
+            name: "Nhân viên",
+            number: cardData.amountEmployees,
+            icon: Users,
+        },
+        {
+            name: "Tình trạng trái cây",
+            number: cardData.amountFruitTypes,
+            icon: HeartPulse,
+        },
+        {
+            name: "Khu vực",
+            number: cardData.amountAreas ?? 0,
+            icon: Computer,
+        },
+        {
+            name: "Loại thiết bị",
+            number: cardData.amountDeviceTypes ?? 0,
+            icon: Zap,
+        },
+    ]
 
-    const onUpdateClassiifyChartTabSelect = async (option: number, type: string) => {
+    const onUpdateClassifyChartTabSelect = async (option: number, type: string) => {
         if (type === 'fruit') {
             setClassifyChartTab((prev) => ({...prev, fruit: option}))
         }
@@ -145,70 +191,44 @@ export default function AdminDashboard() {
         fetchSeriesForClassifyDataChart(classifyChartTab.fruit, classifyChartTab.timeFrame)
     }, [classifyChartTab])
 
+    useSocketFruitClassify((newResult: ClassifyResultInterface) => {
+        if (newResult.fruit === classifyChartTab.fruit) {
+            setCardData(prev => ({
+                ...prev,
+                amountResults: prev.amountResults + 1,
+            }))
+
+            fetchSeriesForClassifyDataChart(classifyChartTab.fruit, classifyChartTab.timeFrame)
+        }
+    });
+
     return (
         <div className='grid grid-cols-12 gap-4 md:gap-6'>
             <div className="col-span-12 space-y-6">
                 <div className="grid grid-cols-4 gap-4 md:gap-4">
-                    <DashboardCard
-                        item={{
-                            name: "Tài khoản",
-                            number: cardData.amountAccounts ?? 0,
-                            icon: UserCircle,
-                        }}
-                    />
-                    <DashboardCard
-                        item={{
-                            name: "Loại trái cây",
-                            number: cardData.amountFruits ?? 0,
-                            icon: Apple,
-                        }}
-                    />
-                    <DashboardCard
-                        className="border-[3px] border-blue-500 p-5 dark:border-yellow-300"
-                        item={{
-                            name: "Số lượng đã phân loại",
-                            number: cardData.amountResults ?? 0,
-                            icon: ScanEye,
-                        }}
-                    />
-                    <DashboardCard
-                        item={{
-                            name: "Thiết bị",
-                            number: cardData.amountDevices ?? 0,
-                            icon: Cpu,
-                        }}
-                    />
+                    {
+                        dashboardCartItems.slice(0, 4).map((item, index) => (
+                            <DashboardCard
+                                key={index}
+                                item={item}
+                                className={item.className}
+                                disableAnimation={item.disableAnimation}
+                            />
+                        ))
+                    }
                 </div>
 
                 <div className="grid grid-cols-4 gap-4 md:gap-4">
-                    <DashboardCard
-                        item={{
-                            name: "Nhân viên",
-                            number: cardData.amountEmployees ?? 0,
-                            icon: Users,
-                        }}
-                    />
-                    <DashboardCard
-                        item={{
-                            name: "Tình trạng trái cây",
-                            number: cardData.amountFruitTypes ?? 0,
-                            icon: HeartPulse,
-                        }}
-                    />
-                    <DashboardCard
-                        item={{
-                            name: "Khu vực",
-                            number: cardData.amountAreas ?? 0,
-                            icon: Computer,
-                        }}
-                    />
-                    <DashboardCard
-                        item={{
-                            name: "Loại thiết bị",
-                            number: cardData.amountDeviceTypes ?? 0,
-                            icon: Zap,
-                        }}
-                    />
+                    {
+                        dashboardCartItems.slice(4, 8).map((item, index) => (
+                            <DashboardCard
+                                key={index}
+                                item={item}
+                                className={item.className}
+                                disableAnimation={item.disableAnimation}
+                            />
+                        ))
+                    }
                 </div>
             </div>
 
@@ -220,8 +240,8 @@ export default function AdminDashboard() {
                     chartTabs2={['Tuần', 'Tháng']}
                     defaultTab1={0}
                     defaultTab2={0}
-                    onChartTab1Selected={(optionSelected) => onUpdateClassiifyChartTabSelect(optionSelected, 'fruit')}
-                    onChartTab2Selected={(optionSelected) => onUpdateClassiifyChartTabSelect(optionSelected, 'timeFrame')}
+                    onChartTab1Selected={(optionSelected) => onUpdateClassifyChartTabSelect(optionSelected, 'fruit')}
+                    onChartTab2Selected={(optionSelected) => onUpdateClassifyChartTabSelect(optionSelected, 'timeFrame')}
                 />
             </div>
         </div>

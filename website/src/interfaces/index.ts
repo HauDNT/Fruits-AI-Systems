@@ -69,7 +69,6 @@ export interface ClassifyResultInterface {
     confidence_level: number;
     image_url: string;
     area: string;
-    batch: string;
     fruit: string;
     fruitType: string;
     created_at: string;

@@ -51,7 +51,7 @@ def model_run_inference(interpreter, image, labels):
         
         print(f"\t + Dự đoán: {predicted_label} | Chỉ số: {predicted_class_idx} | Độ tin cậy: {predicted_confidence}", flush=True)
         
-        return predicted_class_idx, predicted_label, predicted_confidence
+        return predicted_label, predicted_confidence
     except Exception as error:
         print(f"Lỗi khi chạy nhận diện với mô hình CNN: {error}", flush=True)
         return None

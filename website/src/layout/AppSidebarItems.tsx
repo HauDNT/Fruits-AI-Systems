@@ -6,11 +6,11 @@ import {
     ScanEye,
     Computer,
     BrainCircuit,
-    LayoutDashboard
+    Gauge
 } from "lucide-react";
 
 export const AdminSidebarItems = [
-    {icon: <LayoutDashboard size={25}/>, name: "Bảng điều khiển", path: "/admin/dashboard"},
+    {icon: <Gauge size={25}/>, name: "Bảng điều khiển", path: "/admin/dashboard"},
     {
         name: "Tài khoản",
         icon: <UserCircle size={25}/>,

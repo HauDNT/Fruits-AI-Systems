@@ -208,7 +208,7 @@ export class StatisticalService {
                 .groupBy("ft.type_name")
                 .addGroupBy("MONTH(fc.created_at)")
                 .orderBy("ft.type_name")
-                .addOrderBy("month")
+                .addOrderBy("month", 'DESC')
                 .getRawMany();
 
             const resultMap: Record<string, number[]> = {};
@@ -251,7 +251,6 @@ export class StatisticalService {
 
     async getClassifyStatisticChartByDaysOfWeek(fruitName: string) {
         try {
-            const dateSet = new Set<string>();
             const rawData = await this.fruitClassifyRepository
                 .createQueryBuilder('fc')
                 .select("ft.type_name", "name")
@@ -264,17 +263,19 @@ export class StatisticalService {
                 .andWhere("f.fruit_name = :fruitName", { fruitName })
                 .groupBy("ft.type_name")
                 .addGroupBy("DATE(fc.created_at)")
-                .orderBy("ft.type_name")
-                .addOrderBy("date")
+                .orderBy("DATE(fc.created_at)", "ASC")
+                .addOrderBy("ft.type_name", "ASC")
                 .getRawMany();
 
+            const dateMap = new Map<string, boolean>();
             const resultMap: Record<string, Record<string, number>> = {};
             rawData.forEach(item => {
                 const name = item.name;
                 const date = item.date;
                 const count = parseInt(item.count);
 
-                dateSet.add(date);
+                // dateSet.add(date);
+                dateMap.set(date, true);
 
                 if (!resultMap[name]) {
                     resultMap[name] = {};
@@ -283,7 +284,7 @@ export class StatisticalService {
                 resultMap[name][date] = count;
             });
 
-            const allDates = Array.from(dateSet).sort();
+            const allDates = Array.from(dateMap.keys());
             const formatDates = allDates.map(dateStr => dayjs(dateStr).format("DD/MM/YYYY HH:mm:ss"))
             const series = Object.entries(resultMap).map(([name, dateMap]) => {
                 const data = allDates.map(date => dateMap[date] || 0);

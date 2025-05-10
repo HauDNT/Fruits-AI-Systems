@@ -2,7 +2,11 @@ import React from "react"
 import CountUp from 'react-countup'
 import {DashboardCardItem} from "@/types";
 
-const DashboardCard: React.FC<{ item: DashboardCardItem, className: string }> = ({item, className = ''}) => {
+const DashboardCard: React.FC<{
+    item: DashboardCardItem,
+    className: string,
+    disableAnimation: boolean,
+}> = ({item, className = '', disableAnimation= false}) => {
     const Icon = item.icon;
 
     return (
@@ -18,17 +22,15 @@ const DashboardCard: React.FC<{ item: DashboardCardItem, className: string }> = 
               {item.name}
             </span>
                         <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                            <CountUp end={item.number} duration={3} />
+                            {
+                                disableAnimation ? (
+                                    <>{item.number}</>
+                                ) : (
+                                    <CountUp end={item.number} duration={3} />
+                                )
+                            }
                         </h4>
                     </div>
-                    {/*<Badge color={item.upOrDown ? "success" : "error"}>*/}
-                    {/*    {*/}
-                    {/*        item.upOrDown ? <ArrowUpIcon/> : <ArrowDownIcon/>*/}
-                    {/*    }*/}
-                    {/*    {*/}
-                    {/*        item.diffRatio*/}
-                    {/*    }*/}
-                    {/*</Badge>*/}
                 </div>
             </div>
         </>

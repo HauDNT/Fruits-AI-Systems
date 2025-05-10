@@ -7,12 +7,13 @@ import VL53L0X
 import FruitRecognitionCNNModel
 import Webcams
 import MachineLearningMethod
-from API import ApiRaspberryCall
 import RaspberryConfig
+from API import ApiRaspberryCall
+from ResultAnalyzer import ResultAnalyzer
 
-MAX_DISTANCE = 85
-MIN_DISTANCE = 50
-LIMIT_DISTANCE_RECORD = 3.5
+MAX_DISTANCE = 89
+MIN_DISTANCE = 80
+LIMIT_DISTANCE_RECORD = 3
 MAX_SENSOR_RETRIES = 3
 
 # ---------------------------- Cấu hình và Máy học ---------------------------------
@@ -32,8 +33,10 @@ interpreter = FruitRecognitionCNNModel.load_cnn_model()
 # Logger
 logger = logging.getLogger(__name__)
 
+# Bộ phân tích kết quả
+analyzer = ResultAnalyzer(standard_threshold=0.7)
+
 # VL53L0X
-lastDistanceRecorded = time.time()
 vl53Sensor = VL53L0X.initialize_vl53l0x()
 
 # Webcams
@@ -72,7 +75,6 @@ async def main_loop():
                 await asyncio.sleep(0.1)
                 continue
             
-            # Retry logic for VL53L0X sensor reading
             distance = None
             for attempt in range(MAX_SENSOR_RETRIES):
                 try:
@@ -91,13 +93,14 @@ async def main_loop():
                 continue
             
             if MIN_DISTANCE < distance < MAX_DISTANCE:
+                print(f"----> Distance: {distance}", flush=True)
                 logger.info("Bắt đầu nhận diện")
                 print("-----Bắt đầu nhận diện-----", flush=True)
                 
                 try:
                     print("1. Chụp ảnh vật thể và chạy suy luận: ", flush=True)
-                    imageWebcam1, firstResultIdx, firstResult_label, firstResult_confidence = MachineLearningMethod.process_recognition(webcam_1, WEBCAMS_NAME[0], interpreter, labels)
-                    imageWebcam2, secondResultIdx, secondResult_label, secondResult_confidence = MachineLearningMethod.process_recognition(webcam_2, WEBCAMS_NAME[1], interpreter, labels)
+                    imageWebcam1, firstResult_label, firstResult_confidence = MachineLearningMethod.process_recognition(webcam_1, WEBCAMS_NAME[0], interpreter, labels)
+                    imageWebcam2, secondResult_label, secondResult_confidence = MachineLearningMethod.process_recognition(webcam_2, WEBCAMS_NAME[1], interpreter, labels)
                     logger.info("Chụp ảnh hoàn tất")
                     print("==> Chụp vật thể hoàn tất!", flush=True)
                     
@@ -107,41 +110,40 @@ async def main_loop():
                     logger.info("Hoàn tất lưu ảnh")
                     print("==> Hoàn tất lưu ảnh", flush=True)
                     
-                    print("3. Gửi API đến Server: ", flush=True)
-                    fieldsData1 = {
-                        "confidence_level": f"{firstResult_confidence:.10f}" if firstResult_confidence is not None else "0.0",
-                        "result": f"{firstResult_label}",
-                        "areaId": f"{raspberry_config['areaId']}"
-                    }
-
-                    fieldsData2 = {
-                        "confidence_level": f"{secondResult_confidence:.10f}" if secondResult_confidence is not None else "0.0",
-                        "result": f"{secondResult_label}",
+                    print("3. Lọc kết quả: ", flush=True)
+                    final_result = analyzer.analyze_results([
+                        {
+                            "label": firstResult_label,
+                            "confidence": firstResult_confidence,
+                            "webcam_name": WEBCAMS_NAME[0],
+                            "image_path": webcam1_image_path
+                        },
+                        {
+                            "label": secondResult_label,
+                            "confidence": secondResult_confidence,
+                            "webcam_name": WEBCAMS_NAME[1],
+                            "image_path": webcam2_image_path
+                        }
+                    ])
+                    
+                    print("4. Gửi kết quả đến Server: ", flush=True)
+                    fieldsData = {
+                        "confidence_level": f"{final_result['confidence']:.10f}",
+                        "result": final_result['label'],
                         "areaId": f"{raspberry_config['areaId']}"
                     }
                     
                     try:
-                        # Gửi hai request bất đồng bộ song song
-                        callApiTurn1, callApiTurn2 = await asyncio.gather(
-                            apiCaller.POST(
+                        response = await apiCaller.POST(
                                 endpoint="/fruit-classification/create-classify",
-                                fields=fieldsData1,
-                                image_path=webcam1_image_path,
+                                fields=fieldsData,
+                                image_path=final_result['image_path'],
                                 image_field_name="classify_image"
-                            ),
-                            apiCaller.POST(
-                                endpoint="/fruit-classification/create-classify",
-                                fields=fieldsData2,
-                                image_path=webcam2_image_path,
-                                image_field_name="classify_image"
-                            )
                         )
                         
-                        message1 = callApiTurn1.get("message", "Không có message từ server")
-                        message2 = callApiTurn2.get("message", "Không có message từ server")
+                        message = response.get("message", "Không có message từ server")
                         
-                        print(f"Kết quả từ server - Webcam 1: {message1}", flush=True)
-                        print(f"Kết quả từ server - Webcam 2: {message2}", flush=True)
+                        print(f"Kết quả từ server - Webcam 1: {message}", flush=True)
                         logger.info("Hoàn tất gửi API")
                     except Exception as error:
                         logger.error(f"Lỗi khi gửi kết quả phân loại: {error}")

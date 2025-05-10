@@ -196,10 +196,10 @@ export default function RaspberryConfig() {
                 <div
                     className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]`}>
                     <div className="grid grid-cols-12 gap-4 p-4">
-                        <div className="col-span-4">
+                        <div className="col-span-5">
                             <Image
                                 src="/images/raspberry.png"
-                                alt=" grid"
+                                alt="Raspberry Pi Image"
                                 className="w-full border border-gray-200 rounded-xl dark:border-gray-800 mb-3"
                                 width={517}
                                 height={295}
@@ -233,8 +233,13 @@ export default function RaspberryConfig() {
                                     }
                                 </SelectContent>
                             </Select>
+                            <div>
+                                <p className={'italic mt-3 text-red-500'}>
+                                    Lưu ý: Mọi thao tác sẽ tác động trực tiếp đến cấu hình Raspberry.
+                                </p>
+                            </div>
                         </div>
-                        <div className="col-span-8">
+                        <div className="col-span-7">
                             {
                                 raspberrySelected ? (
                                     <h1 className={'text-xl'}>Raspberry: {raspberrySelected.device_code}</h1>
