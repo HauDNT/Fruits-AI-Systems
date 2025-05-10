@@ -187,6 +187,10 @@ export class StatisticalService {
                 throw new BadRequestException('Tên trái cây không tồn tại')
             }
 
+            const today = new Date();
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(today.getDate() - 6);
+
             const rawData = await this.fruitClassifyRepository
                 .createQueryBuilder('fc')
                 .select("ft.type_name", "name")
@@ -197,6 +201,10 @@ export class StatisticalService {
                 .innerJoin("fc.fruit", "f")
                 .where("fc.deleted_at IS NULL")
                 .andWhere("f.fruit_name = :fruitName", { fruitName })
+                .andWhere("fc.created_at BETWEEN :start AND :end", {
+                    start: sevenDaysAgo,
+                    end: today
+                })
                 .groupBy("ft.type_name")
                 .addGroupBy("MONTH(fc.created_at)")
                 .orderBy("ft.type_name")
