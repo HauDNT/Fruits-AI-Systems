@@ -3,9 +3,10 @@ import {ChartTabInterface} from "@/interfaces";
 
 const ChartTab: React.FC = ({
     options = [],
+    defaultOptions = 0,
     onTabClicked,
 }: ChartTabInterface) => {
-    const [selected, setSelected] = useState(options[0]);
+    const [selected, setSelected] = useState(options[defaultOptions]);
 
     const getButtonClass = (option: options) =>
         selected === option
@@ -21,7 +22,7 @@ const ChartTab: React.FC = ({
         <div className="flex items-center gap-0.5 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-900">
             {
                 options.length > 0 ? (
-                    options.map(option => (
+                    options.map((option) => (
                         <button
                             onClick={() => handleSelectOption(option)}
                             className={`px-3 py-2 font-medium w-full rounded-md text-theme-sm hover:text-gray-900 dark:hover:text-white ${getButtonClass(

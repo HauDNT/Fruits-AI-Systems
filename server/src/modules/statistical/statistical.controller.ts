@@ -1,4 +1,4 @@
-import {Controller, Get} from '@nestjs/common';
+import {BadRequestException, Controller, Get, Query} from '@nestjs/common';
 import {StatisticalService} from './statistical.service';
 
 @Controller('statistical')
@@ -44,5 +44,22 @@ export class StatisticalController {
     @Get('/amount-device-types')
     async getAmountDeviceTypes() {
         return await this.statisticalService.getAmountDeviceTypes()
+    }
+
+    @Get('/classify-chart')
+    async getClassifyStatisticChartByMonth(
+        @Query('fruit') fruit: string,
+        @Query('time_frame') time_frame: string,
+    ) {
+        const timeFrame = time_frame ?? 'Tháng'
+
+        switch (timeFrame){
+            case 'Tháng':
+                return await this.statisticalService.getClassifyStatisticChartByMonth(fruit)
+            case 'Tuần':
+                return await this.statisticalService.getClassifyStatisticChartByDaysOfWeek(fruit)
+            default:
+                throw new BadRequestException('Khung thời gian thống kê không hợp lệ')
+        }
     }
 }

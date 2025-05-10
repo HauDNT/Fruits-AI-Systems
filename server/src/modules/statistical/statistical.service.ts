@@ -1,5 +1,6 @@
 import {BadRequestException, HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
+import * as dayjs from "dayjs";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {Repository} from "typeorm";
 import {Device} from "@/modules/devices/entities/device.entity";
@@ -175,6 +176,124 @@ export class StatisticalService {
             }
 
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy số lượng loại thiết bị');
+        }
+    }
+
+    async getClassifyStatisticChartByMonth(fruitName: string) {
+        try {
+            const fruit = await this.fruitRepository.findOneBy({ fruit_name: fruitName })
+
+            if (!fruit) {
+                throw new BadRequestException('Tên trái cây không tồn tại')
+            }
+
+            const rawData = await this.fruitClassifyRepository
+                .createQueryBuilder('fc')
+                .select("ft.type_name", "name")
+                .addSelect("f.fruit_name", "fruit")
+                .addSelect("MONTH(fc.created_at)", "month")
+                .addSelect("COUNT(*)", "count")
+                .innerJoin("fc.fruitType", "ft")
+                .innerJoin("fc.fruit", "f")
+                .where("fc.deleted_at IS NULL")
+                .andWhere("f.fruit_name = :fruitName", { fruitName })
+                .groupBy("ft.type_name")
+                .addGroupBy("MONTH(fc.created_at)")
+                .orderBy("ft.type_name")
+                .addOrderBy("month")
+                .getRawMany();
+
+            const resultMap: Record<string, number[]> = {};
+            const monthSet = new Set<number>();
+
+            rawData.forEach(item => {
+                const name = item.name;
+                const monthIndex = parseInt(item.month) - 1;
+                const count = parseInt(item.count);
+
+                if (!resultMap[name]) {
+                    resultMap[name] = new Array(12).fill(0);
+                }
+
+                resultMap[name][monthIndex] = count;
+                monthSet.add(monthIndex);
+            });
+
+            const series = Object.entries(resultMap).map(([name, data]) => ({
+                name,
+                data
+            }));
+
+            const categories = Array.from({ length: 12 }, (_, i) => `Tháng ${i + 1}`);
+
+            return {
+                series,
+                categories
+            };
+        } catch (e) {
+            console.log('Error when get data for classify statistic chart by month: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy dữ liệu cho biểu đồ thống kê kết quả phân loại theo tháng');
+        }
+    }
+
+    async getClassifyStatisticChartByDaysOfWeek(fruitName: string) {
+        try {
+            const dateSet = new Set<string>();
+            const rawData = await this.fruitClassifyRepository
+                .createQueryBuilder('fc')
+                .select("ft.type_name", "name")
+                .addSelect("f.fruit_name", "fruit")
+                .addSelect("DATE(fc.created_at)", "date")
+                .addSelect("COUNT(*)", "count")
+                .innerJoin("fc.fruitType", "ft")
+                .innerJoin("fc.fruit", "f")
+                .where("fc.deleted_at IS NULL")
+                .andWhere("f.fruit_name = :fruitName", { fruitName })
+                .groupBy("ft.type_name")
+                .addGroupBy("DATE(fc.created_at)")
+                .orderBy("ft.type_name")
+                .addOrderBy("date")
+                .getRawMany();
+
+            const resultMap: Record<string, Record<string, number>> = {};
+            rawData.forEach(item => {
+                const name = item.name;
+                const date = item.date;
+                const count = parseInt(item.count);
+
+                dateSet.add(date);
+
+                if (!resultMap[name]) {
+                    resultMap[name] = {};
+                }
+
+                resultMap[name][date] = count;
+            });
+
+            const allDates = Array.from(dateSet).sort();
+            const formatDates = allDates.map(dateStr => dayjs(dateStr).format("DD/MM/YYYY HH:mm:ss"))
+            const series = Object.entries(resultMap).map(([name, dateMap]) => {
+                const data = allDates.map(date => dateMap[date] || 0);
+                return { name, data };
+            });
+
+            return {
+                series,
+                categories: formatDates,
+            };
+        } catch (e) {
+            console.log('Error when get data for classify statistic chart by days of week: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy dữ liệu cho biểu đồ thống kê kết quả phân loại theo ngày trong tuần');
         }
     }
 }

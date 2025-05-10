@@ -1,23 +1,34 @@
-import {TbApple} from "react-icons/tb"
-import {RiHistoryLine, RiUser3Line, RiDashboard3Line} from "react-icons/ri"
-import {LuCircuitBoard, LuBrainCircuit} from "react-icons/lu"
-import {MdConveyorBelt} from "react-icons/md"
+import {
+    UserCircle,
+    Apple,
+    Cpu,
+    Users,
+    ScanEye,
+    Computer,
+    BrainCircuit,
+    LayoutDashboard
+} from "lucide-react";
 
 export const AdminSidebarItems = [
-    {icon: <RiDashboard3Line size={25}/>, name: "Bảng điều khiển", path: "/admin/dashboard"},
+    {icon: <LayoutDashboard size={25}/>, name: "Bảng điều khiển", path: "/admin/dashboard"},
+    {
+        name: "Tài khoản",
+        icon: <UserCircle size={25}/>,
+        path: "/admin/users"
+    },
     {
         name: "Nhân viên",
-        icon: <RiUser3Line size={25}/>,
+        icon: <Users size={25}/>,
         path: "/admin/users"
     },
     {
         name: "Khu",
-        icon: <MdConveyorBelt size={25}/>,
+        icon: <Computer size={25}/>,
         path: "/admin/areas"
     },
     {
         name: "Trái cây",
-        icon: <TbApple size={25}/>,
+        icon: <Apple size={25}/>,
         subItems: [
             {name: "Trái cây", path: "/admin/fruits"},
             {name: "Tình trạng", path: "/admin/fruitTypes"},
@@ -25,7 +36,7 @@ export const AdminSidebarItems = [
     },
     {
         name: "Quản lý thiết bị",
-        icon: <LuCircuitBoard size={25}/>,
+        icon: <Cpu size={25}/>,
         subItems: [
             {name: "Thiết bị", path: "/admin/devices"},
             {name: "Loại thiết bị", path: "/admin/deviceTypes"},
@@ -34,7 +45,7 @@ export const AdminSidebarItems = [
     },
     {
         name: "Cấu hình học máy",
-        icon: <LuBrainCircuit size={25}/>,
+        icon: <BrainCircuit size={25}/>,
         subItems: [
             {name: "Máy chủ Raspberry", path: "/admin/raspberryConfig"},
             {name: "Mô hình máy học", path: "#"},
@@ -42,7 +53,7 @@ export const AdminSidebarItems = [
     },
     {
         name: "Lịch sử phân loại",
-        icon: <RiHistoryLine size={25}/>,
+        icon: <ScanEye size={25}/>,
         path: "/admin/classification"
     },
 ];

@@ -10,7 +10,7 @@ import {
     Zap,
 } from "lucide-react";
 import DashboardCard from "@/components/cards/DashboardCard"
-import ClassifiResultsChart from "@/components/charts/ClassifiResultsChart";
+import ClassifyResultsChart from "@/components/charts/ClassifyResultsChart";
 import {useEffect, useState} from "react";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import {useToast} from "@/hooks/use-toast";
@@ -27,6 +27,27 @@ export default function AdminDashboard() {
         amountAreas: 0,
         amountDeviceTypes: 0,
     })
+    const [fruits, setFruits] = useState([])
+    const [classifyChartData, setClassifyChartData] = useState([])
+    const [classifyChartTab, setClassifyChartTab] = useState({
+        fruit: fruits[0],
+        timeFrame: 'Tuần',
+    })
+
+    const onUpdateClassiifyChartTabSelect = async (option: number, type: string) => {
+        if (type === 'fruit') {
+            setClassifyChartTab((prev) => ({...prev, fruit: option}))
+        }
+        else if (type === 'timeFrame') {
+            setClassifyChartTab((prev) => ({...prev, timeFrame: option}))
+        } else {
+            toast({
+                title: "Xảy ra lỗi khi chọn tab thống kê biểu đồ. Hãy tải lại trang!",
+                description: errorMessage,
+                variant: "destructive",
+            })
+        }
+    }
 
     const fetchCardDashboardData = async () => {
         try {
@@ -62,7 +83,7 @@ export default function AdminDashboard() {
                     amountDeviceTypes: resAmountDeviceTypes.data,
                 })
             }
-        } catch (e) {
+        } catch (error) {
             const errorMessage = handleAxiosError(error);
             console.log('Lỗi khi tải dữ liệu card dashboard: ', error)
 
@@ -74,9 +95,55 @@ export default function AdminDashboard() {
         }
     }
 
+    const fetchFruitsList = async () => {
+        try {
+            const resData = await axiosInstance.get('/fruits/all')
+            if (resData.data) {
+                const tabFruitsList = resData.data.map(fruit => fruit.fruit_name);
+                setFruits(tabFruitsList);
+                setClassifyChartTab((prev) => ({...prev, fruit: tabFruitsList[0]}))
+            }
+        } catch (error) {
+            const errorMessage = handleAxiosError(error);
+            console.log('Lỗi khi tải danh sách trái cây: ', error)
+
+            toast({
+                title: "Tải danh sách trái cây thất bại",
+                description: errorMessage,
+                variant: "destructive",
+            })
+        }
+    }
+
+    const fetchSeriesForClassifyDataChart = async (fruit: string, timeFrame: string) => {
+        try {
+            const resData = await axiosInstance.get(`/statistical/classify-chart?fruit=${fruit}&time_frame=${timeFrame}`)
+            if (resData.data) {
+                setClassifyChartData({
+                    series: resData.data.series,
+                    categories: resData.data.categories,
+                })
+            }
+        } catch (error) {
+            const errorMessage = handleAxiosError(error);
+            console.log('Lỗi khi tải dữ liệu cho biểu đồ thống kê kết quả phân loại: ', error)
+
+            toast({
+                title: "Tải dữ liệu biểu đồ thống kê kết quả phân loại thất bại",
+                description: errorMessage,
+                variant: "destructive",
+            })
+        }
+    }
+
     useEffect(() => {
         fetchCardDashboardData()
+        fetchFruitsList()
     }, [])
+
+    useEffect(() => {
+        fetchSeriesForClassifyDataChart(classifyChartTab.fruit, classifyChartTab.timeFrame)
+    }, [classifyChartTab])
 
     return (
         <div className='grid grid-cols-12 gap-4 md:gap-6'>
@@ -145,28 +212,16 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/*<div className="col-span-12 xl:col-span-5">*/}
-            {/*    <MonthlyTargetChart/>*/}
-            {/*</div>*/}
-
-            {/*<div className="col-span-12">*/}
-            {/*    <MonthlyAccountCreatedChart/>*/}
-            {/*</div>*/}
-
             <div className="col-span-12">
-                <ClassifiResultsChart
-                    series={
-                        [
-                            {
-                                name: "Táo chín",
-                                data: [168, 450, 201, 298, 187, 550, 291, 110, 215, 390, 280, 120],
-                            },
-                            {
-                                name: "Táo thối",
-                                data: [68, 90, 101, 198, 57, 50, 35, 20, 25, 39, 20, 20],
-                            },
-                        ]
-                    }
+                <ClassifyResultsChart
+                    series={classifyChartData.series ?? []}
+                    categories={classifyChartData.categories}
+                    chartTabs1={fruits}
+                    chartTabs2={['Tuần', 'Tháng']}
+                    defaultTab1={0}
+                    defaultTab2={0}
+                    onChartTab1Selected={(optionSelected) => onUpdateClassiifyChartTabSelect(optionSelected, 'fruit')}
+                    onChartTab2Selected={(optionSelected) => onUpdateClassiifyChartTabSelect(optionSelected, 'timeFrame')}
                 />
             </div>
         </div>

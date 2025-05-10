@@ -17,11 +17,25 @@ interface ClassifiResultsChartSeriesInterface {
 interface ClassifiResultsChartInterface {
     chartName?: string,
     series: ClassifiResultsChartSeriesInterface[],
+    categories: any[],
+    defaultTab1: number,
+    defaultTab2: number,
+    chartTabs1: string[],
+    chartTabs2: string[],
+    onChartTab1Selected?: void,
+    onChartTab2Selected?: void,
 }
 
-export default function ClassifiResultsChart({
+export default function ClassifyResultsChart({
     chartName = 'Kết quả phân loại trái cây',
     series,
+    categories = [],
+    defaultTab1,
+    defaultTab2,
+    chartTabs1,
+    chartTabs2,
+    onChartTab1Selected,
+    onChartTab2Selected,
 }: ClassifiResultsChartInterface) {
     const options: ApexOptions = {
         legend: {
@@ -81,20 +95,7 @@ export default function ClassifiResultsChart({
         },
         xaxis: {
             type: "category", // Category-based x-axis
-            categories: [
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "May",
-                "Jun",
-                "Jul",
-                "Aug",
-                "Sep",
-                "Oct",
-                "Nov",
-                "Dec",
-            ],
+            categories: categories,
             axisBorder: {
                 show: false, // Hide x-axis border
             },
@@ -122,53 +123,43 @@ export default function ClassifiResultsChart({
     };
 
     return (
-        series.length > 0 ? (
-            <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-                <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
-                    <div className="w-full">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                            { chartName }
-                        </h3>
-                    </div>
-                    <div className="flex items-start w-full gap-3 sm:justify-end">
-                        <ChartTab
-                            options = {['Táo', 'Nho', 'Lê']}
-                            onTabClicked={(optionSelected) => console.log(optionSelected)}
-                        />
-                        <ChartTab
-                            options = {['Ngày', 'Tuần', 'Tháng']}
-                            onTabClicked={(optionSelected) => console.log(optionSelected)}
-                        />
-                    </div>
+        <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
+            <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
+                <div className="w-full">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                        { chartName }
+                    </h3>
                 </div>
-
-                <div className="max-w-full overflow-x-auto custom-scrollbar">
-                    <div className="min-w-[1000px] xl:min-w-full">
-                        <ReactApexChart
-                            options={options}
-                            series={series}
-                            type="area"
-                            height={310}
-                        />
-                    </div>
+                <div className="flex items-start w-full gap-3 sm:justify-end">
+                    <ChartTab
+                        defaultOptions={defaultTab1}
+                        options = {chartTabs1}
+                        onTabClicked={(optionSelected) => onChartTab1Selected(optionSelected)}
+                    />
+                    <ChartTab
+                        defaultOptions={defaultTab2}
+                        options = {chartTabs2}
+                        onTabClicked={(optionSelected) => onChartTab2Selected(optionSelected)}
+                    />
                 </div>
             </div>
-        ) : (
-            <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-                <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
-                    <div className="w-full">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                            { chartName }
-                        </h3>
-                    </div>
-                </div>
 
-                <div className="max-w-full overflow-x-auto custom-scrollbar">
-                    <div className="min-w-[1000px] xl:min-w-full">
-                        Không có dữ liệu
-                    </div>
+            <div className="max-w-full overflow-x-auto custom-scrollbar">
+                <div className="min-w-[1000px] xl:min-w-full">
+                    {
+                        series.length > 0 ? (
+                            <ReactApexChart
+                                options={options}
+                                series={series}
+                                type="area"
+                                height={310}
+                            />
+                        ) : (
+                            <span>Không có dữ liệu</span>
+                        )
+                    }
                 </div>
             </div>
-        )
+        </div>
     );
 }
