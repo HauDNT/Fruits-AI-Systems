@@ -3,10 +3,15 @@ import {ChartTabInterface} from "@/interfaces";
 
 const ChartTab: React.FC = ({
     options = [],
-    defaultOptions = 0,
+    defaultOptions,
     onTabClicked,
 }: ChartTabInterface) => {
     const [selected, setSelected] = useState(options[defaultOptions]);
+
+console.log('Selected: ', selected);
+console.log('Options: ', options);
+console.log('Parse: ', selected === options[0]);
+console.log('---------------------------------------------') 
 
     const getButtonClass = (option: options) =>
         selected === option
