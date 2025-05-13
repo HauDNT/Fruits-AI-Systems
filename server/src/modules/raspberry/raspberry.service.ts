@@ -208,7 +208,6 @@ export class RaspberryService {
 
             // Bắt đầu khởi tạo configData
             let configData: any = {
-                id: data.id,
                 device_id: raspberry.id,
                 labels: labels,
                 raspAccessToken: this.jwtService.sign({ device_id, device_code }),
@@ -228,7 +227,7 @@ export class RaspberryService {
             return await this.raspberryRepository.upsert(
                 configData,
                 {
-                    conflictPaths: ['id', 'device_id'],
+                    conflictPaths: ['device_id'],
                     skipUpdateIfNoValuesChanged: true,
                 }
             );

@@ -76,7 +76,6 @@ export default function RaspberryConfig() {
                 setRaspberryConfig(config)
             } else {
                 setRaspberryConfig({
-                    id: raspberrySelected.id,
                     device_id: raspberrySelected.id,
                     device_code: raspberrySelected.device_code,
                     labels: [],
@@ -85,7 +84,6 @@ export default function RaspberryConfig() {
             }
         } catch (error) {
             if (error.response?.status === 400) {
-                // Không có cấu hình => tạo mặc định
                 setRaspberryConfig({
                     id: raspberrySelected.id,
                     device_id: raspberrySelected.id,
