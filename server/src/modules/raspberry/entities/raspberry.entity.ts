@@ -16,6 +16,9 @@ export class Raspberry {
     @Column('text')
     labels: string;
 
+    @Column('text', { nullable: true })
+    model_path: string | null;
+
     @Column()
     raspAccessToken: string;
 

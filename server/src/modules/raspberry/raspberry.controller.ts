@@ -1,6 +1,22 @@
-import {Controller, Get, Post, Body, Param, Query, HttpException, HttpStatus} from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Param,
+    Query,
+    HttpException,
+    HttpStatus,
+    UseInterceptors,
+    BadRequestException, UploadedFile
+} from '@nestjs/common';
 import {RaspberryService} from './raspberry.service';
 import {RaspberryConfigDto} from "@/modules/raspberry/dto/raspberry-config.dto";
+import {FileInterceptor} from "@nestjs/platform-express";
+import {diskStorage} from 'multer';
+import {extname} from 'path';
+import * as fs from 'fs/promises';
+
 @Controller('raspberry')
 export class RaspberryController {
     constructor(private readonly raspberryService: RaspberryService) {
@@ -37,9 +53,30 @@ export class RaspberryController {
     }
 
     @Post('/update-config')
+    @UseInterceptors(FileInterceptor('raspberry_model', {
+        storage: diskStorage({
+            destination: './uploads/models',
+            filename: (req, file, cb) => {
+                const uniqueSuffix = Date.now();
+                const fileExt = extname(file.originalname);
+                cb(null, `model_${uniqueSuffix}${fileExt}`);
+            },
+        }),
+        fileFilter: (req, file, cb) => {
+            if (!file.originalname.endsWith('.tflite')) {
+                return cb(new BadRequestException('Chỉ được phép upload file .tflite'), false)
+            }
+            cb(null, true)
+        }
+    }))
     async updateRaspberryConfig(
+        @UploadedFile() file: Express.Multer.File,
         @Body() data: RaspberryConfigDto
     ) {
-        return await this.raspberryService.updateRaspberryConfig(data)
+        const modelPath = file ? `/uploads/models/${file.filename}` : null
+
+        console.log('Check: ', modelPath)
+
+        return await this.raspberryService.updateRaspberryConfig(data, modelPath)
     }
 }

@@ -10,6 +10,8 @@ void setup() {
 }
 
 void loop() {
+  robot_arm.updateAll();
+
   if (Serial.available()) {
     String inputCommand = Serial.readStringUntil('\n');
     inputCommand.trim();
@@ -23,7 +25,6 @@ void loop() {
     String joint = inputCommand.substring(0, spaceIndex);
     int angle = inputCommand.substring(spaceIndex + 1).toInt();
 
-    // Serial Monitor: servo1 (example)
     if (joint == "servo1") robot_arm.servo1.moveTo(angle);
     else if (joint == "servo2") robot_arm.servo2.moveTo(angle);
     else if (joint == "servo3") robot_arm.servo3.moveTo(angle);

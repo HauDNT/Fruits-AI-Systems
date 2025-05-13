@@ -9,6 +9,7 @@ import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import {Checkbox} from "@/components/ui/checkbox";
 import CustomButton from "@/components/buttons/CustomButton";
 import {HttpStatusCode} from "axios";
+import {Input} from "@/components/ui/input";
 
 export default function RaspberryConfig() {
     const {toast} = useToast()
@@ -147,18 +148,27 @@ export default function RaspberryConfig() {
                 return
             }
 
-            const data = {
-                ...raspberryConfig,
-                device_code: raspberrySelected.device_code,
+            const formData = new FormData()
+            formData.append('id', raspberryConfig.id)
+            formData.append('device_id', raspberryConfig.device_id)
+            formData.append('device_code', raspberryConfig.device_code)
+            formData.append('labels', JSON.stringify(raspberryConfig.labels))
+
+            if (raspberryConfig.raspberry_model) {
+                formData.append('raspberry_model', raspberryConfig.raspberry_model)
             }
+
             const resData = await axiosInstance.post(
                 `/raspberry/update-config`,
-                data
+                formData,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                }
             )
 
             if (resData.status === HttpStatusCode.Created) {
                 toast({
-                    title: "Cập nhật cấu hình Raspberry thành công",
+                    title: `Cập nhật cấu hình Raspberry ${raspberryConfig.raspberry_model ?? 'và mô hình học máy mới '} thành công`,
                     variant: "success",
                 })
             }
@@ -186,6 +196,7 @@ export default function RaspberryConfig() {
     useEffect(() => {
         if (raspberrySelected.id !== null) {
             getRaspberryConfig()
+            console.log("Loaded config labels:", raspberryConfig?.labels);
         }
     }, [raspberrySelected])
 
@@ -284,9 +295,28 @@ export default function RaspberryConfig() {
                                             );
                                         })}
 
+                                        <h1 className={'text-md font-bold !mt-6'}>
+                                            Chọn mô hình máy học sử dụng trên Raspberry
+                                        </h1>
+
+                                        <Input
+                                            type="file"
+                                            accept=".tflite"
+                                            multiple={false}
+                                            disabled={!raspberrySelected.device_code}
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+                                                setRaspberryConfig(prevConfig => ({
+                                                    ...prevConfig,
+                                                    raspberry_model: file,
+                                                }))
+                                            }}
+                                        />
+
                                         <CustomButton
                                             type="button"
-                                            className='!mt-12 w-full'
+                                            className='!mt-6 w-full'
                                             onClick={() => handleUpdateRaspberryConfig()}
                                         >
                                             Áp dụng cấu hình

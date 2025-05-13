@@ -21,7 +21,7 @@ export class AreasController {
     @UseInterceptors(FileInterceptor('area_image', {
         storage: diskStorage({
             destination: async (req, file, callback) => {
-                const uploadPath = './uploads/areas';
+                const uploadPath = './uploads/images/areas';
                 try {
                     await fs.mkdir(uploadPath, { recursive: true });
                     callback(null, uploadPath);

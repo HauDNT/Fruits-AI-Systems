@@ -30,7 +30,7 @@ export class DevicesController {
     @UseInterceptors(FileInterceptor('device_image', {
         storage: diskStorage({
             destination: async (req, file, callback) => {
-                const uploadPath = './uploads/devices';
+                const uploadPath = './uploads/images/devices';
                 try {
                     await fs.mkdir(uploadPath, {recursive: true});
                     callback(null, uploadPath);

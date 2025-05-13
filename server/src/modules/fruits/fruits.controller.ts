@@ -35,7 +35,7 @@ export class FruitsController {
     @UseInterceptors(FileInterceptor('fruit_image', {
         storage: diskStorage({
             destination: async (req, file, callback) => {
-                const uploadPath = './uploads/fruits';
+                const uploadPath = './uploads/images/fruits';
                 try {
                     await fs.mkdir(uploadPath, { recursive: true });
                     callback(null, uploadPath);

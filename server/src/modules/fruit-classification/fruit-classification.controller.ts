@@ -32,7 +32,7 @@ export class FruitClassificationController {
     @UseInterceptors(FileInterceptor('classify_image', {
         storage: diskStorage({
             destination: async (req, file, callback) => {
-                const uploadPath = './uploads/results';
+                const uploadPath = './uploads/images/results';
                 try {
                     await fs.mkdir(uploadPath, {recursive: true});
                     callback(null, uploadPath);

@@ -10,10 +10,11 @@ import {JWTStrategy} from "@/authentication/jwt/jwt-strategy";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {Area} from "@/modules/areas/entities/area.entity";
+import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Raspberry, Device, Area, Fruit, FruitType]),
+        TypeOrmModule.forFeature([Raspberry, Device, DeviceType, Area, Fruit, FruitType]),
         JwtModule.registerAsync({
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({
