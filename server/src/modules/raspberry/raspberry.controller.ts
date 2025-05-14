@@ -3,7 +3,6 @@ import {
     Get,
     Post,
     Body,
-    Param,
     Query,
     HttpException,
     HttpStatus,
@@ -15,11 +14,15 @@ import {RaspberryConfigDto} from "@/modules/raspberry/dto/raspberry-config.dto";
 import {FileInterceptor} from "@nestjs/platform-express";
 import {diskStorage} from 'multer';
 import {extname} from 'path';
-import * as fs from 'fs/promises';
+import {SocketGateway} from "@/gateway/socketGateway";
+import * as dayjs from "dayjs";
 
 @Controller('raspberry')
 export class RaspberryController {
-    constructor(private readonly raspberryService: RaspberryService) {
+    constructor(
+        private readonly raspberryService: RaspberryService,
+        private readonly socketGateway: SocketGateway,
+    ) {
     }
 
     @Get('/raspberry-fruit-types')
@@ -74,9 +77,17 @@ export class RaspberryController {
         @Body() data: RaspberryConfigDto
     ) {
         const modelPath = file ? `/uploads/models/${file.filename}` : null
+        const {upsertConfig, configData} = await this.raspberryService.updateRaspberryConfig(data, modelPath)
+        const formatConfigData = {
+            ...configData,
+            updatedAt: dayjs(Date.now()).format('DD/MM/YYYY HH:mm:ss'),
+        }
 
-        console.log('Check: ', modelPath)
+        this.socketGateway.emitNewConfigurationToRaspberry(data.device_code, formatConfigData)
 
-        return await this.raspberryService.updateRaspberryConfig(data, modelPath)
+        return {
+            success: true,
+            message: `Đã gửi config đến Raspberry ${data.device_code}`
+        }
     }
 }

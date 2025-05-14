@@ -19,13 +19,13 @@ import {extname} from "path";
 import {plainToInstance} from "class-transformer";
 import {TableMetaData} from "@/interfaces/table";
 import {FruitClassificationFlat} from "@/interfaces";
-import {FruitClassificationGateway} from "@/gateway/fruitClassification.gateway";
+import {SocketGateway} from "@/gateway/socketGateway";
 
 @Controller('fruit-classification')
 export class FruitClassificationController {
     constructor(
         private readonly fruitClassificationService: FruitClassificationService,
-        private readonly classifyGateway: FruitClassificationGateway,
+        private readonly socketGateway: SocketGateway,
     ) { }
 
     @Post('create-classify')
@@ -76,11 +76,11 @@ export class FruitClassificationController {
                 areaId: body.areaId,
             })
 
-            const imageUrl = `/uploads/results/${file.filename}`;
+            const imageUrl = `/uploads/images/results/${file.filename}`;
 
             const createdRecord = await this.fruitClassificationService.create(createResultDto, imageUrl)
 
-            this.classifyGateway.broadcastNewClassification({
+            this.socketGateway.emitNewFruitClassification({
                 id: createdRecord.id,
                 confidence_level: createdRecord.confidence_level,
                 fruit: createdRecord.fruit.fruit_name,

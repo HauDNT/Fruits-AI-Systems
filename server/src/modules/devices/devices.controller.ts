@@ -73,7 +73,7 @@ export class DevicesController {
                 status_id: body.status_id,
                 area_id: body.area_id,
             })
-            const imageUrl = `uploads/devices/${file.filename}`
+            const imageUrl = `uploads/images/devices/${file.filename}`
 
             return await this.devicesService.create(createDeviceDto, imageUrl)
         } catch (e) {

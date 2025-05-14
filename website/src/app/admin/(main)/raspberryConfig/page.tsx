@@ -149,7 +149,7 @@ export default function RaspberryConfig() {
             const formData = new FormData()
             formData.append('id', raspberryConfig.id)
             formData.append('device_id', raspberryConfig.device_id)
-            formData.append('device_code', raspberryConfig.device_code)
+            formData.append('device_code', raspberrySelected.device_code)
             formData.append('labels', JSON.stringify(raspberryConfig.labels))
 
             if (raspberryConfig.raspberry_model) {
@@ -166,7 +166,7 @@ export default function RaspberryConfig() {
 
             if (resData.status === HttpStatusCode.Created) {
                 toast({
-                    title: `Cập nhật cấu hình Raspberry ${raspberryConfig.raspberry_model ?? 'và mô hình học máy mới '} thành công`,
+                    title: `Cập nhật cấu hình Raspberry ${raspberrySelected.device_code ?? 'và mô hình học máy mới '} thành công`,
                     variant: "success",
                 })
             }

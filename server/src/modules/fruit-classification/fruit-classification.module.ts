@@ -6,13 +6,13 @@ import {FruitClassification} from "@/modules/fruit-classification/entities/fruit
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
-import {FruitClassificationGateway} from "@/gateway/fruitClassification.gateway";
+import {SocketGateway} from "@/gateway/socketGateway";
 
 @Module({
     imports: [TypeOrmModule.forFeature([FruitClassification, Fruit, Area, FruitType])],
     controllers: [FruitClassificationController],
-    providers: [FruitClassificationService, FruitClassificationGateway],
-    exports: [FruitClassificationGateway]
+    providers: [FruitClassificationService, SocketGateway],
+    exports: [SocketGateway]
 })
 export class FruitClassificationModule {
 }

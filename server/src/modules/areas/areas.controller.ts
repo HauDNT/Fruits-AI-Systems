@@ -60,7 +60,7 @@ export class AreasController {
             const createAreaDto = plainToInstance(CreateAreaDto, {
                 area_desc: body.area_desc,
             })
-            const imageUrl = `/uploads/areas/${file.filename}`;
+            const imageUrl = `/uploads/images/areas/${file.filename}`;
 
             return await this.areasService.create(createAreaDto, imageUrl);
         } catch (error) {

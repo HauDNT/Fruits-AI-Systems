@@ -89,7 +89,7 @@ export class FruitsController {
                 fruit_types: fruitTypes,
             });
 
-            const imageUrl = `/uploads/fruits/${file.filename}`;
+            const imageUrl = `/uploads/images/fruits/${file.filename}`;
 
             return await this.fruitsService.create(createFruitDto, imageUrl);
         } catch (error) {

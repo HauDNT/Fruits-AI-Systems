@@ -34,31 +34,6 @@ export class RaspberryService {
     ) {
     }
 
-    async checkDeviceIsRaspberry(device_code: string): Promise<boolean> {
-        try {
-            const device = await this.deviceRepository.findOne({
-                where: { device_code },
-                relations: ['deviceType'],
-            });
-            if (!device) throw new NotFoundException('Không tìm thấy thiết bị');
-
-            const raspberryType = await this.deviceTypeRepository
-                .createQueryBuilder('checkRaspberry')
-                .where('LOWER(checkRaspberry.type_name) LIKE :typeName', { typeName: '%raspberry%' })
-                .getOne()
-
-            return device.deviceType?.type_name.toLowerCase() === raspberryType?.type_name.toLowerCase();
-        } catch (e) {
-            console.log('Lỗi: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi khi kiểm tra thiết bị');
-        }
-    }
-
     async getAvailableMapIds() {
         try {
             const mappings = await this.dataSource.query(
@@ -200,7 +175,12 @@ export class RaspberryService {
     async updateRaspberryConfig(data: RaspberryConfigDto, modelFilePath?: string) {
         try {
             const { device_id, device_code, labels } = data;
-            const raspberry = await this.deviceRepository.findOneBy({ id: device_id });
+            const raspberry = await this.deviceRepository.findOne({
+                where: { id: device_id },
+                relations: ['areaBelong'],
+            });
+
+            console.log(raspberry)
 
             if (!raspberry) {
                 throw new BadRequestException('Raspberry không tồn tại');
@@ -211,6 +191,7 @@ export class RaspberryService {
                 device_id: raspberry.id,
                 labels: labels,
                 raspAccessToken: this.jwtService.sign({ device_id, device_code }),
+                areaId: raspberry.areaBelong?.id ?? null,
             };
 
             // Nếu có file mô hình thì xoá bỏ file cũ và thêm path file vào configData
@@ -224,13 +205,22 @@ export class RaspberryService {
                 configData.model_path = modelFilePath;
             }
 
-            return await this.raspberryRepository.upsert(
+            const upsertConfig = await this.raspberryRepository.upsert(
                 configData,
                 {
                     conflictPaths: ['device_id'],
                     skipUpdateIfNoValuesChanged: true,
                 }
             );
+
+            const labelsArray = configData.labels ? JSON.parse(configData.labels) as FruitTypeIdsDto[] : []
+            const labelsFormatted = await this.generateLabelsFromFruitAndTypeIds(labelsArray)
+            configData = {...configData, labels: labelsFormatted}
+
+            return {
+                upsertConfig,
+                configData
+            }
         } catch (e) {
             console.log('Lỗi: ', e.message);
 

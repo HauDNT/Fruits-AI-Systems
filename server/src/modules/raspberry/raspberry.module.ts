@@ -11,6 +11,7 @@ import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
+import {SocketGateway} from "@/gateway/socketGateway";
 
 @Module({
     imports: [
@@ -30,7 +31,11 @@ import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
     providers: [
         RaspberryService,
         JWTStrategy,
+        SocketGateway,
     ],
+    exports: [
+        SocketGateway,
+    ]
 })
 export class RaspberryModule {
 }

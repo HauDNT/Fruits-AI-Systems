@@ -1,10 +1,18 @@
 {
   "device_code": "#DV-447CH5",
   "api_endpoint": "http://192.168.59.138:8080",
-  "id": 2,
+  "id": 22,
   "device_id": 2,
-  "labels": "[\"Apple Ripe\",\"Apple Rot\",\"Grapes Ripe\",\"Grapes Rot\",\"Pear Ripe\",\"Pear Rot\"]",
-  "raspAccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VfaWQiOjIsImRldmljZV9jb2RlIjoiI0RWLTQ0N0NINSIsImlhdCI6MTc0Njg3MTY4OSwiZXhwIjoxNzQ2ODc1Mjg5fQ.iyPBGLdu3_fxFtk85FQE_FMKJWkGeVjuT2YFYghzkVs",
-  "updatedAt": "10/05/2025 17:08:09",
+  "labels": [
+    "Apple Ripe",
+    "Apple Rot",
+    "Grapes Ripe",
+    "Grapes Rot",
+    "Pear Ripe",
+    "Pear Rot"
+  ],
+  "model_path": "/uploads/models/model_1747197590693.tflite",
+  "raspAccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VfaWQiOiIyIiwiZGV2aWNlX2NvZGUiOiIjRFYtNDQ3Q0g1IiwiaWF0IjoxNzQ3MTk3NTkwLCJleHAiOjE3NDcyMDExOTB9.Uys_Zv_jTalMVQ7QkBP4pIMZIjrVoQ6wMvoBf9Q_ItQ",
+  "updatedAt": "14/05/2025 11:39:50",
   "areaId": 1
 }
