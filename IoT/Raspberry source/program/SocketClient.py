@@ -25,7 +25,7 @@ class SocketClient:
             
         @self.socket_io.on("new_config")
         def handle_update_config(data):
-            print("[RPI] Nhận cấu hình mới:", data)
+            print("[RPI] Nhận cấu hình mới từ Server. Tiến hành cập nhật...")
             if self.on_classification_callback:
                 self.on_classification_callback(data)
                 

@@ -180,8 +180,6 @@ export class RaspberryService {
                 relations: ['areaBelong'],
             });
 
-            console.log(raspberry)
-
             if (!raspberry) {
                 throw new BadRequestException('Raspberry không tồn tại');
             }

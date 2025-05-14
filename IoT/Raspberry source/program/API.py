@@ -114,4 +114,3 @@ class ApiRaspberryCall:
         except Exception as e:
             logger.error(f"Phản hồi không phải JSON hợp lệ: {str(e)}")
             return {"error": f"Phản hồi không phải JSON hợp lệ: {str(e)}"}
-

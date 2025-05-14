@@ -1,10 +1,10 @@
 import time
 import numpy as np
 from tensorflow.lite.python.interpreter import Interpreter
-from ai_edge_litert.interpreter import Interpreter          # type: ignore
+from ai_edge_litert.interpreter import Interpreter
 from PIL import Image
 
-CNN_MODEL_PATH = "/home/dell/Workspace/FruitsFlow/models/cnn/FruitsClassify_23042025.tflite"
+CNN_MODEL_PATH = "/home/dell/Workspace/FruitsFlow/models/default_model.tflite"
 INPUT_SIZE = (224, 224)
 
 def load_cnn_model(cnn_model_path = CNN_MODEL_PATH):

@@ -41,6 +41,10 @@ async def load_remote_config_from_server_and_update():
         )
 
         if "error" not in response:
+            model_filename = os.path.basename(response["model_path"])
+            local_model_path = os.path.join("/home/dell/Workspace/FruitsFlow/models/", model_filename)
+            response["model_path"] = local_model_path
+            
             save_raspberry_config_to_memory(response)
             return response
 

@@ -1,3 +1,4 @@
+import os
 import time
 import asyncio
 import threading
@@ -28,6 +29,7 @@ asyncio.run(RaspberryConfig.load_remote_config_from_server_and_update())
 # Lấy cấu hình
 raspberry_config = RaspberryConfig.load_raspberry_config_in_memory()
 
+# Hàm cập nhật cấu hình động với Socket
 def hot_update_config(recogRunner, loop, data=None):
     print(f"[RPI] Đã nhận cấu hình mới qua Socket! Tiến hành cập nhật...\n")
     
@@ -37,11 +39,39 @@ def hot_update_config(recogRunner, loop, data=None):
             if not all(field in data for field in required_fields):
                 raise ValueError(f"Dữ liệu cấu hình thiếu các trường: {required_fields}")
             config_data = data.copy()
-            
+
             if isinstance(config_data['labels'], list):
                 config_data['labels'] = json.dumps(config_data['labels'])
+            
+            # Tải mô hình nếu model_path có thay đổi
+            if 'model_path' in config_data and config_data['model_path'] != raspberry_config.get('model_path'):
+                print("[RPI] Đang tải mô hình mới...")
                 
-            RaspberryConfig.save_raspberry_config_to_memory(data)
+                model_url = f"{raspberry_config['api_endpoint']}{config_data['model_path']}"
+                model_filename = config_data['model_path'].split('/')[-1]
+                local_model_dir = '/home/dell/Workspace/FruitsFlow/models'
+                os.makedirs(local_model_dir, exist_ok=True)
+                local_model_path = os.path.join(local_model_dir, model_filename)
+
+                hotDownloadModelSuccess = MachineLearningMethod.hot_download_model(model_url, local_model_path)
+                
+                if hotDownloadModelSuccess:
+                    print("[RPI] Tải mô hình hoàn tất!")
+                    
+                    config_data['model_path'] = local_model_path
+                    model_files = sorted(
+                        filter(lambda x: "default.tflite" not in x, os.listdir(local_model_dir)),
+                        key=lambda x: os.path.getmtime(os.path.join(local_model_dir, x))
+                    )
+                    while len(model_files) > 3:
+                        file_to_delete = model_files.pop(0)
+                        file_path = os.path.join(local_model_dir, file_to_delete)
+                        os.remove(file_path)
+                else:
+                    logger.warning("Tải mô hình thất bại, giữ model_path hiện tại.")
+                    config_data['model_path'] = raspberry_config.get('model_path', '')
+
+            RaspberryConfig.save_raspberry_config_to_memory(config_data)
             print("[RPI] Cấu hình mới đã được lưu từ WebSocket.")
             recogRunner.request_restart()
         else:
@@ -63,6 +93,7 @@ if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     runner = RecognitionRunner()
+    
     socket_client = SocketClient(
         device_code=raspberry_config["device_code"],
         server_address=raspberry_config["api_endpoint"],

@@ -3,16 +3,9 @@
   "api_endpoint": "http://192.168.59.138:8080",
   "id": 22,
   "device_id": 2,
-  "labels": [
-    "Apple Ripe",
-    "Apple Rot",
-    "Grapes Ripe",
-    "Grapes Rot",
-    "Pear Ripe",
-    "Pear Rot"
-  ],
-  "model_path": "/uploads/models/model_1747197590693.tflite",
-  "raspAccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VfaWQiOiIyIiwiZGV2aWNlX2NvZGUiOiIjRFYtNDQ3Q0g1IiwiaWF0IjoxNzQ3MTk3NTkwLCJleHAiOjE3NDcyMDExOTB9.Uys_Zv_jTalMVQ7QkBP4pIMZIjrVoQ6wMvoBf9Q_ItQ",
-  "updatedAt": "14/05/2025 11:39:50",
+  "labels": "[\"Apple Ripe\",\"Apple Rot\",\"Grapes Ripe\",\"Grapes Rot\",\"Pear Ripe\",\"Pear Rot\"]",
+  "model_path": "/home/dell/Workspace/FruitsFlow/models/model_1747222996560.tflite",
+  "raspAccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VfaWQiOiIyIiwiZGV2aWNlX2NvZGUiOiIjRFYtNDQ3Q0g1IiwiaWF0IjoxNzQ3MjIzMjEwLCJleHAiOjE3NDcyMjY4MTB9.oneRqKwhYYZYx046Kv40-OAtu0Cj42KFC9aHHlbAoS0",
+  "updatedAt": "14/05/2025 18:46:50",
   "areaId": 1
 }

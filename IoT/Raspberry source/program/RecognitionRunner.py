@@ -1,3 +1,4 @@
+import os
 import json
 import time
 import asyncio
@@ -35,7 +36,18 @@ class RecognitionRunner:
         # Khởi tạo tài nguyên
         self.raspberry_config = RaspberryConfig.load_raspberry_config_in_memory()
         self.labels = json.loads(self.raspberry_config["labels"])
-        self.interpreter = FruitRecognitionCNNModel.load_cnn_model()
+        
+        model_path = self.raspberry_config.get("model_path")
+        if not model_path or not os.path.exists(model_path):
+            logger.error(f"Không tìm thấy mô hình tại {model_path}, sử dụng mô hình mặc định.")
+            model_path = "/home/dell/Workspace/FruitsFlow/models/default_model.tflite"
+            
+        self.interpreter = FruitRecognitionCNNModel.load_cnn_model(model_path)
+        if not self.interpreter:
+            print(f"Lỗi: Không thể load mô hình từ đường dẫn: {model_path}")
+            logger.error(f"Lỗi: Không thể load mô hình từ đường dẫn: {model_path}")
+            return
+
         self.apiCaller = ApiRaspberryCall(
             base_url=self.raspberry_config["api_endpoint"],
             headers={"Authorization": self.raspberry_config["raspAccessToken"]},
