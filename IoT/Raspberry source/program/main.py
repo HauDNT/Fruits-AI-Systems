@@ -4,14 +4,8 @@ import asyncio
 import threading
 import logging
 import json
-from typing import Dict
-import VL53L0X
-import FruitRecognitionCNNModel
-import Webcams
 import MachineLearningMethod
 import RaspberryConfig
-from API import ApiRaspberryCall
-from ResultAnalyzer import ResultAnalyzer
 from SocketClient import SocketClient
 from RecognitionRunner import RecognitionRunner
 
