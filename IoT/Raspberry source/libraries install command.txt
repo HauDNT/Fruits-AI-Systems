@@ -1,0 +1,9 @@
+ pip install aiohttp
+pip install opencv-python
+pip install Pillow
+pip install tensorflow
+pip install ai-edge-litert
+pip install python-socketio
+pip install Adafruit-Blinka
+pip install adafruit-circuitpython-vl53l0x
+pip install RPi.GPIO
