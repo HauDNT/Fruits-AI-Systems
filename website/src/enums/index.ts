@@ -4,3 +4,9 @@ export enum RoleEnum {
     Teacher,
     Student,
 }
+
+export enum Gender {
+    Male,
+    Female,
+    Other,
+}

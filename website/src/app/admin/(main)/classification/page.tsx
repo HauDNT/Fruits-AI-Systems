@@ -84,7 +84,7 @@ export default function Classification() {
 
         setData(prev => ({
             ...prev,
-            values: [newResult, ...prev.values], // Thêm lên đầu bảng
+            values: [newResult, ...prev.values],
         }));
     });
 

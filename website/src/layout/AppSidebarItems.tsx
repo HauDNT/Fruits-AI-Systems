@@ -19,7 +19,7 @@ export const AdminSidebarItems = [
     {
         name: "Nhân viên",
         icon: <Users size={25}/>,
-        path: "/admin/users"
+        path: "/admin/employees"
     },
     {
         name: "Khu",

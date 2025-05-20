@@ -91,18 +91,23 @@ class RobotArm {
     RobotArm():
       servo1(4, 0, 180, 30),
       servo2(16, 0, 180, 90),
-      servo3(17, 0, 180, 60),
-      servo4(5, 0, 180, 90),
+      servo3(17, 0, 180, 30),
+      servo4(5, 0, 180, 100),
       servo5(18, 0, 180, 80),
-      servo6(19, 0, 180, 80) {}
+      servo6(19, 0, 180, 85) {}
 
     void attachAll() {
-      servo1.attach();
-      servo2.attach();
-      servo3.attach();
-      servo4.attach();
-      servo5.attach();
       servo6.attach();
+      delay(300);
+      servo5.attach();
+      delay(300);
+      servo4.attach();
+      delay(300);
+      servo3.attach();
+      delay(300);
+      servo2.attach();
+      delay(300);
+      servo1.attach();
     }
 
     void centerAll() {

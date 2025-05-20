@@ -53,7 +53,7 @@ export interface CustomTableProps extends TableProps {
 export interface CustomTableColumn {
     key: string;
     displayName: string;
-    type: 'string' | 'number' | 'boolean' | 'date';
+    type: 'string' | 'number' | 'boolean' | 'date' | 'gender';
     valueMapping?: Record<string, any>
 }
 

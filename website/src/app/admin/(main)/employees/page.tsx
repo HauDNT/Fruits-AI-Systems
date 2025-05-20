@@ -1,21 +1,21 @@
 'use client'
 
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import {useToast} from "@/hooks/use-toast";
 import {useEffect, useState} from "react";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import CustomTable from "@/components/table/CustomTable";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
-import {DeviceBodyType} from '@/schemas/device.schema';
-import CreateNewDeviceForm from "@/components/forms/CreateNewDeviceForm";
+import CreateNewEmployeeForm from "@/components/forms/CreateNewEmployeeForm";
+import {EmployeeBodyType} from "@/schemas/employee.schema";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 
-export default function Devices() {
+export default function Employees() {
     const {toast} = useToast()
     const [data, setData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "device_code, deviceType, deviceStatus, areaBelong"
+    const searchFields = "fullname, employee_code, phone_number"
     const [createFormState, setCreateFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
@@ -31,10 +31,10 @@ export default function Devices() {
         }
     }
 
-    const fetchDevicesByQueryParams = async (searchQuery: string, searchFields: string) => {
+    const fetchEmployeesByQueryParams = async (searchQuery: string, searchFields: string) => {
         try {
             const resData = (await axiosInstance.get(
-                '/devices',
+                '/employees',
                 {
                     params: {
                         page: meta.currentPage,
@@ -58,17 +58,20 @@ export default function Devices() {
         } catch (e) {
             console.log('Error: ', e)
             toast({
-                title: 'Không thể tải lên danh sách thiết bị',
+                title: 'Không thể tải lên danh sách nhân viên',
                 variant: 'destructive',
             })
         }
     }
 
-    const handleCreateNewDevice = async (formData: DeviceBodyType) => {
+    const handleCreateNewEmployee = async (formData: EmployeeBodyType) => {
         try {
-            const resData = await axiosInstance.post('/devices/create-device', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            })
+            const resData = await axiosInstance.post(
+                '/employees/create-employee',
+                formData,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                })
 
             if (resData.status === 201) {
                 setCreateFormState(false)
@@ -77,15 +80,15 @@ export default function Devices() {
                     values: [...prev.values, resData.data.data]
                 }))
 
-                toast({ title: "Thêm thiết bị thành công" , variant: "success"})
+                toast({ title: 'Thêm nhân viên mới thành công', variant: 'success' })
                 return true
             }
-        }  catch (error) {
+        } catch (error) {
             const errorMessage = handleAxiosError(error);
-            console.log('Thêm thiết bị thất bại: ', error)
+            console.log('Thêm nhân viên thất bại: ', error)
 
             toast({
-                title: "Thêm thiết bị thất bại",
+                title: "Thêm nhân viên thất bại",
                 description: errorMessage,
                 variant: "destructive",
             })
@@ -95,16 +98,16 @@ export default function Devices() {
     }
 
     useEffect(() => {
-        fetchDevicesByQueryParams(searchQuery, searchFields)
+        fetchEmployeesByQueryParams(searchQuery, searchFields)
     }, [searchQuery, meta.currentPage])
 
     return (
         <>
-            <PageBreadcrumb pageTitle={'Thiết bị'}/>
+            <PageBreadcrumb pageTitle={'Nhân viên'}/>
 
             <div className="space-y-6">
                 <CustomTable
-                    tableTitle={'Danh sách thiết bị'}
+                    tableTitle={'Danh sách nhân viên'}
                     tableData={data}
                     onSort={(key) => console.log(`Sorting by ${key}`)}
                     createItem={true}
@@ -132,10 +135,11 @@ export default function Devices() {
                     onClose={() => setCreateFormState(false)}
                     maxWidth="max-w-3xl"
                 >
-                    <CreateNewDeviceForm
-                        onSubmit={(formData: DeviceBodyType) => handleCreateNewDevice(formData)}
+                    <CreateNewEmployeeForm
+                        onSubmit={(formData: EmployeeBodyType) => handleCreateNewEmployee(formData)}
                         onClose={() => setCreateFormState(false)}
                     />
+
                 </ModelLayer>
             </div>
         </>

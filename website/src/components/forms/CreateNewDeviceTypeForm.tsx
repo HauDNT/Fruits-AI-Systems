@@ -19,6 +19,7 @@ import { DeviceTypeBody, DeviceTypeBodyType } from "@/schemas/device.schema"
 const CreateNewDeviceTypeForm = ({
     className,
     onSubmit,
+    onClose,
 }: FormInterface) => {
     const form = useForm<DeviceTypeBodyType>({
         resolver: zodResolver(DeviceTypeBody),
@@ -34,6 +35,7 @@ const CreateNewDeviceTypeForm = ({
         const submitResult = onSubmit(formData);
         if (submitResult) {
             form.reset();
+            onClose()
         }
     };
 

@@ -1,7 +1,7 @@
 import { CustomTableColumn } from "@/interfaces/table"
+import {Gender} from "@/enums";
 
 export const renderCellValues = (col: CustomTableColumn, value: any): string => {
-    // Nếu có Value Mapping trong dữ liệu trả về thì ưu tiên sử dụng
     if (col.valueMapping) {
         const key = value.toString()
         return col.valueMapping[key] || value.toString()
@@ -14,6 +14,13 @@ export const renderCellValues = (col: CustomTableColumn, value: any): string => 
             return value ? (new Date(value).toLocaleTimeString("vi-VN") + ' ' + new Date(value).toLocaleDateString("vi-VN")) : "-";
         case "number":
             return value !== undefined && value !== null ? value.toString() : "-";
+        case "gender":
+            switch (parseInt(value)) {
+                case Gender.Male: return "Nam";
+                case Gender.Female: return "Nữ";
+                case Gender.Other: return "Khác";
+                default: return "Không xác định";
+            }
         case "string":
         default:
             return value || "-";
