@@ -46,6 +46,6 @@ export class UserController {
         @Body() data: DeleteUserDto
     ): Promise<DeleteResult> {
         const { userIds } = data;
-        return await this.userService.deleteUSers(userIds);
+        return await this.userService.deleteUsers(userIds);
     }
 }

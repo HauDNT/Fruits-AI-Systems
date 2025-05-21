@@ -47,7 +47,6 @@ export default function AdminDashboard() {
             number: cardData.amountResults,
             icon: ScanEye,
             className: "border-[3px] border-blue-500 p-5 dark:border-yellow-300",
-            disableAnimation: true,
         },
         {name: "Thiết bị", number: cardData.amountDevices, icon: Cpu},
         {name: "Nhân viên", number: cardData.amountEmployees, icon: Users},

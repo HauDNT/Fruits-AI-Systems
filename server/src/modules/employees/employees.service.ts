@@ -1,12 +1,14 @@
 import {BadRequestException, HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {Employee} from "@/modules/employees/entities/employee.entity";
-import {IsNull, Like, Repository} from "typeorm";
+import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {TableMetaData} from "@/interfaces/table";
 import {CreateEmployeeDto} from "@/modules/employees/dto/create-employee.dto";
 import {generateUniqueCode} from "@/utils/generateUniqueCode";
 import {Area} from "@/modules/areas/entities/area.entity";
+import * as path from 'path';
+import * as fs from 'fs/promises';
 
 @Injectable()
 export class EmployeesService {
@@ -20,7 +22,7 @@ export class EmployeesService {
 
     async create(createEmployeeDto: CreateEmployeeDto, imageUrl: string) {
         try {
-            const { fullname, gender, phone_number, areaId } = createEmployeeDto
+            const {fullname, gender, phone_number, areaId} = createEmployeeDto
             const checkEmployeeExist = await this.employeeRepository
                 .createQueryBuilder('existEmployee')
                 .where('LOWER(existEmployee.fullname) = LOWER(:fullname)', {fullname: fullname})
@@ -31,7 +33,7 @@ export class EmployeesService {
                 throw new BadRequestException('Đã tồn tại thông tin của nhân viên này')
             }
 
-            const area = await this.areaRepository.findOneBy({ id: areaId })
+            const area = await this.areaRepository.findOneBy({id: areaId})
 
             let employeeCode: string
             let employeeCodeExist
@@ -53,8 +55,6 @@ export class EmployeesService {
                 updated_at: new Date(),
             })
 
-            console.log(newEmployee)
-
             const saveEmployee = await this.employeeRepository.save(newEmployee)
 
             return {
@@ -63,6 +63,9 @@ export class EmployeesService {
             }
         } catch (e) {
             console.log('Lỗi: ', e.message)
+
+            const fileEmployeeImgPath = path.join(process.cwd(), imageUrl)
+            await fs.unlink(fileEmployeeImgPath)
 
             if (e instanceof HttpException) {
                 throw e;
@@ -107,13 +110,13 @@ export class EmployeesService {
 
             return {
                 columns: [
-                    { key: "id", displayName: "ID", type: "number" },
-                    { key: "employee_code", displayName: "Mã nhân viên", type: "string" },
-                    { key: "fullname", displayName: "Họ và tên", type: "string" },
-                    { key: "gender", displayName: "Giới tính", type: "gender" },
-                    { key: "phone_number", displayName: "Số điện thoại", type: "string" },
-                    { key: "created_at", displayName: "Ngày tạo", type: "date" },
-                    { key: "updated_at", displayName: "Ngày cập nhật", type: "date" },
+                    {key: "id", displayName: "ID", type: "number"},
+                    {key: "employee_code", displayName: "Mã nhân viên", type: "string"},
+                    {key: "fullname", displayName: "Họ và tên", type: "string"},
+                    {key: "gender", displayName: "Giới tính", type: "gender"},
+                    {key: "phone_number", displayName: "Số điện thoại", type: "string"},
+                    {key: "created_at", displayName: "Ngày tạo", type: "date"},
+                    {key: "updated_at", displayName: "Ngày cập nhật", type: "date"},
                 ],
                 values: employees,
                 meta: {
@@ -132,6 +135,34 @@ export class EmployeesService {
             }
 
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách nhân viên');
+        }
+    }
+
+    async deleteEmployees(employeeIds: string[]): Promise<DeleteResult> {
+        try {
+            const employees = await this.employeeRepository.find({ where: {id: In(employeeIds)}})
+            if (employees.length !== employeeIds.length) {
+                throw new BadRequestException('Một hoặc nhiều thông tin nhân viên không tồn tại')
+            }
+
+            for (const employee of employees) {
+                const fileEmployeeImgPath = path.join(process.cwd(), employee.avatar_url)
+                try {
+                    await fs.unlink(fileEmployeeImgPath)
+                } catch (error) {
+                    console.error(`Error deleting file ${fileEmployeeImgPath}: `, error.message);
+                }
+            }
+
+            return await this.employeeRepository.delete(employeeIds)
+        } catch (e) {
+            console.log('Error when delete users: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình xoá tài khoản người dùng');
         }
     }
 }

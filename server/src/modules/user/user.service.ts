@@ -117,7 +117,7 @@ export class UserService {
         return `This action returns a #${id} user`;
     }
 
-    async deleteUSers(userIds: string[]): Promise<DeleteResult> {
+    async deleteUsers(userIds: string[]): Promise<DeleteResult> {
         try {
             const checkBeforeDelete = await this.userRepository.findBy({ id: In(userIds) })
             if (checkBeforeDelete.length) {

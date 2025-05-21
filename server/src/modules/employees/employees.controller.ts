@@ -20,6 +20,8 @@ import {EmployeesService} from './employees.service';
 import {TableMetaData} from "@/interfaces/table";
 import {Employee} from "@/modules/employees/entities/employee.entity";
 import {CreateEmployeeDto} from "@/modules/employees/dto/create-employee.dto";
+import {DeleteResult} from "typeorm";
+import {DeleteEmployeeDto} from "@/modules/employees/dto/delete-employee.dto";
 
 @Controller('employees')
 export class EmployeesController {
@@ -99,5 +101,13 @@ export class EmployeesController {
             queryString,
             searchFields,
         })
+    }
+
+    @Delete('/delete-employees')
+    async deleteEmployees(
+        @Body() data: DeleteEmployeeDto
+    ): Promise<DeleteResult> {
+        const { employeeIds } = data;
+        return await this.employeesService.deleteEmployees(employeeIds)
     }
 }

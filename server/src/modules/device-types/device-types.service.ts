@@ -1,6 +1,5 @@
 import {HttpException, Injectable, BadRequestException, InternalServerErrorException} from '@nestjs/common';
 import {CreateDeviceTypeDto} from './dto/create-device-type.dto';
-import {UpdateDeviceTypeDto} from './dto/update-device-type.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
 import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";

@@ -97,6 +97,54 @@ export default function Employees() {
         }
     }
 
+    const deleteEmployees = async (employeesSelected: string[]) => {
+        try {
+            if (employeesSelected.length > 0) {
+                await axiosInstance.delete(
+                    '/employees/delete-employees',
+                    {
+                        data: {
+                            employeeIds: employeesSelected
+                        }
+                    }
+                ).then((res) => {
+                    if (res.data.affected > 0) {
+                        if (res.data.affected < employeesSelected.length) {
+                            toast({
+                                title: `Đã xoá ${res.data.affected} / ${employeesSelected.length} nhân viên`,
+                                variant: "success",
+                            })
+                        } else {
+                            toast({
+                                title: `Đã xoá nhân viên thành công`,
+                                variant: "success",
+                            })
+                        }
+
+                        setData((prevState) => ({
+                            ...prevState,
+                            values: prevState.values.filter(item => !employeesSelected.includes(item.id))
+                        }));
+                    } else {
+                        toast({
+                            title: "Vui lòng chọn ít nhất 1 khu để xoá",
+                            variant: "warning",
+                        });
+                    }
+                })
+            }
+        } catch (error) {
+            const errorMessage = handleAxiosError(error);
+            console.log("Xoá nhân viên thất bại")
+
+            toast({
+                title: "Xoá nhân viên thất bại",
+                description: errorMessage,
+                variant: "destructive",
+            });
+        }
+    }
+
     useEffect(() => {
         fetchEmployeesByQueryParams(searchQuery, searchFields)
     }, [searchQuery, meta.currentPage])
@@ -115,7 +163,7 @@ export default function Employees() {
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
-                    handleDelete={(itemSelected) => console.log(itemSelected)}
+                    handleDelete={(itemSelected) => deleteEmployees(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
                 />
 
