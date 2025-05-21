@@ -38,9 +38,9 @@ export default function CustomTable({
         if (checked) {
             setItemSelect((prev) => {
                 if (prev.includes(itemId)) {
-                    return prev; // Nếu itemId đã có, không thêm lại
+                    return prev;
                 }
-                return [...prev, itemId]; // Thêm itemId vào danh sách
+                return [...prev, itemId];
             });
         } else {
             setItemSelect((prev) => prev.filter((id) => id !== itemId));

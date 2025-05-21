@@ -1,8 +1,8 @@
 'use client'
-
+import {useEffect, useState} from "react";
+import { useRouter } from 'next/navigation';
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import {useToast} from "@/hooks/use-toast";
-import {useEffect, useState} from "react";
 import CustomTable from "@/components/table/CustomTable";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
@@ -11,6 +11,7 @@ import {EmployeeBodyType} from "@/schemas/employee.schema";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 
 export default function Employees() {
+    const router = useRouter()
     const {toast} = useToast()
     const [data, setData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
@@ -159,10 +160,12 @@ export default function Employees() {
                     tableData={data}
                     onSort={(key) => console.log(`Sorting by ${key}`)}
                     createItem={true}
+                    detailItem={true}
                     deleteItem={true}
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
+                    handleDetail={(item) => router.push(`/admin/employees/${item.id}`)}
                     handleDelete={(itemSelected) => deleteEmployees(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
                 />

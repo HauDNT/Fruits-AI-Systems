@@ -8,11 +8,6 @@ const ChartTab: React.FC = ({
 }: ChartTabInterface) => {
     const [selected, setSelected] = useState(options[defaultOptions]);
 
-console.log('Selected: ', selected);
-console.log('Options: ', options);
-console.log('Parse: ', selected === options[0]);
-console.log('---------------------------------------------') 
-
     const getButtonClass = (option: options) =>
         selected === option
             ? "shadow-theme-xs text-gray-900 dark:text-white bg-white dark:bg-gray-800"
