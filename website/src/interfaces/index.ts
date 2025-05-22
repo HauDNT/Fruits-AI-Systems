@@ -8,7 +8,7 @@ export interface LoginResponseInterface {
     accessToken: string,
 }
 
-// Redux
+// Redux for auth
 export interface ReduxUserState {
     userId: string;
     username: string;
@@ -74,8 +74,21 @@ export interface ClassifyResultInterface {
     created_at: string;
 }
 
+// Chart tab
 export interface ChartTabInterface {
     options: string[];
     defaultOptions: number;
     onTabClicked?: (option: string) => void;
+}
+
+// Employee detail
+export interface EmployeeDetailInterface {
+    id: number;
+    employee_code: string;
+    fullname: string;
+    gender: number;
+    phone_number: string;
+    avatar_url: string;
+    created_at: string;
+    updated_at: string;
 }

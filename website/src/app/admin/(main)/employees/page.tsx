@@ -9,6 +9,7 @@ import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewEmployeeForm from "@/components/forms/CreateNewEmployeeForm";
 import {EmployeeBodyType} from "@/schemas/employee.schema";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
+import EmployeeDetailForm from "@/components/forms/EmployeeDetailForm";
 
 export default function Employees() {
     const router = useRouter()
@@ -18,7 +19,10 @@ export default function Employees() {
     const [searchQuery, setSearchQuery] = useState("")
     const searchFields = "fullname, employee_code, phone_number"
     const [createFormState, setCreateFormState] = useState(false)
+    const [employeeDetailData, setEmployeeDetailData] = useState(null)
+    const [detailFormState, setDetailFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
+    const toggleDetailFormState = () => setDetailFormState(prev => !prev)
 
     const handleNextPage = () => {
         if (meta.currentPage < meta.totalPages) {
@@ -165,7 +169,10 @@ export default function Employees() {
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
-                    handleDetail={(item) => router.push(`/admin/employees/${item.id}`)}
+                    handleDetail={(item) => {
+                        toggleDetailFormState()
+                        setEmployeeDetailData(item)
+                    }}
                     handleDelete={(itemSelected) => deleteEmployees(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
                 />
@@ -190,7 +197,14 @@ export default function Employees() {
                         onSubmit={(formData: EmployeeBodyType) => handleCreateNewEmployee(formData)}
                         onClose={() => setCreateFormState(false)}
                     />
+                </ModelLayer>
 
+                <ModelLayer
+                    isOpen={detailFormState}
+                    onClose={() => setDetailFormState(false)}
+                    maxWidth="max-w-3xl"
+                >
+                    <EmployeeDetailForm data={employeeDetailData}/>
                 </ModelLayer>
             </div>
         </>

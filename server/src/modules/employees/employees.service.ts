@@ -101,7 +101,7 @@ export class EmployeesService {
 
             const [employees, total] = await this.employeeRepository.findAndCount({
                 where: searchConditions.length > 0 ? searchConditions : where,
-                select: ['id', 'employee_code', 'fullname', 'gender', 'phone_number', 'created_at', 'updated_at'],
+                select: ['id', 'employee_code', 'fullname', 'avatar_url', 'gender', 'phone_number', 'created_at', 'updated_at'],
                 skip,
                 take,
             })
@@ -126,7 +126,6 @@ export class EmployeesService {
                     limit: limit,
                 }
             };
-
         } catch (e) {
             console.log('Lỗi: ', e.message)
 

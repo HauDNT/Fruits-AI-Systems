@@ -163,7 +163,6 @@ export class AreasService {
                 const fileAreaImgPath = path.join(process.cwd(), area.image_url)
                 try {
                     await fs.unlink(fileAreaImgPath);
-                    console.log(`Deleted file: ${fileAreaImgPath}`);
                 } catch (error) {
                     console.error(`Error deleting file ${fileAreaImgPath}: `, error.message);
                 }
