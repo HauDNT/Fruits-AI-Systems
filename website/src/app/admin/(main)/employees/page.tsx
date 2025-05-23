@@ -1,6 +1,5 @@
 'use client'
 import {useEffect, useState} from "react";
-import { useRouter } from 'next/navigation';
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import {useToast} from "@/hooks/use-toast";
 import CustomTable from "@/components/table/CustomTable";
@@ -12,7 +11,6 @@ import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import EmployeeDetailForm from "@/components/forms/EmployeeDetailForm";
 
 export default function Employees() {
-    const router = useRouter()
     const {toast} = useToast()
     const [data, setData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})

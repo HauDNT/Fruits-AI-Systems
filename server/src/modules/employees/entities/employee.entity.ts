@@ -44,8 +44,12 @@ export class Employee {
     @DeleteDateColumn({type: "timestamp"})
     deleted_at: Date | null;
 
+    // Thêm cột area_id để TypeScript nhận diện
+    @Column({ name: 'area_id', type: 'integer', nullable: true })
+    area_id: number | null;
+
     // Employees <-> Area
     @ManyToOne(() => Area, area => area.employee)
-    @JoinColumn({name: 'area_id'})
+    @JoinColumn({ name: 'area_id' })
     areaWorkAt: Area;
 }

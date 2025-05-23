@@ -1,4 +1,4 @@
-import {Theme} from "@/types";
+import {Theme, ToggleLabelInputFieldType, ToggleLabelInputOptionsDataType} from "@/types";
 import React from "react";
 
 // Authen
@@ -62,6 +62,17 @@ export interface ListCheckInterface<T> {
     title?: string;
     data: T[];
     onCheck?: (itemsChecked: number[]) => void;
+}
+
+
+// Toggle label input
+export interface ToggleLabelInputInterface {
+    fieldState: boolean;
+    fieldName: string;
+    fieldValue: string | number;
+    fieldType: ToggleLabelInputFieldType;
+    dataForOptions?: ToggleLabelInputOptionsDataType[];
+    onFieldChange: () => void;
 }
 
 // Classify result

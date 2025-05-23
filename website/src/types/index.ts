@@ -24,3 +24,5 @@ export type FruitType = {
     type_name: string;
     type_desc: string;
 }
+
+export type ToggleLabelInputFieldType = "input" | "options"
