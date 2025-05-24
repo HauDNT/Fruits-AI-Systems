@@ -209,7 +209,7 @@ export class StatisticalService {
 
             const dayNames = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
             const todayWeekday = today.day() === 0 ? 6 : today.day() - 1;
-            
+
             const resultMap: Record<string, number[]> = {};
 
             rawData.forEach(item => {
@@ -380,6 +380,26 @@ export class StatisticalService {
             }
 
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy dữ liệu cho biểu đồ thống kê kết quả phân loại trong 1 năm');
+        }
+    }
+
+    async getRatioOfFruits() {
+        try {
+            return await this.fruitClassifyRepository
+                .createQueryBuilder('fc')
+                .leftJoinAndSelect('fc.fruit', 'fruit')
+                .select('fruit.fruit_desc', 'fruit')
+                .addSelect('COUNT(*)', 'count')
+                .groupBy('fruit.fruit_desc')
+                .getRawMany();
+        } catch (e) {
+            console.log('Error when get ratio of fruits: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy tỉ lệ các loại trái cây');
         }
     }
 }

@@ -62,4 +62,9 @@ export class StatisticalController {
                 throw new BadRequestException('Khung thời gian thống kê không hợp lệ')
         }
     }
+
+    @Get('/ratio-fruits')
+    async getRatioOfFruits() {
+        return await this.statisticalService.getRatioOfFruits()
+    }
 }
