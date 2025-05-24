@@ -411,6 +411,7 @@ export class StatisticalService {
                 .select('area.area_desc', 'area_name')
                 .addSelect('COUNT(*)', 'count')
                 .groupBy('area.area_desc')
+                .orderBy("area.area_desc", "ASC")
                 .getRawMany();
         } catch (e) {
             console.log('Error when get amount employee in each area: ', e.message)

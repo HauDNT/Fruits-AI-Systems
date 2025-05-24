@@ -159,11 +159,11 @@ const CreateNewEmployeeForm = ({
                             name="areaId"
                             render={({field}) => (
                                 <FormItem className="mb-0">
-                                    <FormLabel>Khu vực lắp đặt</FormLabel>
+                                    <FormLabel>Khu vực làm việc</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Chọn khu vực lắp đặt thiết bị"/>
+                                                <SelectValue placeholder="Chọn khu vực làm việc"/>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
