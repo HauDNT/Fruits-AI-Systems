@@ -51,13 +51,13 @@ export class StatisticalController {
         @Query('fruit') fruit: string,
         @Query('time_frame') time_frame: string,
     ) {
-        const timeFrame = time_frame ?? 'Tháng'
-
-        switch (timeFrame){
-            case 'Tháng':
-                return await this.statisticalService.getClassifyStatisticChartByMonth(fruit)
+        switch (time_frame){
             case 'Tuần':
                 return await this.statisticalService.getClassifyStatisticChartByDaysOfWeek(fruit)
+            case 'Tháng':
+                return await this.statisticalService.getClassifyStatisticChartByMonth(fruit)
+            case 'Năm':
+                return await this.statisticalService.getClassifyStatisticChartByYear(fruit)
             default:
                 throw new BadRequestException('Khung thời gian thống kê không hợp lệ')
         }

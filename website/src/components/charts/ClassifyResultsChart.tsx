@@ -53,8 +53,8 @@ export default function ClassifyResultsChart({
             },
         },
         stroke: {
-            curve: "straight", // Define the line style (straight, smooth, or step)
-            width: [2, 2], // Line width for each dataset
+            curve: "smooth", // Define the line style (straight, smooth, or step)
+            width: [1, 1], // Line width for each dataset
         },
 
         fill: {

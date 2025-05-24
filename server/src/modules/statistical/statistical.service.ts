@@ -1,6 +1,7 @@
 import {BadRequestException, HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import * as dayjs from "dayjs";
+import * as isoWeek from 'dayjs/plugin/isoWeek';
 import {Area} from "@/modules/areas/entities/area.entity";
 import {Repository} from "typeorm";
 import {Device} from "@/modules/devices/entities/device.entity";
@@ -11,6 +12,8 @@ import {Employee} from "@/modules/employees/entities/employee.entity";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
+
+dayjs.extend(isoWeek);
 
 @Injectable()
 export class StatisticalService {
@@ -179,7 +182,139 @@ export class StatisticalService {
         }
     }
 
+    async getClassifyStatisticChartByDaysOfWeek(fruitName: string) {
+        try {
+            const today = dayjs();
+            const startOfWeek = today.startOf('week').add(1, 'day');
+
+            const rawData = await this.fruitClassifyRepository
+                .createQueryBuilder('fc')
+                .select("ft.type_name", "name")
+                .addSelect("f.fruit_name", "fruit")
+                .addSelect("WEEKDAY(fc.created_at)", "weekday") // 0 = Monday, ..., 6 = Sunday
+                .addSelect("COUNT(*)", "count")
+                .innerJoin("fc.fruitType", "ft")
+                .innerJoin("fc.fruit", "f")
+                .where("fc.deleted_at IS NULL")
+                .andWhere("f.fruit_name = :fruitName", { fruitName })
+                .andWhere("fc.created_at BETWEEN :start AND :end", {
+                    start: startOfWeek.toDate(),
+                    end: today.toDate()
+                })
+                .groupBy("ft.type_name")
+                .addGroupBy("WEEKDAY(fc.created_at)")
+                .orderBy("WEEKDAY(fc.created_at)", "ASC")
+                .addOrderBy("ft.type_name", "ASC")
+                .getRawMany();
+
+            const dayNames = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
+            const todayWeekday = today.day() === 0 ? 6 : today.day() - 1;
+            
+            const resultMap: Record<string, number[]> = {};
+
+            rawData.forEach(item => {
+                const name = item.name;
+                const weekday = parseInt(item.weekday);
+                const count = parseInt(item.count);
+
+                if (!resultMap[name]) {
+                    resultMap[name] = new Array(7).fill(0);
+                }
+
+                resultMap[name][weekday] = count;
+            });
+
+            const series = Object.entries(resultMap).map(([name, data]) => ({
+                name,
+                data: data.slice(0, todayWeekday + 1)
+            }));
+            const categories = dayNames.slice(0, todayWeekday + 1);
+
+            return {
+                series,
+                categories
+            };
+        } catch (e) {
+            console.log('Error when get data for classify statistic chart by days of week: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy dữ liệu cho biểu đồ thống kê kết quả phân loại theo ngày trong tuần');
+        }
+    }
+
     async getClassifyStatisticChartByMonth(fruitName: string) {
+        try {
+            const fruit = await this.fruitRepository.findOneBy({ fruit_name: fruitName });
+
+            if (!fruit) {
+                throw new BadRequestException('Tên trái cây không tồn tại');
+            }
+
+            const now = dayjs();
+            const startOfMonth = now.startOf('month').toDate();
+            const endOfMonth = now.endOf('day').toDate(); // đến thời điểm hiện tại
+
+            const rawData = await this.fruitClassifyRepository
+                .createQueryBuilder('fc')
+                .select("ft.type_name", "name")
+                .addSelect("f.fruit_name", "fruit")
+                .addSelect("DAY(fc.created_at)", "day")
+                .addSelect("COUNT(*)", "count")
+                .innerJoin("fc.fruitType", "ft")
+                .innerJoin("fc.fruit", "f")
+                .where("fc.deleted_at IS NULL")
+                .andWhere("f.fruit_name = :fruitName", { fruitName })
+                .andWhere("fc.created_at BETWEEN :start AND :end", {
+                    start: startOfMonth,
+                    end: endOfMonth
+                })
+                .groupBy("ft.type_name")
+                .addGroupBy("DAY(fc.created_at)")
+                .orderBy("DAY(fc.created_at)", "ASC")
+                .addOrderBy("ft.type_name", "ASC")
+                .getRawMany();
+
+            const currentDay = now.date(); // ngày hiện tại trong tháng (vd: 15)
+            const resultMap: Record<string, number[]> = {};
+
+            rawData.forEach(item => {
+                const name = item.name;
+                const dayIndex = parseInt(item.day) - 1;
+                const count = parseInt(item.count);
+
+                if (!resultMap[name]) {
+                    resultMap[name] = new Array(currentDay).fill(0);
+                }
+
+                resultMap[name][dayIndex] = count;
+            });
+
+            const series = Object.entries(resultMap).map(([name, data]) => ({
+                name,
+                data
+            }));
+
+            const categories = Array.from({ length: currentDay }, (_, i) => (i + 1).toString().padStart(2, '0'));
+
+            return {
+                series,
+                categories
+            };
+        } catch (e) {
+            console.log('Error when get data for classify statistic chart by month: ', e.message);
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy dữ liệu cho biểu đồ thống kê kết quả phân loại trong tháng hiện tại');
+        }
+    }
+
+    async getClassifyStatisticChartByYear(fruitName: string) {
         try {
             const fruit = await this.fruitRepository.findOneBy({ fruit_name: fruitName })
 
@@ -187,9 +322,8 @@ export class StatisticalService {
                 throw new BadRequestException('Tên trái cây không tồn tại')
             }
 
+            const yearStart = new Date(new Date().getFullYear(), 0, 1); // 01/01/yyyy
             const today = new Date();
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(today.getDate() - 6);
 
             const rawData = await this.fruitClassifyRepository
                 .createQueryBuilder('fc')
@@ -202,7 +336,7 @@ export class StatisticalService {
                 .where("fc.deleted_at IS NULL")
                 .andWhere("f.fruit_name = :fruitName", { fruitName })
                 .andWhere("fc.created_at BETWEEN :start AND :end", {
-                    start: sevenDaysAgo,
+                    start: yearStart,
                     end: today
                 })
                 .groupBy("ft.type_name")
@@ -239,70 +373,13 @@ export class StatisticalService {
                 categories
             };
         } catch (e) {
-            console.log('Error when get data for classify statistic chart by month: ', e.message)
+            console.log('Error when get data for classify statistic chart by year: ', e.message)
 
             if (e instanceof HttpException) {
                 throw e;
             }
 
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy dữ liệu cho biểu đồ thống kê kết quả phân loại theo tháng');
-        }
-    }
-
-    async getClassifyStatisticChartByDaysOfWeek(fruitName: string) {
-        try {
-            const rawData = await this.fruitClassifyRepository
-                .createQueryBuilder('fc')
-                .select("ft.type_name", "name")
-                .addSelect("f.fruit_name", "fruit")
-                .addSelect("DATE(fc.created_at)", "date")
-                .addSelect("COUNT(*)", "count")
-                .innerJoin("fc.fruitType", "ft")
-                .innerJoin("fc.fruit", "f")
-                .where("fc.deleted_at IS NULL")
-                .andWhere("f.fruit_name = :fruitName", { fruitName })
-                .groupBy("ft.type_name")
-                .addGroupBy("DATE(fc.created_at)")
-                .orderBy("DATE(fc.created_at)", "ASC")
-                .addOrderBy("ft.type_name", "ASC")
-                .getRawMany();
-
-            const dateMap = new Map<string, boolean>();
-            const resultMap: Record<string, Record<string, number>> = {};
-            rawData.forEach(item => {
-                const name = item.name;
-                const date = item.date;
-                const count = parseInt(item.count);
-
-                // dateSet.add(date);
-                dateMap.set(date, true);
-
-                if (!resultMap[name]) {
-                    resultMap[name] = {};
-                }
-
-                resultMap[name][date] = count;
-            });
-
-            const allDates = Array.from(dateMap.keys());
-            const formatDates = allDates.map(dateStr => dayjs(dateStr).format("DD/MM/YYYY HH:mm:ss"))
-            const series = Object.entries(resultMap).map(([name, dateMap]) => {
-                const data = allDates.map(date => dateMap[date] || 0);
-                return { name, data };
-            });
-
-            return {
-                series,
-                categories: formatDates,
-            };
-        } catch (e) {
-            console.log('Error when get data for classify statistic chart by days of week: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy dữ liệu cho biểu đồ thống kê kết quả phân loại theo ngày trong tuần');
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy dữ liệu cho biểu đồ thống kê kết quả phân loại trong 1 năm');
         }
     }
 }

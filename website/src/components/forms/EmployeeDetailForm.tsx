@@ -106,7 +106,7 @@ const EmployeeDetailForm = ({
                                     width={80}
                                     height={80}
                                     src={process.env.NEXT_PUBLIC_URL_SERVER + (formData.avatar_url ?? '')}
-                                    alt="user"
+                                    alt="image profile"
                                 />
                             </div>
                             <div className="order-3 xl:order-2">

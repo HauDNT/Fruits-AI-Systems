@@ -17,7 +17,7 @@ import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import {useSocketFruitClassify} from "@/hooks/useSocketFruitClassify";
 import {ClassifyResultInterface} from "@/interfaces";
 
-const TIME_FRAMES = ["Tuần", "Tháng"];
+const TIME_FRAMES = ["Tuần", "Tháng", "Năm"];
 export default function AdminDashboard() {
     const {toast} = useToast();
     const [cardData, setCardData] = useState({
@@ -29,15 +29,6 @@ export default function AdminDashboard() {
         amountFruitTypes: 0,
         amountAreas: 0,
         amountDeviceTypes: 0,
-    });
-    const [fruits, setFruits] = useState<string[]>([]);
-    const [classifyChartData, setClassifyChartData] = useState({
-        series: [],
-        categories: [],
-    });
-    const [classifyChartTab, setClassifyChartTab] = useState({
-        fruit: undefined,
-        timeFrame: TIME_FRAMES[0],
     });
     const dashboardCartItems = [
         {name: "Tài khoản", number: cardData.amountAccounts, icon: UserCircle},
@@ -54,6 +45,15 @@ export default function AdminDashboard() {
         {name: "Khu vực", number: cardData.amountAreas ?? 0, icon: Computer},
         {name: "Loại thiết bị", number: cardData.amountDeviceTypes ?? 0, icon: Zap},
     ];
+    const [fruits, setFruits] = useState<string[]>([]);
+    const [classifyEachFruitChartData, setClassifyEachFruitChartData] = useState({
+        series: [],
+        categories: [],
+    });
+    const [classifyChartTab, setClassifyChartTab] = useState({
+        fruit: undefined,
+        timeFrame: TIME_FRAMES[0],
+    });
 
     const onUpdateClassifyChartTabSelect = async (option: any, type: string) => {
         if (type === "fruit") {
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
         try {
             const resData = await axiosInstance.get(`/statistical/classify-chart?fruit=${fruit}&time_frame=${timeFrame}`);
             if (resData.data) {
-                setClassifyChartData({
+                setClassifyEachFruitChartData({
                     series: resData.data.series,
                     categories: resData.data.categories,
                 });
@@ -201,8 +201,8 @@ export default function AdminDashboard() {
                 {
                     classifyChartTab.fruit && (
                         <ClassifyResultsChart
-                            series={classifyChartData.series ?? []}
-                            categories={classifyChartData.categories}
+                            series={classifyEachFruitChartData.series ?? []}
+                            categories={classifyEachFruitChartData.categories}
                             chartTabs1={fruits}
                             chartTabs2={TIME_FRAMES}
                             defaultTab1={0}
