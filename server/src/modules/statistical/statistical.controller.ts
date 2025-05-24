@@ -67,4 +67,9 @@ export class StatisticalController {
     async getRatioOfFruits() {
         return await this.statisticalService.getRatioOfFruits()
     }
+
+    @Get('/employees-each-area')
+    async getEmployeesInEachArea() {
+        return await this.statisticalService.getEmployeesInEachArea()
+    }
 }

@@ -9,11 +9,12 @@ import DashboardCard from "@/components/cards/DashboardCard";
 import ClassifyResultsChart from "@/components/charts/ClassifyResultsChart";
 import {ClassifyResultInterface} from "@/interfaces";
 import PieChartFruitDistribution from "@/components/charts/PieChartFruitDistribution";
+import MonthlySalesChart from "@/components/charts/EmployeesEachAreaChart";
 
 export default function AdminDashboard() {
     const {
-        cardData, fruits, ratioFruits, chartData,
-        classifyChartTab, onSelectTab, setCardData,
+        cardData, fruits, ratioFruits, employeesEachArea,
+        chartData, classifyChartTab, onSelectTab, setCardData,
     } = useDashboardData();
 
     const cardItems = [
@@ -48,7 +49,7 @@ export default function AdminDashboard() {
                 ))}
             </div>
 
-            <div className="col-span-8">
+            <div className="col-span-12 space-y-6">
                 {classifyChartTab.fruit && (
                     <ClassifyResultsChart
                         series={chartData.series}
@@ -64,14 +65,29 @@ export default function AdminDashboard() {
             </div>
 
             {
+                employeesEachArea ? (
+                    <div className="col-span-8 space-y-6">
+                        <MonthlySalesChart
+                            chartName={'Số lượng nhân viên tại các khu'}
+                            data={employeesEachArea}
+                        />
+                    </div>
+                ) : (
+                    <div className="col-span-8 space-y-6">
+                        Không tải được dữ liệu nhân viên tại các khu phân loại
+                    </div>
+                )
+            }
+
+            {
                 ratioFruits ? (
-                    <div className="col-span-4">
+                    <div className="col-span-4 space-y-6">
                         <PieChartFruitDistribution
                             chartName={"Tỉ lệ các loại trái cây"}
                             data={ratioFruits}/>
                     </div>
                 ) : (
-                    <div className="col-span-4">
+                    <div className="col-span-4 space-y-6">
                         Không tải được dữ liệu phân bổ các loại trái cây
                     </div>
                 )

@@ -57,7 +57,7 @@ export default function PieChartFruitDistribution({ chartName, data }: Props) {
                     </h3>
                 </div>
             </div>
-            <Chart options={options} series={series} type="pie" height={336} />
+            <Chart options={options} series={series} type="pie" height={350} />
         </div>
     );
 }

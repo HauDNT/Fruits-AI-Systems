@@ -402,4 +402,25 @@ export class StatisticalService {
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy tỉ lệ các loại trái cây');
         }
     }
+
+    async getEmployeesInEachArea() {
+        try {
+            return await this.employeeRepository
+                .createQueryBuilder('em')
+                .leftJoinAndSelect('em.areaWorkAt', 'area')
+                .select('area.area_desc', 'area_name')
+                .addSelect('COUNT(*)', 'count')
+                .groupBy('area.area_desc')
+                .getRawMany();
+        } catch (e) {
+            console.log('Error when get amount employee in each area: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy số lượng nhân viên thuộc mỗi khu phân loại');
+        }
+    }
+
 }

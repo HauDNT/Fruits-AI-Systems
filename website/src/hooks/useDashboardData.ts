@@ -20,9 +20,8 @@ export function useDashboardData() {
     });
 
     const [fruits, setFruits] = useState<string[]>([]);
-
-    const [ratioFruits, setRatioFruits] = useState(null)
-
+    const [ratioFruits, setRatioFruits] = useState(null);
+    const [employeesEachArea, setEmployeesEachArea] = useState(null);
     const [classifyChartTab, setClassifyChartTab] = useState({
         fruit: undefined,
         timeFrame: TIME_FRAMES[0],
@@ -92,10 +91,20 @@ export function useDashboardData() {
         }
     }
 
+    const fetchEmployeesEachArea = async () => {
+        try {
+            const res = await axiosInstance.get("/statistical/employees-each-area");
+            setEmployeesEachArea(res.data);
+        } catch (err) {
+            toast({title: "Tải dữ liệu nhân viên của từng khu phân loại thất bại", description: handleAxiosError(err), variant: "destructive"});
+        }
+    }
+
     useEffect(() => {
         fetchCardData();
         fetchFruitList();
         fetchRatioOfFruits();
+        fetchEmployeesEachArea();
     }, []);
 
     useEffect(() => {
@@ -108,6 +117,7 @@ export function useDashboardData() {
         cardData,
         fruits,
         ratioFruits,
+        employeesEachArea,
         chartData,
         classifyChartTab,
         onSelectTab,
