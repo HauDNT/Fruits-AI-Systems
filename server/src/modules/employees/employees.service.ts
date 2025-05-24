@@ -9,6 +9,7 @@ import {generateUniqueCode} from "@/utils/generateUniqueCode";
 import {Area} from "@/modules/areas/entities/area.entity";
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import {UpdateEmployeeDto} from "@/modules/employees/dto/update-employee.dto";
 
 @Injectable()
 export class EmployeesService {
@@ -144,6 +145,29 @@ export class EmployeesService {
             }
 
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách nhân viên');
+        }
+    }
+
+    async updateEmployeeProfile(data: UpdateEmployeeDto, employeeId: number): Promise<Employee> {
+        try {
+            const employee = await this.employeeRepository.preload({
+                id: employeeId,
+                ...data
+            })
+
+            if (!employee) {
+                throw new BadRequestException(`Không tìm thấy nhân viên có mã số ${employeeId}`)
+            }
+
+            return this.employeeRepository.save(employee)
+        } catch (e) {
+            console.log('Error when update profile employee: ', e.message)
+
+            if (e instanceof HttpException) {
+                throw e;
+            }
+
+            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình cập nhật thông tin nhân viên');
         }
     }
 

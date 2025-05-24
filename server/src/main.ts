@@ -1,4 +1,5 @@
 import {NestFactory} from "@nestjs/core";
+import { ValidationPipe } from '@nestjs/common';
 import {AppModule} from "./app.module";
 import {ConfigService} from "@nestjs/config";
 import {swaggerConfig} from "@/config/swagger-config";
@@ -18,6 +19,15 @@ async function bootstrap() {
             "preflightContinue": false,
             credentials: true
         }
+    );
+
+    // Global pipes
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true,
+            forbidNonWhitelisted: false,
+            transform: true,
+        }),
     );
 
     // Serve static files in "uploads" folder at "/uploads" path

@@ -12,7 +12,7 @@ import EmployeeDetailForm from "@/components/forms/EmployeeDetailForm";
 
 export default function Employees() {
     const {toast} = useToast()
-    const [data, setData] = useState([])
+    const [employeesData, setEmployeesData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
     const searchFields = "fullname, employee_code, phone_number"
@@ -48,7 +48,7 @@ export default function Employees() {
                 }
             )).data;
 
-            setData({
+            setEmployeesData({
                 columns: resData.columns,
                 values: resData.values,
             });
@@ -78,7 +78,7 @@ export default function Employees() {
 
             if (resData.status === 201) {
                 setCreateFormState(false)
-                setData(prev => ({
+                setEmployeesData(prev => ({
                     ...prev,
                     values: [...prev.values, resData.data.data]
                 }))
@@ -124,7 +124,7 @@ export default function Employees() {
                             })
                         }
 
-                        setData((prevState) => ({
+                        setEmployeesData((prevState) => ({
                             ...prevState,
                             values: prevState.values.filter(item => !employeesSelected.includes(item.id))
                         }));
@@ -159,7 +159,7 @@ export default function Employees() {
             <div className="space-y-6">
                 <CustomTable
                     tableTitle={'Danh sách nhân viên'}
-                    tableData={data}
+                    tableData={employeesData}
                     onSort={(key) => console.log(`Sorting by ${key}`)}
                     createItem={true}
                     detailItem={true}
@@ -202,7 +202,12 @@ export default function Employees() {
                     onClose={() => setDetailFormState(false)}
                     maxWidth="max-w-3xl"
                 >
-                    <EmployeeDetailForm data={employeeDetailData}/>
+                    <EmployeeDetailForm data={employeeDetailData} opUpdateSuccess={(newEmployeeProfile) => {
+                        setEmployeesData(prev =>({
+                            ...prev,
+                            values: prev.values.map(employee => employee.id === newEmployeeProfile.id ? newEmployeeProfile : employee)
+                        }))
+                    }}/>
                 </ModelLayer>
             </div>
         </>

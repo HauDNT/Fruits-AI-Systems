@@ -71,6 +71,7 @@ export interface ToggleLabelInputInterface {
     fieldName: string;
     fieldValue: string | number;
     fieldType: ToggleLabelInputFieldType;
+    optionPlaceHolder?: string;
     dataForOptions?: ToggleLabelInputOptionsDataType[];
     onFieldChange: () => void;
 }

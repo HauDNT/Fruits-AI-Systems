@@ -26,3 +26,7 @@ export type FruitType = {
 }
 
 export type ToggleLabelInputFieldType = "input" | "options"
+export type ToggleLabelInputOptionsDataType = {
+    label: string;
+    value: string | number;
+}

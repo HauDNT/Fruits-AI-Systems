@@ -37,7 +37,10 @@ const ToggleLabelInput = ({
                         onChange={(e) => onFieldChange(e.target.value)}
                     />
                 ) : fieldType === 'options' ? (
-                    <Select onValueChange={(value) => onFieldChange(value)} defaultValue={selectedOption?.value || undefined}>
+                    <Select
+                        onValueChange={(value) => onFieldChange(value)}
+                        defaultValue={selectedOption ? selectedOption.value : undefined}
+                    >
                         <SelectTrigger>
                             <SelectValue placeholder={optionPlaceHolder} />
                         </SelectTrigger>

@@ -11,7 +11,13 @@ import ToggleLabelInput from "@/components/common/ToggleLabelInput";
 import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import { useToast } from "@/hooks/use-toast";
 
-const EmployeeDetailForm = ({ data: initialData }: { data: EmployeeDetailInterface }) => {
+const EmployeeDetailForm = ({
+    data: initialData,
+    opUpdateSuccess,
+}: {
+    data: EmployeeDetailInterface,
+    opUpdateSuccess?: () => void,
+}) => {
     const { toast } = useToast();
     const [editState, setEditState] = useState(false);
     const [areas, setAreas] = useState<{ label: string; value: number }[]>([]);
@@ -52,8 +58,20 @@ const EmployeeDetailForm = ({ data: initialData }: { data: EmployeeDetailInterfa
 
     const updateProfile = async () => {
         try {
-            console.table(formData)
-        } catch (e) {
+            const resData = await axiosInstance.put(
+                `/employees/update-profile/${formData.id}`,
+                formData
+            )
+
+            if (resData.data) {
+                toast({
+                    title: `Cập nhật thông tin nhân viên ${formData.fullname} thành công`,
+                    variant: "success",
+                });
+
+                opUpdateSuccess(formData)
+            }
+        } catch (error) {
             const errorMessage = handleAxiosError(error);
             console.log('Cập nhật thông tin nhân viên thất bại: ', error);
 

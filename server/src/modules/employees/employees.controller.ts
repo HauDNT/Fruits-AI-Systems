@@ -9,7 +9,7 @@ import {
     Query,
     UseInterceptors,
     UploadedFile,
-    BadRequestException, InternalServerErrorException
+    BadRequestException, InternalServerErrorException, Put
 } from '@nestjs/common';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {diskStorage} from 'multer';
@@ -20,8 +20,9 @@ import {EmployeesService} from './employees.service';
 import {TableMetaData} from "@/interfaces/table";
 import {Employee} from "@/modules/employees/entities/employee.entity";
 import {CreateEmployeeDto} from "@/modules/employees/dto/create-employee.dto";
-import {DeleteResult} from "typeorm";
+import {DeleteResult, UpdateResult} from "typeorm";
 import {DeleteEmployeeDto} from "@/modules/employees/dto/delete-employee.dto";
+import {UpdateEmployeeDto} from "@/modules/employees/dto/update-employee.dto";
 
 @Controller('employees')
 export class EmployeesController {
@@ -101,6 +102,14 @@ export class EmployeesController {
             queryString,
             searchFields,
         })
+    }
+
+    @Put('/update-profile/:id')
+    async updateEmployeeProfile(
+        @Body() data: UpdateEmployeeDto,
+        @Param('id') employeeId: string,
+    ): Promise<Employee> {
+        return await this.employeesService.updateEmployeeProfile(data, +employeeId)
     }
 
     @Delete('/delete-employees')
