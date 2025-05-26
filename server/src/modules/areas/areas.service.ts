@@ -20,40 +20,40 @@ export class AreasService {
     }
 
     async create(createAreaDto: CreateAreaDto, imageUrl: string) {
-        try {
-            const {area_desc} = createAreaDto;
-            let areaCode: string;
-            let areaCodeExist;
+        const {area_desc} = createAreaDto;
 
-            do {
-                areaCode = generateUniqueCode("Area", 6)
-                areaCodeExist = await this.areaRepository.findOneBy({
-                    area_code: areaCode,
-                });
-            } while (areaCodeExist);
+        const areaExist = await this.areaRepository
+            .createQueryBuilder('ar')
+            .where('LOWER(ar.area_desc) = LOWER(:area_desc)', {area_desc: area_desc})
+            .getOne()
 
-            const newArea = this.areaRepository.create({
+        if (areaExist) {
+            throw new BadRequestException('Khu phân loại đã tồn tại!')
+        }
+
+        let areaCode: string;
+        let areaCodeExist;
+
+        do {
+            areaCode = generateUniqueCode("Area", 6)
+            areaCodeExist = await this.areaRepository.findOneBy({
                 area_code: areaCode,
-                area_desc,
-                image_url: imageUrl,
-                created_at: new Date(),
-                updated_at: new Date(),
-            })
+            });
+        } while (areaCodeExist);
 
-            const saveArea = await this.areaRepository.save(newArea)
+        const newArea = this.areaRepository.create({
+            area_code: areaCode,
+            area_desc,
+            image_url: imageUrl,
+            created_at: new Date(),
+            updated_at: new Date(),
+        })
 
-            return {
-                message: 'Tạo khu phân loại thành công',
-                data: saveArea,
-            }
-        } catch (e) {
-            console.log('Lỗi: ', e.message)
+        const saveArea = await this.areaRepository.save(newArea)
 
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình tạo khu phân loại');
+        return {
+            message: 'Tạo khu phân loại thành công',
+            data: saveArea,
         }
     }
 

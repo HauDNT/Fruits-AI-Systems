@@ -18,7 +18,7 @@ private:
   int targetAngle = 90;
   unsigned long lastMoveTime = 0;
   int moveStep = 1;
-  unsigned long moveInterval = 3;  // ms
+  unsigned long moveInterval = 5;  // ms
 
 public:
   Joint(int pin, int minA = 0, int maxA = 180, int defaultA = 90) {

@@ -29,12 +29,12 @@ const CreateNewAreaForm = ({
         }
     })
 
-    const handleSubmit = (values: AreaBodyType) => {
+    const handleSubmit = async (values: AreaBodyType) => {
         const formData = new FormData();
         formData.append('area_desc', values.area_desc);
         formData.append('area_image', values.area_image);
 
-        const submitResult = onSubmit(formData);
+        const submitResult = await onSubmit(formData);
         if (submitResult) {
             form.reset();
         }

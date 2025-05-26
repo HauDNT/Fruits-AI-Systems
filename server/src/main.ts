@@ -1,10 +1,11 @@
+import { join } from 'path';
+import * as express from 'express';
 import {NestFactory} from "@nestjs/core";
 import { ValidationPipe } from '@nestjs/common';
 import {AppModule} from "./app.module";
 import {ConfigService} from "@nestjs/config";
 import {swaggerConfig} from "@/config/swagger-config";
-import { join } from 'path';
-import * as express from 'express';
+import { AllExceptionsFilter } from "@/utils/AllExceptionsFilter";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -29,6 +30,9 @@ async function bootstrap() {
             transform: true,
         }),
     );
+
+    // Global filters
+    app.useGlobalFilters(new AllExceptionsFilter());
 
     // Serve static files in "uploads" folder at "/uploads" path
     app.use('/uploads', express.static(join(process.cwd(), 'uploads')));

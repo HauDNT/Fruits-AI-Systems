@@ -4,8 +4,8 @@ import z from 'zod'
 export const AreaBody = z
     .object({
         area_desc: z.string()
-            .min(3, 'Mô tả trái cây có ít nhất 3 ký tự')
-            .max(50, 'Mô tả trái cây có tối đa 50 ký tự'),
+            .min(8, 'Mô tả khu có ít nhất 8 ký tự')
+            .max(50, 'Mô tả khu có tối đa 50 ký tự'),
         area_image: z
             .instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
             .refine(
@@ -22,23 +22,4 @@ export const AreaBody = z
             ),
     })
 
-// Fruit type schema
-export const AreaTypeBody = z
-    .object({
-        area_desc: z.string()
-            .min(3, 'Mô tả khu phân loại có ít nhất 3 ký tự')
-            .max(50, 'Mô tả khu phân loại có tối đa 50 ký tự'),
-        area_image: z
-            .instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
-            .refine(
-                (file) => file.size <= 5 * 1024 * 1024,
-                { message: 'Ảnh phải nhỏ hơn 5MB' }
-            )
-            .refine(
-                (file) => ['image/jpeg', 'image/png', 'image/gif'].includes(file.type),
-                { message: 'Chỉ chấp nhận định dạng JPG, PNG hoặc GIF' }
-            ),
-    })
-
 export type AreaBodyType = z.TypeOf<typeof AreaBody>
-export type AreaTypeBodyType = z.TypeOf<typeof AreaTypeBody>

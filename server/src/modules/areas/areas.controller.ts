@@ -1,16 +1,28 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, BadRequestException, InternalServerErrorException} from '@nestjs/common';
-import {FileInterceptor} from '@nestjs/platform-express';
-import {diskStorage} from 'multer';
 import {extname} from 'path';
-import {plainToInstance} from 'class-transformer';
+import {DeleteResult} from "typeorm";
 import * as fs from 'fs/promises';
+import {diskStorage} from 'multer';
+import {plainToInstance} from 'class-transformer';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    Query,
+    UseInterceptors,
+    UploadedFile,
+    BadRequestException,
+} from '@nestjs/common';
+import {FileInterceptor} from '@nestjs/platform-express';
 import {AreasService} from './areas.service';
 import {CreateAreaDto} from './dto/create-area.dto';
 import {UpdateAreaDto} from './dto/update-area.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {DeleteAreaDto} from "@/modules/areas/dto/delete-area.dto";
-import {DeleteResult} from "typeorm";
 
 @Controller('areas')
 export class AreasController {
@@ -23,7 +35,7 @@ export class AreasController {
             destination: async (req, file, callback) => {
                 const uploadPath = './uploads/images/areas';
                 try {
-                    await fs.mkdir(uploadPath, { recursive: true });
+                    await fs.mkdir(uploadPath, {recursive: true});
                     callback(null, uploadPath);
                 } catch (error) {
                     callback(new Error('Không thể tạo thư mục lưu trữ ảnh khu phân loại'), null);
@@ -42,35 +54,27 @@ export class AreasController {
             cb(null, true);
         },
         limits: {
-            fileSize: 5 * 1024 * 1024, // Giới hạn 5MB
+            fileSize: 5 * 1024 * 1024,
         },
     }))
     async create(
         @UploadedFile() file: Express.Multer.File,
-        @Body() body: any) {
-        try {
-            if (!file) {
-                throw new BadRequestException('Vui lòng gửi file ảnh');
-            }
+        @Body() body: CreateAreaDto) {
 
-            if (!body.area_desc) {
-                throw new BadRequestException('Thiếu thông tin bắt buộc: mô tả');
-            }
-
-            const createAreaDto = plainToInstance(CreateAreaDto, {
-                area_desc: body.area_desc,
-            })
-            const imageUrl = `/uploads/images/areas/${file.filename}`;
-
-            return await this.areasService.create(createAreaDto, imageUrl);
-        } catch (error) {
-            console.log('-> Error: ', error.message)
-
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-            throw new InternalServerErrorException('Lỗi khi thêm khu phân loại: ' + error.message);
+        if (!file) {
+            throw new BadRequestException('Vui lòng gửi file ảnh');
         }
+
+        if (!body.area_desc) {
+            throw new BadRequestException('Thiếu thông tin bắt buộc: mô tả');
+        }
+
+        const createAreaDto = plainToInstance(CreateAreaDto, {
+            area_desc: body.area_desc,
+        })
+        const imageUrl = `/uploads/images/areas/${file.filename}`;
+
+        return await this.areasService.create(createAreaDto, imageUrl);
     }
 
     @Get('/all')
@@ -105,7 +109,7 @@ export class AreasController {
 
     @Delete('/delete-areas')
     async deleteAreas(@Body() data: DeleteAreaDto): Promise<DeleteResult> {
-        const { areaIds } = data
+        const {areaIds} = data
         return await this.areasService.deleteAreas(areaIds);
     }
 }

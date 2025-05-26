@@ -44,12 +44,9 @@ export const AdminSidebarItems = [
         ],
     },
     {
-        name: "Cấu hình học máy",
+        name: "Cấu hình Raspberry",
         icon: <BrainCircuit size={25}/>,
-        subItems: [
-            {name: "Máy chủ Raspberry", path: "/admin/raspberryConfig"},
-            {name: "Mô hình máy học", path: "#"},
-        ],
+        path: "/admin/raspberryConfig",
     },
     {
         name: "Lịch sử phân loại",
