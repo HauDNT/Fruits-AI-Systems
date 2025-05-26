@@ -8,8 +8,6 @@ import {
     Get,
     Post,
     Body,
-    Patch,
-    Param,
     Delete,
     Query,
     UseInterceptors,
@@ -19,7 +17,6 @@ import {
 import {FileInterceptor} from '@nestjs/platform-express';
 import {AreasService} from './areas.service';
 import {CreateAreaDto} from './dto/create-area.dto';
-import {UpdateAreaDto} from './dto/update-area.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {DeleteAreaDto} from "@/modules/areas/dto/delete-area.dto";
@@ -95,16 +92,6 @@ export class AreasController {
             queryString,
             searchFields,
         })
-    }
-
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.areasService.findOne(+id);
-    }
-
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateAreaDto: UpdateAreaDto) {
-        return this.areasService.update(+id, updateAreaDto);
     }
 
     @Delete('/delete-areas')

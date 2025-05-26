@@ -4,7 +4,6 @@ import * as fs from 'fs/promises';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
 import {CreateAreaDto} from './dto/create-area.dto';
-import {UpdateAreaDto} from './dto/update-area.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {generateUniqueCode} from "@/utils/generateUniqueCode";
@@ -135,14 +134,6 @@ export class AreasService {
 
             throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách khu');
         }
-    }
-
-    findOne(id: number) {
-        return `This action returns a #${id} area`;
-    }
-
-    update(id: number, updateAreaDto: UpdateAreaDto) {
-        return `This action updates a #${id} area`;
     }
 
     async deleteAreas(areaIds: string[]): Promise<DeleteResult> {

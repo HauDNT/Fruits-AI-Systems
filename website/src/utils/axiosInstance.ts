@@ -32,7 +32,7 @@ export default axiosInstance;
 
 export const handleAxiosError = (error) => {
     if (axios.isAxiosError(error) && error.response) {
-        return error.response.data.description || "Axios error fetch API (No description)";
+        return error.response.data.message || "Axios error fetch API (No description)";
     }
 
     return `Axios error. Error: ${error}`;
