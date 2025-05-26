@@ -18,7 +18,7 @@ private:
   int targetAngle = 90;
   unsigned long lastMoveTime = 0;
   int moveStep = 1;
-  unsigned long moveInterval = 5;  // ms
+  unsigned long moveInterval = 10;  // ms
 
 public:
   Joint(int pin, int minA = 0, int maxA = 180, int defaultA = 90) {
@@ -104,7 +104,7 @@ public:
     : servo1(4, 0, 180, 30),
       servo2(16, 0, 180, 80),
       servo3(17, 0, 180, 30),
-      servo4(5, 0, 160, 120),
+      servo4(5, 0, 180, 130),
       servo5(18, 0, 180, 80),
       servo6(19, 0, 180, 85) {}
 
