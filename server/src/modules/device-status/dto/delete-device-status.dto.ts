@@ -2,6 +2,6 @@ import {IsArray, IsNotEmpty} from "class-validator";
 
 export class DeleteDeviceStatusDto {
     @IsArray()
-    @IsNotEmpty({ message: 'Status list id is not empty' })
+    @IsNotEmpty({ message: 'Danh sách trạng thái thiết bị cần xoá không được rỗng' })
     statusIds: string[];
 }

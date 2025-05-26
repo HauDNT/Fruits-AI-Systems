@@ -3,21 +3,16 @@ import {
     Get,
     Post,
     Body,
-    Patch,
-    Param,
-    Delete,
     UseInterceptors,
     UploadedFile,
-    HttpException, InternalServerErrorException, BadRequestException, Query
+    BadRequestException, Query
 } from '@nestjs/common';
+import {extname} from "path";
+import * as fs from 'fs/promises';
+import {diskStorage} from "multer";
 import {DevicesService} from './devices.service';
 import {CreateDeviceDto} from './dto/create-device.dto';
-import {UpdateDeviceDto} from './dto/update-device.dto';
 import {FileInterceptor} from "@nestjs/platform-express";
-import {diskStorage} from "multer";
-import * as fs from 'fs/promises';
-import {extname} from "path";
-import {plainToInstance} from "class-transformer";
 import {TableMetaData} from "@/interfaces/table";
 import {DeviceClassificationFlat} from "@/interfaces";
 
@@ -57,34 +52,14 @@ export class DevicesController {
     }))
     async create(
         @UploadedFile() file: Express.Multer.File,
-        @Body() body: any,
+        @Body() createDeviceDto: CreateDeviceDto,
     ) {
-        try {
-            if (!file) {
-                throw new BadRequestException('Vui lòng gửi file ảnh');
-            }
-
-            if (!body.type_id || !body.status_id || !body.area_id) {
-                throw new BadRequestException('Thiếu thông tin bắt buộc: khu vực, trạng thái, loại thiết bị');
-            }
-
-            const createDeviceDto = plainToInstance(CreateDeviceDto, {
-                type_id: body.type_id,
-                status_id: body.status_id,
-                area_id: body.area_id,
-            })
-            const imageUrl = `uploads/images/devices/${file.filename}`
-
-            return await this.devicesService.create(createDeviceDto, imageUrl)
-        } catch (e) {
-            console.log('Lỗi: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình tạo thiết bị mới');
+        if (!file) {
+            throw new BadRequestException('Vui lòng gửi file ảnh');
         }
+        const imageUrl = `uploads/images/devices/${file.filename}`
+
+        return await this.devicesService.create(createDeviceDto, imageUrl)
     }
 
     @Get()
@@ -105,15 +80,5 @@ export class DevicesController {
     @Get('/raspberry-all')
     async findAllRaspberry() {
         return await this.devicesService.findAllRaspberry();
-    }
-
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateDeviceDto: UpdateDeviceDto) {
-        return this.devicesService.update(+id, updateDeviceDto);
-    }
-
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.devicesService.remove(+id);
     }
 }

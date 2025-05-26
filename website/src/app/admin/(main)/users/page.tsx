@@ -43,7 +43,6 @@ export default function Users() {
                 totalPages: resData.meta.totalPages,
             })
         } catch (e) {
-            console.log('Error: ', e)
             toast({
                 title: 'Không thể tải lên danh sách tài khoản người dùng',
                 variant: 'destructive',
@@ -71,7 +70,6 @@ export default function Users() {
             }
         } catch (error) {
             const errorMessage = handleAxiosError(error);
-            console.error('Thêm tài khoản thất bại:', error);
 
             toast({
                 title: "Thêm tài khoản thất bại",
@@ -121,7 +119,6 @@ export default function Users() {
             }
         } catch (error) {
             const errorMessage = handleAxiosError(error);
-            console.log("Xoá trạng thái thất bại")
 
             toast({
                 title: "Xoá trạng thái thất bại",

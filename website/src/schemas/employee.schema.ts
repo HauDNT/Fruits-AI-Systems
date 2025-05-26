@@ -2,10 +2,16 @@ import z from "zod"
 
 export const EmployeeBody = z
     .object({
-        fullname: z.string({ message: 'Vui lòng nhập họ và tên' }),
+        fullname: z
+            .string({ message: 'Vui lòng nhập họ và tên' })
+            .min(5, { message: 'Họ và tên có ít nhất 5 ký tự' })
+            .max(100, { message: 'Họ và tên có nhiều nhất 100 ký tự' }),
         gender: z.string({ message: 'Vui lòng chọn giới tính' }),
-        phone_number: z.string({ message: 'Vui lòng nhập số điện thoại' }),
-        areaId: z.string({ message: 'Vui lòng chọn khu vực lắp đặt' }),
+        phone_number: z
+            .string({ message: 'Vui lòng nhập số điện thoại' })
+            .min(1, { message: 'Số điện thoại có ít nhất 1 ký tự' })
+            .max(11, { message: 'Số điện thoại có nhiều nhất 11 ký tự' }),
+        area_id: z.string({ message: 'Vui lòng chọn khu vực lắp đặt' }),
         employee_image: z
             .instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
             .refine(

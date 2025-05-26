@@ -4,11 +4,11 @@ import z from 'zod'
 export const FruitBody = z
     .object({
         fruit_name: z.string()
-            .min(3, 'Tên trái cây có ít nhất 3 ký tự')
-            .max(50, 'Tên trái cây có tối đa 50 ký tự'),
+            .min(1, 'Tên trái cây có ít nhất 1 ký tự')
+            .max(100, 'Tên trái cây có tối đa 100 ký tự'),
         fruit_desc: z.string()
-            .min(3, 'Mô tả trái cây có ít nhất 3 ký tự')
-            .max(50, 'Mô tả trái cây có tối đa 50 ký tự'),
+            .min(1, 'Mô tả trái cây có ít nhất 1 ký tự')
+            .max(100, 'Mô tả trái cây có tối đa 100 ký tự'),
         fruit_types: z
             .array(z.string().min(1))
             .refine(
@@ -34,12 +34,14 @@ export const FruitBody = z
 // Fruit type schema
 export const FruitTypeBody = z
     .object({
-        type_name: z.string()
-            .min(3, 'Tình trạng trái cây có ít nhất 3 ký tự')
+        type_name: z
+            .string()
+            .min(1, 'Tình trạng trái cây có ít nhất 1 ký tự')
             .max(50, 'Tình trạng cây có tối đa 50 ký tự'),
-        type_desc: z.string()
-            .min(3, 'Mô tả có ít nhất 3 ký tự')
-            .max(50, 'Mô tả có tối đa 50 ký tự'),
+        type_desc: z
+            .string()
+            .min(1, 'Mô tả có ít nhất 1 ký tự')
+            .max(100, 'Mô tả có tối đa 100 ký tự'),
     })
 
 export type FruitBodyType = z.TypeOf<typeof FruitBody>

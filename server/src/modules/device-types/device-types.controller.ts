@@ -1,7 +1,6 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, Query} from '@nestjs/common';
+import {Controller, Get, Post, Body, Delete, Query} from '@nestjs/common';
 import {DeviceTypesService} from './device-types.service';
 import {CreateDeviceTypeDto} from './dto/create-device-type.dto';
-import {UpdateDeviceTypeDto} from './dto/update-device-type.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
 import {DeleteResult} from "typeorm";

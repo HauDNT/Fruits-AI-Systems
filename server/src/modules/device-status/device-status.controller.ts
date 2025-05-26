@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, Query} from '@nestjs/common';
+import {Controller, Get, Post, Body, Delete, Query} from '@nestjs/common';
 import {DeviceStatusService} from './device-status.service';
 import {CreateDeviceStatusDto} from './dto/create-device-status.dto';
 import {DeviceStatus} from "@/modules/device-status/entities/device-status.entity";

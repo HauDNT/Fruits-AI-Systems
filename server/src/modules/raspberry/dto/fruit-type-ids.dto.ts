@@ -2,10 +2,10 @@ import {IsNotEmpty, IsNumber} from "class-validator";
 
 export class FruitTypeIdsDto {
     @IsNumber()
-    @IsNotEmpty()
+    @IsNotEmpty({message: 'Mã trái cây không được bỏ trống'})
     fruit_id: number;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsNotEmpty({message: 'Mã tình trạng trái cây không được bỏ trống'})
     type_id: number;
 }

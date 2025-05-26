@@ -23,7 +23,7 @@ export class EmployeesService {
 
     async create(createEmployeeDto: CreateEmployeeDto, imageUrl: string) {
         try {
-            const {fullname, gender, phone_number, areaId} = createEmployeeDto
+            const {fullname, gender, phone_number, area_id} = createEmployeeDto
             const checkEmployeeExist = await this.employeeRepository
                 .createQueryBuilder('existEmployee')
                 .where('LOWER(existEmployee.fullname) = LOWER(:fullname)', {fullname: fullname})
@@ -34,7 +34,7 @@ export class EmployeesService {
                 throw new BadRequestException('Đã tồn tại thông tin của nhân viên này')
             }
 
-            const area = await this.areaRepository.findOneBy({id: areaId})
+            const area = await this.areaRepository.findOneBy({id: area_id})
 
             let employeeCode: string
             let employeeCodeExist

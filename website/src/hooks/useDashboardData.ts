@@ -1,5 +1,4 @@
-// hooks/useDashboardData.ts
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import {useToast} from "@/hooks/use-toast";
 
@@ -58,7 +57,11 @@ export function useDashboardData() {
                 amountDeviceTypes: deviceTypes.data,
             });
         } catch (err) {
-            toast({title: "Tải dữ liệu card dashboard thất bại", description: handleAxiosError(err), variant: "destructive"});
+            toast({
+                title: "Tải dữ liệu card dashboard thất bại",
+                description: handleAxiosError(err),
+                variant: "destructive"
+            });
         }
     };
 
@@ -69,7 +72,11 @@ export function useDashboardData() {
             setFruits(names);
             setClassifyChartTab(prev => ({...prev, fruit: names[0]}));
         } catch (err) {
-            toast({title: "Tải danh sách trái cây thất bại", description: handleAxiosError(err), variant: "destructive"});
+            toast({
+                title: "Tải danh sách trái cây thất bại",
+                description: handleAxiosError(err),
+                variant: "destructive"
+            });
         }
     };
 
@@ -87,7 +94,11 @@ export function useDashboardData() {
             const res = await axiosInstance.get("/statistical/ratio-fruits");
             setRatioFruits(res.data);
         } catch (err) {
-            toast({title: "Tải dữ liệu phân bổ trái cây thất bại", description: handleAxiosError(err), variant: "destructive"});
+            toast({
+                title: "Tải dữ liệu phân bổ trái cây thất bại",
+                description: handleAxiosError(err),
+                variant: "destructive"
+            });
         }
     }
 
@@ -96,7 +107,11 @@ export function useDashboardData() {
             const res = await axiosInstance.get("/statistical/employees-each-area");
             setEmployeesEachArea(res.data);
         } catch (err) {
-            toast({title: "Tải dữ liệu nhân viên của từng khu phân loại thất bại", description: handleAxiosError(err), variant: "destructive"});
+            toast({
+                title: "Tải dữ liệu nhân viên của từng khu phân loại thất bại",
+                description: handleAxiosError(err),
+                variant: "destructive"
+            });
         }
     }
 
@@ -113,6 +128,11 @@ export function useDashboardData() {
         }
     }, [classifyChartTab]);
 
+    const onUpdateEventSocketListener = useCallback(async () => {
+        await fetchChartData(classifyChartTab.fruit!, classifyChartTab.timeFrame);
+        await fetchRatioOfFruits();
+    }, [classifyChartTab.fruit, classifyChartTab.timeFrame]);
+
     return {
         cardData,
         fruits,
@@ -122,5 +142,6 @@ export function useDashboardData() {
         classifyChartTab,
         onSelectTab,
         setCardData,
+        onUpdateEventSocketListener,
     };
 }

@@ -1,7 +1,5 @@
 import {
-    HttpException,
     Injectable,
-    InternalServerErrorException,
     BadRequestException,
 } from '@nestjs/common';
 import {TableMetaData} from "@/interfaces/table";
@@ -20,39 +18,29 @@ export class FruitTypesService {
     }
 
     async create(createFruitTypeDto: CreateFruitTypeDto) {
-        try {
-            const {type_name, type_desc} = createFruitTypeDto;
+        const {type_name, type_desc} = createFruitTypeDto;
 
-            const checkExistType = await this.fruitTypeRepository
-                .createQueryBuilder('fruitType')
-                .where('LOWER(fruitType.type_name) = LOWER(:type_name)', {type_name: type_name})
-                .getOne()
+        const checkExistType = await this.fruitTypeRepository
+            .createQueryBuilder('fruitType')
+            .where('LOWER(fruitType.type_name) = LOWER(:type_name)', {type_name: type_name})
+            .getOne()
 
-            if (!checkExistType) {
-                const newType = await this.fruitTypeRepository.create({
-                    type_name: type_name,
-                    type_desc: type_desc,
-                    created_at: new Date(),
-                    updated_at: new Date(),
-                })
+        if (!checkExistType) {
+            const newType = await this.fruitTypeRepository.create({
+                type_name: type_name,
+                type_desc: type_desc,
+                created_at: new Date(),
+                updated_at: new Date(),
+            })
 
-                const savedType = await this.fruitTypeRepository.save(newType);
+            const savedType = await this.fruitTypeRepository.save(newType);
 
-                return {
-                    message: 'Tạo trạng thái thành công',
-                    data: savedType,
-                };
-            } else {
-                throw new BadRequestException('Trạng thái đã tồn tại')
-            }
-        } catch (e) {
-            console.log('Lỗi: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình tạo tình trạng trái cây mới');
+            return {
+                message: 'Tạo trạng thái thành công',
+                data: savedType,
+            };
+        } else {
+            throw new BadRequestException('Trạng thái đã tồn tại')
         }
     }
 
@@ -111,21 +99,11 @@ export class FruitTypesService {
     }
 
     async deleteFruitTypes(fruitTypeIds: string[]): Promise<DeleteResult> {
-        try {
-            const checkBeforeDelete = await this.fruitTypeRepository.findBy({id: In(fruitTypeIds)})
-            if (checkBeforeDelete.length) {
-                return await this.fruitTypeRepository.delete(fruitTypeIds);
-            } else {
-                throw new BadRequestException('Tình trạng trái cây không tồn tại')
-            }
-        } catch (e) {
-            console.log('Error when delete fruit types: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình xoá tình trạng trái cây');
+        const checkBeforeDelete = await this.fruitTypeRepository.findBy({id: In(fruitTypeIds)})
+        if (checkBeforeDelete.length) {
+            return await this.fruitTypeRepository.delete(fruitTypeIds);
+        } else {
+            throw new BadRequestException('Tình trạng trái cây không tồn tại')
         }
     }
 }

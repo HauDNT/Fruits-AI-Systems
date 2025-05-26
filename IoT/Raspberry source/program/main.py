@@ -29,7 +29,7 @@ def hot_update_config(recogRunner, loop, data=None):
     
     try:
         if data:
-            required_fields = ['labels', 'raspAccessToken', 'model_path', 'areaId']
+            required_fields = ['labels', 'raspAccessToken', 'model_path', 'area_id']
             if not all(field in data for field in required_fields):
                 raise ValueError(f"Dữ liệu cấu hình thiếu các trường: {required_fields}")
             config_data = data.copy()

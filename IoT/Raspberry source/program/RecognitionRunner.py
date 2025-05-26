@@ -143,7 +143,7 @@ class RecognitionRunner:
                         fieldsData = {
                             "confidence_level": f"{final_result['confidence']:.10f}",
                             "result": final_result['label'],
-                            "areaId": f"{self.raspberry_config['areaId']}"
+                            "area_id": f"{self.raspberry_config['area_id']}"
                         }
                         
                         try:

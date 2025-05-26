@@ -42,9 +42,11 @@ export default function Areas() {
                 totalPages: resData.meta.totalPages,
             })
         } catch (e) {
-            console.log('Error: ', e)
+            const errorMessage = handleAxiosError(error);
+
             toast({
                 title: 'Không thể tải lên danh sách khu',
+                description: errorMessage,
                 variant: 'destructive',
             })
         }
@@ -72,7 +74,6 @@ export default function Areas() {
             }
         } catch (error) {
             const errorMessage = handleAxiosError(error);
-            console.error('Thêm khu thất bại:', error);
 
             toast({
                 title: "Thêm khu thất bại",
@@ -122,7 +123,6 @@ export default function Areas() {
             }
         } catch (error) {
             const errorMessage = handleAxiosError(error);
-            console.log("Xoá trạng thái thất bại")
 
             toast({
                 title: "Xoá trạng thái thất bại",

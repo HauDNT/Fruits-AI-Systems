@@ -1,4 +1,4 @@
-import {BadRequestException, HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import {InjectRepository} from "@nestjs/typeorm";
@@ -57,117 +57,87 @@ export class AreasService {
     }
 
     async findAll() {
-        try {
-            const areas = await this.areaRepository.find()
+        const areas = await this.areaRepository.find()
 
-            areas.forEach((area, index) => {
-                areas[index] = omitFields(area, ['image_url', 'created_at', 'updated_at', 'deleted_at'])
-            })
+        areas.forEach((area, index) => {
+            areas[index] = omitFields(area, ['image_url', 'created_at', 'updated_at', 'deleted_at'])
+        })
 
-            return areas
-        } catch (e) {
-            console.log('Lỗi: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách khu phân loại');
-        }
+        return areas
     }
 
     async getAreasByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<Area>> {
-        try {
-            const {
-                page,
-                limit,
-                queryString,
-                searchFields,
-            } = data;
+        const {
+            page,
+            limit,
+            queryString,
+            searchFields,
+        } = data;
 
-            const skip = (page - 1) * limit;
-            const take = limit;
+        const skip = (page - 1) * limit;
+        const take = limit;
 
-            const where: any = {};
-            where.deleted_at = IsNull();
+        const where: any = {};
+        where.deleted_at = IsNull();
 
-            let searchConditions: any[] = [];
-            if (queryString && searchFields) {
-                const fields = searchFields.split(',').map((field) => field.trim());
-                searchConditions = fields.map((field) => ({
-                    ...where,
-                    [field]: Like(`%${queryString}%`),
-                }));
-            }
-
-            const [areas, total] = await this.areaRepository.findAndCount({
-                where: searchConditions.length > 0 ? searchConditions : where,
-                select: ['id', 'area_code', 'area_desc', 'created_at', 'updated_at'],
-                skip,
-                take,
-            })
-
-            const totalPages = Math.ceil(total / limit)
-
-            return {
-                "columns": [
-                    {"key": "id", "displayName": "ID", "type": "number"},
-                    {"key": "area_code", "displayName": "Mã khu", "type": "string"},
-                    {"key": "area_desc", "displayName": "Mô tả", "type": "string"},
-                    {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
-                    {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
-                ],
-                "values": areas,
-                "meta": {
-                    "totalItems": total,
-                    "currentPage": page,
-                    "totalPages": totalPages,
-                    "limit": limit,
-                },
-            };
-        } catch (e) {
-            console.log('Lỗi: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách khu');
+        let searchConditions: any[] = [];
+        if (queryString && searchFields) {
+            const fields = searchFields.split(',').map((field) => field.trim());
+            searchConditions = fields.map((field) => ({
+                ...where,
+                [field]: Like(`%${queryString}%`),
+            }));
         }
+
+        const [areas, total] = await this.areaRepository.findAndCount({
+            where: searchConditions.length > 0 ? searchConditions : where,
+            select: ['id', 'area_code', 'area_desc', 'created_at', 'updated_at'],
+            skip,
+            take,
+        })
+
+        const totalPages = Math.ceil(total / limit)
+
+        return {
+            "columns": [
+                {"key": "id", "displayName": "ID", "type": "number"},
+                {"key": "area_code", "displayName": "Mã khu", "type": "string"},
+                {"key": "area_desc", "displayName": "Mô tả", "type": "string"},
+                {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
+                {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
+            ],
+            "values": areas,
+            "meta": {
+                "totalItems": total,
+                "currentPage": page,
+                "totalPages": totalPages,
+                "limit": limit,
+            },
+        };
     }
 
     async deleteAreas(areaIds: string[]): Promise<DeleteResult> {
-        try {
-            if (!Array.isArray(areaIds) || areaIds.length === 0) {
-                throw new BadRequestException('Danh sách id khu phân loại không hợp lệ');
-            }
-
-            const areas = await this.areaRepository.find({
-                where: {id: In(areaIds)},
-            })
-
-            if (areas.length !== areaIds.length) {
-                throw new BadRequestException('Một hoặc nhiều khu phân loại không tồn tại');
-            }
-
-            for (const area of areas) {
-                const fileAreaImgPath = path.join(process.cwd(), area.image_url)
-                try {
-                    await fs.unlink(fileAreaImgPath);
-                } catch (error) {
-                    console.error(`Error deleting file ${fileAreaImgPath}: `, error.message);
-                }
-            }
-
-            return await this.areaRepository.delete(areaIds);
-        } catch (e) {
-            console.log('Error when delete areas: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình xoá khu phân loại');
+        if (!Array.isArray(areaIds) || areaIds.length === 0) {
+            throw new BadRequestException('Danh sách mã khu phân loại không hợp lệ');
         }
+
+        const areas = await this.areaRepository.find({
+            where: {id: In(areaIds)},
+        })
+
+        if (areas.length !== areaIds.length) {
+            throw new BadRequestException('Một hoặc nhiều khu phân loại không tồn tại');
+        }
+
+        for (const area of areas) {
+            const fileAreaImgPath = path.join(process.cwd(), area.image_url)
+            try {
+                await fs.unlink(fileAreaImgPath);
+            } catch (error) {
+                console.error(`Error deleting file ${fileAreaImgPath}: `, error.message);
+            }
+        }
+
+        return await this.areaRepository.delete(areaIds);
     }
 }

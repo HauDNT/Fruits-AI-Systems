@@ -2,12 +2,12 @@ import {IsNotEmpty, IsString, Length} from "class-validator";
 
 export class CreateUserDto {
     @IsString()
-    @Length(8, 50, { message: 'Username must be 8 to 50 characters' })
-    @IsNotEmpty({ message: 'Username is not empty' })
+    @Length(1, 50, { message: 'Username phải từ 1 đến 50 ký tự' })
+    @IsNotEmpty({ message: 'Username không được bỏ trống' })
     username: string;
 
     @IsString()
-    @Length(8, 50, { message: 'Password must be 8 to 50 characters' })
-    @IsNotEmpty({ message: 'Password is not empty' })
+    @Length(1, 50, { message: 'Mật khẩu phải từ 1 đến 50 ký tự' })
+    @IsNotEmpty({ message: 'Mật khẩu không được bỏ trống' })
     password: string;
 }

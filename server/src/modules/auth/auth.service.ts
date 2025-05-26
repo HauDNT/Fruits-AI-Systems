@@ -18,44 +18,34 @@ export class AuthService {
     }
 
     async login(data: LoginDTO): Promise<LoginResponse>  {
-        try {
-            const account = await this.userRepository.findOne({
-                where: {
-                    username: data.username,
-                }
-            })
-
-            if (!account) {
-                throw new UnauthorizedException('Tài khoản không tồn tại')
+        const account = await this.userRepository.findOne({
+            where: {
+                username: data.username,
             }
+        })
 
-            const isValidPassword: boolean = await comparePassword(
-                data.password,
-                account.password,
-            )
+        if (!account) {
+            throw new UnauthorizedException('Tài khoản không tồn tại')
+        }
 
-            if (!isValidPassword) {
-                throw new UnauthorizedException('Mật khẩu không trùng khớp')
-            }
+        const isValidPassword: boolean = await comparePassword(
+            data.password,
+            account.password,
+        )
 
-            const payload: JWTLoginPayload = {
-                userId: account.id,
-                username: account.username,
-            }
+        if (!isValidPassword) {
+            throw new UnauthorizedException('Mật khẩu không trùng khớp')
+        }
 
-            return {
-                userId: account.id,
-                username: account.username,
-                accessToken: this.jwtService.sign(payload),
-            }
-        } catch (e) {
-            console.log(`Lỗi đăng nhập: ${e.message}`)
+        const payload: JWTLoginPayload = {
+            userId: account.id,
+            username: account.username,
+        }
 
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình đăng nhập');
+        return {
+            userId: account.id,
+            username: account.username,
+            accessToken: this.jwtService.sign(payload),
         }
     }
 }

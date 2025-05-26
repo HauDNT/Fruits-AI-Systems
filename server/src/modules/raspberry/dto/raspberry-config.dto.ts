@@ -1,16 +1,16 @@
-import {IsArray, IsNotEmpty, IsNumber, IsString, Length} from "class-validator";
+import {IsArray, IsNotEmpty, IsNumber, IsString,} from "class-validator";
 import {FruitTypeIdsDto} from "@/modules/raspberry/dto/fruit-type-ids.dto";
 
 export class RaspberryConfigDto {
     @IsNumber()
-    @IsNotEmpty()
+    @IsNotEmpty({message: 'Mã thiết bị không được bỏ trống'})
     device_id: number;
 
     @IsString()
-    @IsNotEmpty()
+    @IsNotEmpty({message: 'Mã định danh thiết bị không được bỏ trống'})
     device_code: string;
 
     @IsArray()
-    @IsNotEmpty()
+    @IsNotEmpty({message: 'Danh sách nhãn học máy phân loại không được bỏ trống'})
     labels: FruitTypeIdsDto[];
 }

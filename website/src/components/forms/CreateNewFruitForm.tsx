@@ -65,6 +65,9 @@ const CreateNewFruitForm = ({
         formData.append('fruit_types', JSON.stringify(storeFruitTypeChecked));
         formData.append('fruit_image', values.fruit_image);
 
+        console.log('Form data')
+        console.table(formData)
+
         const submitResult = onSubmit(formData);
         if (submitResult) {
             form.reset();

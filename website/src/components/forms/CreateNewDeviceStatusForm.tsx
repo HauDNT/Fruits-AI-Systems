@@ -19,6 +19,7 @@ import { DeviceStatusBody, DeviceStatusBodyType } from "@/schemas/device.schema"
 const CreateNewDeviceStatusForm = ({
     className,
     onSubmit,
+    onClose,
 }: FormInterface) => {
     const form = useForm<DeviceStatusBodyType>({
         resolver: zodResolver(DeviceStatusBody),

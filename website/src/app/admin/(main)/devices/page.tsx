@@ -12,7 +12,10 @@ import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 
 export default function Devices() {
     const {toast} = useToast()
-    const [data, setData] = useState([])
+    const [data, setData] = useState({
+        columns: [],
+        values: [],
+    });
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
     const searchFields = "device_code, deviceType, deviceStatus, areaBelong"
@@ -56,7 +59,6 @@ export default function Devices() {
                 totalPages: resData.meta.totalPages,
             })
         } catch (e) {
-            console.log('Error: ', e)
             toast({
                 title: 'Không thể tải lên danh sách thiết bị',
                 variant: 'destructive',
@@ -72,6 +74,7 @@ export default function Devices() {
 
             if (resData.status === 201) {
                 setCreateFormState(false)
+
                 setData(prev => ({
                     ...prev,
                     values: [...prev.values, resData.data.data]
@@ -82,7 +85,6 @@ export default function Devices() {
             }
         }  catch (error) {
             const errorMessage = handleAxiosError(error);
-            console.log('Thêm thiết bị thất bại: ', error)
 
             toast({
                 title: "Thêm thiết bị thất bại",

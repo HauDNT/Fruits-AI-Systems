@@ -41,7 +41,7 @@ const CreateNewEmployeeForm = ({
             fullname: undefined,
             gender: undefined,
             phone_number: undefined,
-            areaId: undefined,
+            area_id: undefined,
             employee_image: undefined,
         }
     })
@@ -66,7 +66,7 @@ const CreateNewEmployeeForm = ({
         formData.append('fullname', values.fullname)
         formData.append('gender', values.gender)
         formData.append('phone_number', values.phone_number)
-        formData.append('areaId', values.areaId)
+        formData.append('area_id', values.area_id)
         formData.append('employee_image', values.employee_image)
 
         const submitResult = onSubmit(formData);
@@ -156,7 +156,7 @@ const CreateNewEmployeeForm = ({
                         />
                         <FormField
                             control={form.control}
-                            name="areaId"
+                            name="area_id"
                             render={({field}) => (
                                 <FormItem className="mb-0">
                                     <FormLabel>Khu vực làm việc</FormLabel>

@@ -23,12 +23,18 @@ export const DeviceBody = z
 
 export const DeviceTypeBody = z
     .object({
-        type_name: z.string().min(3, { message: 'Vui lòng nhập tên loại thiết bị' })
+        type_name: z
+            .string()
+            .min(3, { message: 'Tên loại thiết bị có ít nhất 3 ký tự' })
+            .max(50, { message: 'Tên loại thiết bị có nhiều nhất 50 ký tự' })
     })
 
 export const DeviceStatusBody = z
     .object({
-        status_name: z.string().min(3, { message: 'Vui lòng nhập tên trạng thái thiết bị' })
+        status_name: z
+            .string()
+            .min(3, { message: 'Tình trạng thiết bị có ít nhất 3 ký tự' })
+            .max(50, { message: 'Tình trạng thiết bị có nhiều nhất 50 ký tự' })
     })
 
 export type DeviceBodyType = z.TypeOf<typeof DeviceBody>

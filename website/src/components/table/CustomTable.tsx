@@ -7,7 +7,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/table/index";
-import { MdMore } from "react-icons/md";
+import {MdMore} from "react-icons/md";
 import {CustomTableProps} from "@/interfaces/table";
 import {renderCellValues} from "@/utils/customTableUtils";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -16,21 +16,21 @@ import {Checkbox} from "@/components/ui/checkbox"
 import Searchbar from "@/components/common/Searchbar";
 
 export default function CustomTable({
-    tableTitle,
-    tableData,
-    onSort,
-    classname,
-    createItem,
-    deleteItem,
-    restoreItem,
-    detailItem,
-    search,
-    handleCreate,
-    handleDetail,
-    handleDelete,
-    handleRestore,
-    handleSearch,
-}: CustomTableProps) {
+                                        tableTitle,
+                                        tableData,
+                                        onSort,
+                                        classname,
+                                        createItem,
+                                        deleteItem,
+                                        restoreItem,
+                                        detailItem,
+                                        search,
+                                        handleCreate,
+                                        handleDetail,
+                                        handleDelete,
+                                        handleRestore,
+                                        handleSearch,
+                                    }: CustomTableProps) {
     const {columns, values} = tableData;
     const [itemSelected, setItemSelect] = useState<number[]>([]);
 
@@ -176,36 +176,11 @@ export default function CustomTable({
                                                                        className="px-5 py-4 sm:px-6 text-center">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className={'w-full'}>
-                                                                <span
-                                                                    className="block text-gray-600 text-center text-theme-sm">
-                                                                {
-                                                                    col.key === 'is_online' ?
-                                                                        (
-                                                                            <div
-                                                                                className={'w-100 flex justify-center'}>
-                                                                                {
-                                                                                    row[col.key] === true ? (
-                                                                                        <span
-                                                                                            className={`absolute h-2 w-2 rounded-full bg-green-400 flex`}>
-                                                                                        <span
-                                                                                            className="absolute inline-flex w-full h-full bg-green-400 rounded-full opacity-75 animate-ping"/>
-                                                                                    </span>
-                                                                                    ) : (
-                                                                                        <span
-                                                                                            className="relative h-2 w-2 rounded-full bg-red-400 flex items-center justify-center">
-                                                                                        <span
-                                                                                            className="inline-flex w-full h-full bg-red-400 rounded-full opacity-75 animate-ping"/>
-                                                                                    </span>
-                                                                                    )
-                                                                                }
-                                                                            </div>
-                                                                        ) : (
+                                                                        <span className="block text-gray-600 text-center text-theme-sm">
                                                                             <span>
                                                                                 {renderCellValues(col, row[col.key])}
                                                                             </span>
-                                                                        )
-                                                                }
-                                                                </span>
+                                                                        </span>
                                                                     </div>
                                                                 </div>
                                                             </TableCell>

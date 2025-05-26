@@ -98,7 +98,7 @@ const AdminLoginForm: React.FC = () => {
                             onSubmit={form.handleSubmit(handleLogin)}
                         >
                             <h1 className="text-4xl leading-normal font-bold text-blue-600 mb-4 text-center">
-                                Trang quản trị <br/> EduFlexHub</h1>
+                                Trang quản trị <br/> FruitsFlow</h1>
                             <FormField
                                 control={form.control}
                                 name="username"

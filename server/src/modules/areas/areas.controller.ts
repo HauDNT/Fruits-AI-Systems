@@ -56,19 +56,12 @@ export class AreasController {
     }))
     async create(
         @UploadedFile() file: Express.Multer.File,
-        @Body() body: CreateAreaDto) {
+        @Body() createAreaDto: CreateAreaDto) {
 
         if (!file) {
             throw new BadRequestException('Vui lòng gửi file ảnh');
         }
 
-        if (!body.area_desc) {
-            throw new BadRequestException('Thiếu thông tin bắt buộc: mô tả');
-        }
-
-        const createAreaDto = plainToInstance(CreateAreaDto, {
-            area_desc: body.area_desc,
-        })
         const imageUrl = `/uploads/images/areas/${file.filename}`;
 
         return await this.areasService.create(createAreaDto, imageUrl);

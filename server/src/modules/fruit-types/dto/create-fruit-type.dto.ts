@@ -2,12 +2,12 @@ import {IsNotEmpty, IsString, Length} from "class-validator";
 
 export class CreateFruitTypeDto {
     @IsString()
-    @Length(8, 50, { message: 'Fruit type must be 8 to 50 characters' })
-    @IsNotEmpty({ message: 'Fruit type is not empty' })
+    @Length(1, 50, { message: 'Tình trạng trái cây phải từ 1 đến 50 ký tự' })
+    @IsNotEmpty({ message: 'Tình trạng trái cây không được bỏ trống' })
     type_name: string;
 
     @IsString()
-    @Length(8, 50, { message: 'Fruit description must be 8 to 50 characters' })
-    @IsNotEmpty({ message: 'Fruit description is not empty' })
+    @Length(1, 100, { message: 'Mô tả tình trạng phải từ 1 đến 100 ký tự' })
+    @IsNotEmpty({ message: 'Mô tả tình trạng không được bỏ trống' })
     type_desc: string;
 }

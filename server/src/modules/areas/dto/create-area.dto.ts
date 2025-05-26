@@ -2,9 +2,9 @@ import {IsNotEmpty, IsString, Length} from "class-validator";
 import {Transform} from 'class-transformer';
 
 export class CreateAreaDto {
-    @IsString({message: 'Area description must be string'})
-    @IsNotEmpty({message: 'Area description is not empty'})
-    @Length(8, 50, {message: 'Area description must be 8 to 50 characters'})
+    @IsString({message: 'Mô tả khu vực phải là chuỗi'})
+    @IsNotEmpty({message: 'Mô tả khu vực không được bỏ trống'})
+    @Length(8, 50, {message: 'Mô tả khu vực phải từ 8 đến 50 ký tự'})
     @Transform(({value}) => String(value))
     area_desc: string;
 }

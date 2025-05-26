@@ -15,25 +15,30 @@ export default function AdminDashboard() {
     const {
         cardData, fruits, ratioFruits, employeesEachArea,
         chartData, classifyChartTab, onSelectTab, setCardData,
+        onUpdateEventSocketListener,
     } = useDashboardData();
 
     const cardItems = [
-        {name: "Tài khoản", number: cardData.amountAccounts, icon: UserCircle},
-        {name: "Loại trái cây", number: cardData.amountFruits, icon: Apple},
+        {name: "Tài khoản", number: cardData.amountAccounts, icon: UserCircle, disableAnimation: false},
+        {name: "Loại trái cây", number: cardData.amountFruits, icon: Apple, disableAnimation: false},
         {
-            name: "Số lượng đã phân loại", number: cardData.amountResults, icon: ScanEye,
+            name: "Số lượng đã phân loại",
+            number: cardData.amountResults,
+            icon: ScanEye,
+            disableAnimation: true,
             className: "border-[3px] border-blue-500 p-5 dark:border-yellow-300"
         },
-        {name: "Thiết bị", number: cardData.amountDevices, icon: Cpu},
-        {name: "Nhân viên", number: cardData.amountEmployees, icon: Users},
-        {name: "Tình trạng trái cây", number: cardData.amountFruitTypes, icon: HeartPulse},
-        {name: "Khu vực", number: cardData.amountAreas, icon: Computer},
-        {name: "Loại thiết bị", number: cardData.amountDeviceTypes, icon: Zap},
+        {name: "Thiết bị", number: cardData.amountDevices, icon: Cpu, disableAnimation: false},
+        {name: "Nhân viên", number: cardData.amountEmployees, icon: Users, disableAnimation: false},
+        {name: "Tình trạng trái cây", number: cardData.amountFruitTypes, icon: HeartPulse, disableAnimation: false},
+        {name: "Khu vực", number: cardData.amountAreas, icon: Computer, disableAnimation: false},
+        {name: "Loại thiết bị", number: cardData.amountDeviceTypes, icon: Zap, disableAnimation: false},
     ];
 
-    useSocketFruitClassify((newResult: ClassifyResultInterface) => {
+    useSocketFruitClassify( async (newResult: ClassifyResultInterface) => {
         if (newResult.fruit === classifyChartTab.fruit) {
             setCardData(prev => ({...prev, amountResults: prev.amountResults + 1}));
+            await onUpdateEventSocketListener();
         }
     });
 
@@ -43,7 +48,7 @@ export default function AdminDashboard() {
                 {[0, 4].map(i => (
                     <div key={i} className="grid grid-cols-4 gap-4 md:gap-4">
                         {cardItems.slice(i, i + 4).map((item, idx) => (
-                            <DashboardCard key={idx} item={item} className={item.className} />
+                            <DashboardCard key={idx} item={item} className={item.className} disableAnimation={item.disableAnimation} />
                         ))}
                     </div>
                 ))}

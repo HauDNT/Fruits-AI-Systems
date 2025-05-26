@@ -3,8 +3,6 @@ import {
     Get,
     Post,
     Body,
-    Patch,
-    Param,
     Delete,
     Query,
     UseInterceptors,
@@ -17,12 +15,11 @@ import {diskStorage} from 'multer';
 import {extname} from 'path';
 import {FruitsService} from './fruits.service';
 import {CreateFruitDto} from './dto/create-fruit.dto';
-import {UpdateFruitDto} from './dto/update-fruit.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {DeleteFruitDto} from "./dto/delete-fruit.dto"
 import {DeleteResult} from "typeorm";
-import { plainToInstance } from 'class-transformer';
+import {plainToInstance} from 'class-transformer';
 import * as fs from 'fs/promises';
 
 @Controller('fruits')
@@ -37,7 +34,7 @@ export class FruitsController {
             destination: async (req, file, callback) => {
                 const uploadPath = './uploads/images/fruits';
                 try {
-                    await fs.mkdir(uploadPath, { recursive: true });
+                    await fs.mkdir(uploadPath, {recursive: true});
                     callback(null, uploadPath);
                 } catch (error) {
                     callback(new Error('Không thể tạo thư mục lưu trữ ảnh trái cây'), null);
@@ -56,50 +53,23 @@ export class FruitsController {
             cb(null, true);
         },
         limits: {
-            fileSize: 5 * 1024 * 1024, // Giới hạn 5MB
+            fileSize: 5 * 1024 * 1024,
         },
     }))
     async create(
         @UploadedFile() file: Express.Multer.File,
-        @Body() body: any) {
-        try {
-            if (!file) {
-                throw new BadRequestException('Vui lòng gửi file ảnh');
-            }
-
-            if (!body.fruit_name || !body.fruit_desc || !body.fruit_types) {
-                throw new BadRequestException('Thiếu thông tin bắt buộc: tên trái cây, mô tả, hoặc tình trạng');
-            }
-
-            // Parse fruit_types từ chuỗi JSON
-            let fruitTypes: number[];
-            try {
-                fruitTypes = JSON.parse(body.fruit_types);
-                if (!Array.isArray(fruitTypes) || fruitTypes.length === 0) {
-                    throw new Error('fruit_types phải là một mảng không rỗng');
-                }
-            } catch (parseError) {
-                throw new BadRequestException('fruit_types không hợp lệ, phải là mảng JSON');
-            }
-
-            // Tạo DTO và validate
-            const createFruitDto = plainToInstance(CreateFruitDto, {
-                fruit_name: body.fruit_name,
-                fruit_desc: body.fruit_desc,
-                fruit_types: fruitTypes,
-            });
-
-            const imageUrl = `/uploads/images/fruits/${file.filename}`;
-
-            return await this.fruitsService.create(createFruitDto, imageUrl);
-        } catch (error) {
-            console.log('-> Error: ', error.message)
-
-            if (error instanceof BadRequestException) {
-                throw error;
-            }
-            throw new InternalServerErrorException('Lỗi khi thêm trái cây: ' + error.message);
+        @Body() createFruitDto: CreateFruitDto) {
+        if (!file) {
+            throw new BadRequestException('Vui lòng gửi file ảnh');
         }
+
+        if (!createFruitDto.fruit_types) {
+            throw new BadRequestException('Không tìm thấy dữ liệu về tình trạng trái cây từ kết quả');
+        }
+
+        const imageUrl = `/uploads/images/fruits/${file.filename}`;
+
+        return await this.fruitsService.create(createFruitDto, imageUrl);
     }
 
     @Get('/all')
@@ -120,16 +90,6 @@ export class FruitsController {
             queryString,
             searchFields,
         })
-    }
-
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.fruitsService.findOne(+id);
-    }
-
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateFruitDto: UpdateFruitDto) {
-        return this.fruitsService.update(+id, updateFruitDto);
     }
 
     @Delete('/delete-fruits')

@@ -1,5 +1,4 @@
 'use client'
-
 import {useToast} from "@/hooks/use-toast";
 import {useEffect, useState} from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -44,7 +43,6 @@ export default function DeviceTypes() {
                 totalPages: resData.meta.totalPages,
             })
         } catch (e) {
-            console.log('Error: ', e)
             toast({
                 title: 'Không thể tải lên danh sách loại thiết bị',
                 variant: 'destructive',
@@ -72,7 +70,6 @@ export default function DeviceTypes() {
             }
         } catch (error) {
             const errorMessage = handleAxiosError(error);
-            console.error('Thêm loại thiết bị mới thất bại:', error);
 
             toast({
                 title: "Thêm loại thiết bị mới thất bại",
@@ -115,7 +112,6 @@ export default function DeviceTypes() {
             }
         } catch (error) {
             const errorMessage = handleAxiosError(error);
-            console.log("Xoá loại thiết bị thất bại")
 
             toast({
                 title: "Xoá loại thiết bị thất bại",
@@ -177,6 +173,7 @@ export default function DeviceTypes() {
                 >
                     <CreateNewDeviceTypeForm
                         onSubmit={(formData: DeviceTypeBodyType) => createNewDeviceType(formData)}
+                        onClose={() => setCreateFormState(false)}
                     />
                 </ModelLayer>
             </div>
