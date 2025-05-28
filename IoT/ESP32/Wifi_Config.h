@@ -8,7 +8,7 @@ const char *password = "haudnt@2003";
 
 void connectWiFi() {
   WiFi.begin(ssid, password);
-  Serial.println("Connecting to wifi...");
+  Serial.println("Đang kết nối đến mạng wifi...");
 
   unsigned long startTime = millis();
   const unsigned long timeout = 10000;  // 10 giây
@@ -19,9 +19,9 @@ void connectWiFi() {
   }
 
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\nConnected to " + String(ssid) + " success!");
+    Serial.println("\Kết nối đến " + String(ssid) + " thành công!");
   } else {
-    Serial.println("\nWiFi connection failed after timeout!");
+    Serial.println("\nKết nối Wifi thất bại, vượt quá thời gian!");
   }
 }
 

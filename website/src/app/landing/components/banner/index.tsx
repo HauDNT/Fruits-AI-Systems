@@ -9,13 +9,13 @@ const Banner = () => {
                     <div className='grid grid-cols-1 lg:grid-cols-12 my-4'>
                         <div className='col-span-7 relative z-1'>
                             <h1 className="text-4xl lg:text-7xl font-bold mb-5 text-black md:text-start text-center">
-                                <span className="text-green-600">Fruit</span>Flow
+                                <span className="text-green-600">Fruits</span>Flow
                             </h1>
                             <p className='text-black md:text-lg font-normal mb-10 md:text-start text-center'>
-                                FruitFlow là nền tảng quản lý phân loại trái cây thông minh, giúp theo dõi và tối ưu hóa quy trình phân loại tự động mọi lúc, mọi nơi.
+                                FruitsFlow là nền tảng quản lý phân loại trái cây thông minh, giúp theo dõi và tối ưu hóa quy trình phân loại tự động mọi lúc, mọi nơi.
                                 <br/>
                                 Với công nghệ thị giác máy tính tiên tiến, giao diện thân thiện và khả năng thống kê thời gian thực,
-                                FruitFlow mang đến giải pháp hiệu quả để quản lý chất lượng trái cây một cách dễ dàng.
+                                FruitsFlow mang đến giải pháp hiệu quả để quản lý chất lượng trái cây một cách dễ dàng.
                             </p>
                             <StartButton/>
                         </div>

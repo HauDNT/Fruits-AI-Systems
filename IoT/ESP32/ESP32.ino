@@ -1,106 +1,135 @@
-// #include "Wifi_Config.h"
-// #include "MQTT_Config.h"
+#include "Wifi_Config.h"
+#include "MQTT_Config.h"
 #include "RoboticArm.h"
 
 RobotArm robot_arm;
 
+bool isControlClassifyRobotic = false;
+unsigned long timeToMoveAtTheEndConvey = 9000;
+
+// Hàng đợi xử lý tuần tự kết quả phân loại
+struct Node {
+  String fruitClass;
+  unsigned long timestamp;
+  Node* next;
+};
+
+Node* front = nullptr;
+Node* rear = nullptr;
+const int MAX_QUEUE_SIZE = 10;
+int queueSize = 0;
+
+void enqueueResult(String newResult) {
+  if (newResult == "" || queueSize >= MAX_QUEUE_SIZE || ESP.getFreeHeap() < 2000) {
+    Serial.println("Không thể thêm kết quả vào hàng đợi: Invalid result, tràn bộ nhớ (" + String(ESP.getFreeHeap()) + " bytes)");
+    return;
+  }
+
+  Node* newNode = new Node;
+  if (newNode == nullptr) {
+    Serial.println("Cấp phát vùng nhớ cho node mới thất bại!");
+    return;
+  }
+
+  newNode->fruitClass = newResult;
+  newNode->timestamp = millis();
+  newNode->next = nullptr;
+
+  if (rear == nullptr) {
+    front = rear = newNode;
+  } else {
+    rear->next = newNode;
+    rear = newNode;
+  }
+  queueSize++;
+  Serial.println("-> Enqueued: " + newResult + ", kích thước hàng đợi: " + String(queueSize) + ", heap còn trống: " + String(ESP.getFreeHeap()));
+}
+
+void dequeueResult() {
+  if (front == nullptr) {
+    return;
+  }
+
+  Node* temp = front;
+  front = front->next;
+
+  if (front == nullptr) {
+    rear = nullptr;
+  }
+
+  delete temp;
+  queueSize--;
+  Serial.println("-> Dequeued, kích thước hàng đợi: " + String(queueSize) + ", heap còn trống: " + String(ESP.getFreeHeap()));
+}
+
+String getFrontResultInQueue() {
+  if (front != nullptr) {
+    return front -> fruitClass;
+  }
+  return "";
+}
+
+unsigned long getFrontTimestamp() {
+  if (front != nullptr) {
+    return front->timestamp;
+  }
+  return 0;
+}
+
+// --------------------------------------- Chương trình chính --------------------------------------------
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("Attaching servos...");
+  Serial.println("Bắt đầu khởi tạo chương trình...");
+  Serial.println("Khởi tạo vùng nhớ heap: " + String(ESP.getFreeHeap()));
 
-  /* Connect Wifi 
-    connectWiFi();
-    if (WiFi.status() != WL_CONNECTED) {
-      Serial.println("WiFi connection failed!");
-      return;
-    }
-    Serial.println("WiFi IP: " + WiFi.localIP().toString());
-  */
-
-  /* Init robotic arm
-    robot_arm.attachAll();
-    robot_arm.centerAll();
-    Serial.println("Robot arm ready. Send command via Serial.");
-  */
+  connectWiFi();
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Kết nối Wifi thất bại!");
+    return;
+  }
+  Serial.println("WiFi IP: " + WiFi.localIP().toString());
 
   robot_arm.attachAll();
   robot_arm.centerAllSmooth();
-  Serial.println("Robot arm ready. Send command via Serial.");
 
-  /* Init MQTT
-    client.setServer(mqtt_server, 1883);
-    client.setCallback(callback);
-  */
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+
+  Serial.println("Chương trình đã sẵn sàng!");
 }
 
 void loop() {
-  /* Control robotic arm
-    robot_arm.updateAll();
-
-    if (Serial.available()) {
-      String inputCommand = Serial.readStringUntil('\n');
-      inputCommand.trim();
-
-      int spaceIndex = inputCommand.indexOf(' ');
-      if (spaceIndex == -1) {
-        Serial.println("Invalid command format. Use: <servoX> <angle>");
-        return;
-      }
-
-      String joint = inputCommand.substring(0, spaceIndex);
-      int angle = inputCommand.substring(spaceIndex + 1).toInt();
-
-      if (joint == "servo1") robot_arm.servo1.moveTo(angle);
-      else if (joint == "servo2") robot_arm.servo2.moveTo(angle);
-      else if (joint == "servo3") robot_arm.servo3.moveTo(angle);
-      else if (joint == "servo4") robot_arm.servo4.moveTo(angle);
-      else if (joint == "servo5") robot_arm.servo5.moveTo(angle);
-      else if (joint == "servo6") robot_arm.servo6.moveTo(angle);
-      else if (joint == "debug") robot_arm.debugAll();
-      else Serial.println("Unknown command");
-    }
-  */
+  static unsigned long lastReconnectAttempt = 0;
 
   robot_arm.updateAll();
 
-  if (Serial.available()) {
-    String inputCommand = Serial.readStringUntil('\n');
-    inputCommand.trim();
-
-    int spaceIndex = inputCommand.indexOf(' ');
-    if (spaceIndex == -1) {
-      Serial.println("Invalid command format. Use: <servoX> <angle>");
-      return;
+  if (!client.connected()) {
+    unsigned long mqtt_connect_current_time = millis();
+    if (mqtt_connect_current_time - lastReconnectAttempt > 5000) {
+      lastReconnectAttempt = mqtt_connect_current_time;
+      connectMQTT();
     }
-
-    Serial.print("Command: ");
-    Serial.println(inputCommand);
-
-    String joint = inputCommand.substring(0, spaceIndex);
-    int angle = inputCommand.substring(spaceIndex + 1).toInt();
-
-    if (joint == "servo1") robot_arm.servo1.moveTo(angle);
-    else if (joint == "servo2") robot_arm.servo2.moveTo(angle);
-    else if (joint == "servo3") robot_arm.servo3.moveTo(angle);
-    else if (joint == "servo4") robot_arm.servo4.moveTo(angle);
-    else if (joint == "servo5") robot_arm.servo5.moveTo(angle);
-    else if (joint == "servo6") robot_arm.servo6.moveTo(angle);
-    else if (joint == "debug") robot_arm.debugAll();
-    else Serial.println("Unknown command");
+  } else {
+    client.loop();
   }
 
-  /* Trying connect MQTT
-    static unsigned long lastReconnectAttempt = 0;
+  if (mqttFruitResult != "") {
+    enqueueResult(mqttFruitResult);
+    mqttFruitResult = "";
+  }
 
-    if (!client.connected()) {
-      unsigned long mqtt_connect_current_time = millis();
-      if (mqtt_connect_current_time - lastReconnectAttempt > 5000) {
-        lastReconnectAttempt = mqtt_connect_current_time;
-        connectMQTT();
-      }
-    } else {
-      client.loop();
-    }
-  */
+  String frontResult = getFrontResultInQueue();
+  if (frontResult != "" && 
+      millis() - getFrontTimestamp() >= timeToMoveAtTheEndConvey &&
+      !robot_arm.servo1.isServoMoving() &&
+      !robot_arm.servo2.isServoMoving() &&
+      !robot_arm.servo3.isServoMoving() &&
+      !robot_arm.servo4.isServoMoving() &&
+      !robot_arm.servo5.isServoMoving() &&
+      !robot_arm.servo6.isServoMoving()) {
+    Serial.println("Cánh tay bắt đầu phân loại cho: " + frontResult);
+    robot_arm.roboticArmMoveToClassifyFruit(frontResult); 
+    dequeueResult();
+  }
 }

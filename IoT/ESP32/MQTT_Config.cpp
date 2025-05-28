@@ -1,9 +1,12 @@
 #include "MQTT_Config.h"
+#include "RoboticArm.h"
 
-const char* mqtt_server = "192.168.59.65";
+extern RobotArm robot_arm;
+const char* mqtt_server = "192.168.104.65";
 const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
+String mqttFruitResult = "";
 
 void connectMQTT() {
   int retryCount = 0;
@@ -11,13 +14,13 @@ void connectMQTT() {
     Serial.print("Connecting to MQTT...");
 
     if (client.connect("ESP32-Controller")) {
-      Serial.println("Connected to Raspberry MQTT Broker!");
+      Serial.println("Đã kết nối đến Raspberry MQTT Broker!");
       client.subscribe("fruit/result");
       return;
     } else {
       Serial.print("Failed, rc=");
       Serial.print(client.state());
-      Serial.println(" Retrying in 5 seconds...");
+      Serial.println(" Thử lại sau 5 giây...");
 
       delay(5000);
       retryCount++;
@@ -25,26 +28,27 @@ void connectMQTT() {
   }
 
   if (retryCount >= 5) {
-    Serial.println("MQTT Connection failed! Restarting ESP32...");
-    // ESP.restart();  // Tự động reset nếu không kết nối được
+    Serial.println("MQTT kết nối thất bại! Khởi động lại ESP32...");
   }
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message received: ");
   String message;
 
   for (int i = 0; i < length; i++) {
     message += (char)payload[i];
   }
 
-  Serial.println(message);
+  int resultIndex = message.indexOf(':');
+  if (resultIndex != -1) {
+    String fruitResult = message.substring(resultIndex + 1);
+    fruitResult.trim();
+    Serial.println("Kết quả mới: " + fruitResult);
 
-  // if (message.indexOf("Object detected: ") >= 0) {
-  //   String colorName = message.substring(17);
-  //   Serial.println("-> Color: " + colorName);
-  //   // controlServoToClassifyColor(colorName);
-  // }
+    mqttFruitResult = fruitResult;
+  } else {
+    Serial.println("Kết quả không phù hợp, không thể phân loại!");
+  }
 }
 
 void mqttLoop() {
