@@ -76,6 +76,13 @@ unsigned long getFrontTimestamp() {
   return 0;
 }
 
+String getSecondResultInQueue() {
+  if (front != nullptr && front->next != nullptr) {
+    return front->next->fruitClass;
+  }
+  return "";
+}
+
 // --------------------------------------- Chương trình chính --------------------------------------------
 void setup() {
   Serial.begin(115200);
@@ -106,7 +113,7 @@ void loop() {
 
   if (!client.connected()) {
     unsigned long mqtt_connect_current_time = millis();
-    if (mqtt_connect_current_time - lastReconnectAttempt > 5000) {
+    if (mqtt_connect_current_time - lastReconnectAttempt > 2000) {
       lastReconnectAttempt = mqtt_connect_current_time;
       connectMQTT();
     }
@@ -121,15 +128,13 @@ void loop() {
 
   String frontResult = getFrontResultInQueue();
   if (frontResult != "" && 
-      millis() - getFrontTimestamp() >= timeToMoveAtTheEndConvey &&
-      !robot_arm.servo1.isServoMoving() &&
-      !robot_arm.servo2.isServoMoving() &&
-      !robot_arm.servo3.isServoMoving() &&
-      !robot_arm.servo4.isServoMoving() &&
-      !robot_arm.servo5.isServoMoving() &&
-      !robot_arm.servo6.isServoMoving()) {
+      millis() - getFrontTimestamp() >= timeToMoveAtTheEndConvey && !robot_arm.isBusy()) {
     Serial.println("Cánh tay bắt đầu phân loại cho: " + frontResult);
     robot_arm.roboticArmMoveToClassifyFruit(frontResult); 
     dequeueResult();
+
+    if (getFrontResultInQueue() == "") {
+      robot_arm.returnToDefault();
+    }
   }
 }
