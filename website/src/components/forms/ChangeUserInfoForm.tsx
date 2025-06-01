@@ -10,26 +10,36 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import {FormInterface} from "@/interfaces"
+import {UserInfo} from "@/interfaces"
 import ComponentCard from "@/components/common/ComponentCard"
 import InputField from "@/components/inputs/InputField"
 import CustomButton from "@/components/buttons/CustomButton"
-import {UserBody, UserBodyType} from "@/schemas/user.schema"
+import {ChangeUserInfoBody, ChangeUserInfoBodyType} from "@/schemas/user.schema"
 
-const CreateNewUserForm = ({
+const ChangeUserInfoForm = ({
     className,
+    userData,
     onSubmit,
-}: FormInterface) => {
-    const form = useForm<UserBodyType>({
-        resolver: zodResolver(UserBody),
+}: {
+    className?: string,
+    userData: UserInfo,
+    onSubmit?: () => boolean,
+}) => {
+    const form = useForm<ChangeUserInfoBodyType>({
+        resolver: zodResolver(ChangeUserInfoBody),
         defaultValues: {
-            username: '',
             password: '',
+            re_password: '',
         }
     })
 
-    const handleSubmit = (values: UserBodyType) => {
-        const submitResult = onSubmit(values);
+    const handleSubmit = (values: ChangeUserInfoBodyType) => {
+        const formValue = {
+            ...values,
+            username: userData.username,
+        }
+        
+        const submitResult = onSubmit(formValue);
 
         if (submitResult) {
             form.reset();
@@ -37,7 +47,7 @@ const CreateNewUserForm = ({
     };
 
     return (
-        <ComponentCard title="Thêm tài khoản người dùng mới" className={'w-full'}>
+        <ComponentCard title={`Đổi thông tin của tài khoản ${userData?.username}`} className={'w-full'}>
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(handleSubmit)}
@@ -46,13 +56,13 @@ const CreateNewUserForm = ({
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <FormField
                             control={form.control}
-                            name={"username"}
+                            name={"password"}
                             render={({field}) => (
                                 <FormItem className="col-span-full">
-                                    <FormLabel>Tên tài khoản</FormLabel>
+                                    <FormLabel>Mật khẩu mới</FormLabel>
                                     <FormControl>
                                         <InputField
-                                            type="text"
+                                            type="password"
                                             {...field}
                                         />
                                     </FormControl>
@@ -62,10 +72,10 @@ const CreateNewUserForm = ({
                         />
                         <FormField
                             control={form.control}
-                            name={"password"}
+                            name={"re_password"}
                             render={({field}) => (
                                 <FormItem className="col-span-full">
-                                    <FormLabel>Mật khẩu</FormLabel>
+                                    <FormLabel>Nhập lại mật khẩu mới</FormLabel>
                                     <FormControl>
                                         <InputField
                                             type="password"
@@ -78,7 +88,7 @@ const CreateNewUserForm = ({
                         />
 
                         <div className="col-span-full">
-                            <CustomButton type="submit" className='!mt-6 w-full'>Thêm</CustomButton>
+                            <CustomButton type="submit" className='!mt-6 w-full'>Thay đổi</CustomButton>
                         </div>
                     </div>
                 </form>
@@ -87,4 +97,4 @@ const CreateNewUserForm = ({
     )
 }
 
-export default CreateNewUserForm
+export default ChangeUserInfoForm

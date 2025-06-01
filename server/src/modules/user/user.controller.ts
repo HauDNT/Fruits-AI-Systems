@@ -1,10 +1,11 @@
-import {Controller, Get, Post, Body, Param, Delete, Query} from '@nestjs/common';
+import {Controller, Get, Post, Body, Param, Delete, Query, Put} from '@nestjs/common';
 import {UserService} from './user.service';
 import {CreateUserDto} from './dto/create-user.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {User} from "@/modules/user/entities/user.entity";
 import {DeleteResult} from "typeorm";
 import {DeleteUserDto} from "@/modules/user/dto/delete-user.dto";
+import {UpdateUserDto} from "@/modules/user/dto/update-user.dto";
 
 @Controller('user')
 export class UserController {
@@ -14,11 +15,6 @@ export class UserController {
     @Post('/create-user')
     async create(@Body() createUserDto: CreateUserDto) {
         return await this.userService.create(createUserDto);
-    }
-
-    @Get('/all')
-    findAll() {
-        return this.userService.findAll();
     }
 
     @Get()
@@ -35,6 +31,14 @@ export class UserController {
             searchFields,
         })
     }
+
+    @Put('/update')
+    async updateUser(
+        @Body() updateUserDto: UpdateUserDto
+    ): Promise<{status: number, message: string}> {
+        return await this.userService.updateUser(updateUserDto)
+    }
+
 
     @Delete('/delete-users')
     async deleteUsers(

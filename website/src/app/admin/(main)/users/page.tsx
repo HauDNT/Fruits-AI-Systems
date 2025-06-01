@@ -1,5 +1,4 @@
 'use client'
-
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import {useToast} from "@/hooks/use-toast";
 import {useEffect, useState} from "react";
@@ -8,7 +7,8 @@ import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewUserForm from "@/components/forms/CreateNewUserForm";
-import {UserBodyType} from "@/schemas/user.schema";
+import ChangeUserInfoForm from "@/components/forms/ChangeUserInfoForm";
+import {ChangeUserInfoBodyType, UserBodyType} from "@/schemas/user.schema";
 
 export default function Users() {
     const {toast} = useToast()
@@ -16,7 +16,9 @@ export default function Users() {
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
     const searchFields = "username"
+    const [userSelected, setUserSelected] = useState(null)
     const [createFormState, setCreateFormState] = useState(false)
+    const [editFormState, setEditFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
     const fetchUsersByQuery = async (searchQuery: string, searchFields: string) => {
@@ -73,6 +75,31 @@ export default function Users() {
 
             toast({
                 title: "Thêm tài khoản thất bại",
+                description: errorMessage,
+                variant: "destructive",
+            });
+
+            return false;
+        }
+    }
+
+    const updateUserInfo = async (formData: any): Promise<boolean> => {
+        try {
+            const resData = await axiosInstance.put(
+                'user/update',
+                formData
+            )
+
+            if (resData.status === 200) {
+                toast({ title: "Cập nhật tài khoản thành công" , variant: "success"});
+                setEditFormState(false);
+                return true;
+            }
+        } catch (error) {
+            const errorMessage = handleAxiosError(error);
+
+            toast({
+                title: "Cập nhật tài khoản thất bại",
                 description: errorMessage,
                 variant: "destructive",
             });
@@ -155,10 +182,15 @@ export default function Users() {
                     onSort={(key) => console.log(`Sorting by ${key}`)}
                     createItem={true}
                     deleteItem={true}
+                    detailItem={true}
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
                     handleDelete={(itemSelected) => deleteUsers(itemSelected)}
+                    handleDetail={(itemSelected) => {
+                        setUserSelected(itemSelected);
+                        setEditFormState(true);
+                    }}
                     handleSearch={(query) => setSearchQuery(query)}
                 />
 
@@ -180,6 +212,17 @@ export default function Users() {
                 >
                     <CreateNewUserForm
                         onSubmit={(formData: UserBodyType) => createNewUser(formData)}
+                    />
+                </ModelLayer>
+
+                <ModelLayer
+                    isOpen={editFormState}
+                    onClose={() => setEditFormState(false)}
+                    maxWidth="max-w-3xl"
+                >
+                    <ChangeUserInfoForm
+                        userData={userSelected}
+                        onSubmit={(formData: ChangeUserInfoBodyType) => updateUserInfo(formData)}
                     />
                 </ModelLayer>
             </div>

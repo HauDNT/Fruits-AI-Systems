@@ -1,4 +1,4 @@
-import z from 'zod'
+import { z } from 'zod'
 
 // Login schema
 export const LoginBody = z

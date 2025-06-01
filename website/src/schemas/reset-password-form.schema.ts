@@ -1,4 +1,4 @@
-import z from 'zod'
+import { z } from 'zod'
 
 // Reset password forms schema
 export const VerifyEmailFormSchema = z

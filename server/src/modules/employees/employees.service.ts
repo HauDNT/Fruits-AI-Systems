@@ -159,7 +159,7 @@ export class EmployeesService {
                 throw new BadRequestException(`Không tìm thấy nhân viên có mã số ${employeeId}`)
             }
 
-            return this.employeeRepository.save(employee)
+            return await this.employeeRepository.save(employee)
         } catch (e) {
             console.log('Error when update profile employee: ', e.message)
 

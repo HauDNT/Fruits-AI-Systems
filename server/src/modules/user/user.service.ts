@@ -1,5 +1,6 @@
 import {BadRequestException, Injectable} from '@nestjs/common';
 import {CreateUserDto} from './dto/create-user.dto';
+import {UpdateUserDto} from "@/modules/user/dto/update-user.dto";
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
 import {User} from "@/modules/user/entities/user.entity";
@@ -38,10 +39,6 @@ export class UserService {
             message: 'Tạo tài khoản thành công',
             data: newUser,
         };
-    }
-
-    findAll() {
-        return `This action returns all user`;
     }
 
     async getUsersByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<User>> {
@@ -91,6 +88,27 @@ export class UserService {
                 "limit": limit,
             },
         };
+    }
+
+    async updateUser(data: UpdateUserDto) {
+        const user = await this.userRepository.findOneBy({username: data.username})
+
+        if (!user) {
+            throw new BadRequestException('Tài khoản người dùng không tồn tại')
+        }
+
+        const hashedPassword = await hashPassword(data.password)
+
+        await this.userRepository.save({
+            ...user,
+            password: hashedPassword,
+            updated_at: new Date(),
+        })
+
+        return {
+            status: 200,
+            message: `Cập nhật tài khoản ${data.username} thành công`
+        }
     }
 
     async deleteUsers(userIds: string[]): Promise<DeleteResult> {

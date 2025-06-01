@@ -104,3 +104,11 @@ export interface EmployeeDetailInterface {
     created_at: string;
     updated_at: string;
 }
+
+// User info props
+export interface UserInfo {
+    id: number;
+    username: string;
+    created_at: string;
+    updated_at: string;
+}
