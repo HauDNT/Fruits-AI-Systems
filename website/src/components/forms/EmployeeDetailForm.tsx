@@ -87,7 +87,6 @@ const EmployeeDetailForm = ({
         fetchAreas();
     }, []);
 
-    // Đồng bộ formData khi initialData thay đổi (nếu cần)
     useEffect(() => {
         setFormData(initialData);
     }, [initialData]);
