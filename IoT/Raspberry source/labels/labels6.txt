@@ -1,7 +1,0 @@
-# label thay đổi được, chủ yếu dựa vào index của mô hình đưa ra
-apple ripe
-apple rot
-grapes ripe
-grapes rot
-pear ripe
-pear rot

@@ -117,7 +117,7 @@ private:
     }
     else if (currentStep == 2 && !servo6.isServoMoving())
     {
-      servo3.moveTo(80);    // -------
+      servo3.moveTo(75);
       currentStep++;
     }
     else if (currentStep == 3 && !servo3.isServoMoving())
@@ -332,12 +332,12 @@ private:
     }
     else if (currentStep == 2 && currentState == MOVE_TO_BIN)
     {
-      servo4.moveTo(160);
+      servo4.moveTo(140);
       currentStep++;
     }
     else if (currentStep == 3 && !servo4.isServoMoving())
     {
-      servo3.moveTo(40);
+      servo3.moveTo(45);
       currentStep++;
     }
     else if (currentStep == 4 && !servo3.isServoMoving())
@@ -532,17 +532,17 @@ public:
     }
     else if (currentStep == 2 && !servo3.isServoMoving())
     {
-      servo6.moveTo(60);
+      servo4.moveTo(160);
       currentStep++;
     }
-    else if (currentStep == 3 && !servo6.isServoMoving())
+    else if (currentStep == 3 && !servo4.isServoMoving())
     {
       servo5.moveTo(80);
       currentStep++;
     }
     else if (currentStep == 4 && !servo5.isServoMoving())
     {
-      servo4.moveTo(160);
+      servo6.moveTo(60);
       currentStep++;
     }
     else if (currentStep == 5 && !servo6.isServoMoving())
