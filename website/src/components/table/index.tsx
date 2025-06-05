@@ -24,11 +24,10 @@ export const TableRow: React.FC<TableRowProps> = ({children, className}) => {
 // TableCell Component
 export const TableCell: React.FC<TableCellProps> = ({
     children,
-    key = 0,
     isHeader = false,
     className,
     onClick,
 }) => {
     const CellTag = isHeader ? "th" : "td";
-    return <CellTag className={` ${className}`} key={key} onClick={onClick}>{children}</CellTag>;
+    return <CellTag className={` ${className}`} onClick={onClick}>{children}</CellTag>;
 };

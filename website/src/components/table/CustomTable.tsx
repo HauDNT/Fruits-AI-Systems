@@ -106,10 +106,10 @@ export default function CustomTable({
                                     }
                                     {
                                         tableData?.values && tableData?.columns ? (
-                                            columns.map((col) => (
+                                            columns.map((col, index) => (
                                                 col.key !== 'id' ? (
                                                     <TableCell
-                                                        key={col.key}
+                                                        key={index}
                                                         isHeader
                                                         onClick={() => onSort?.(col.key)}
                                                         className="px-5 py-3 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"

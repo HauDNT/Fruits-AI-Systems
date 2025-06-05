@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
-import Chart from "react-apexcharts";
-import ChartTab from "@/components/common/ChartTab";
+import dynamic from "next/dynamic";
 
 interface FruitDistribution {
     fruit: string;
@@ -12,6 +11,8 @@ interface Props {
     chartName: string;
     data: FruitDistribution[];
 }
+
+const Chart = dynamic(() => import("react-apexcharts"), {ssr: false})
 
 export default function PieChartFruitDistribution({ chartName, data }: Props) {
     const labels = data.map(item => item.fruit);

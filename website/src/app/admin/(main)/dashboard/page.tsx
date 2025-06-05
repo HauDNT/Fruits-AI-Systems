@@ -1,4 +1,5 @@
 "use client";
+import dynamic from "next/dynamic";
 import {
     Apple, Cpu, Users, HeartPulse, ScanEye,
     Computer, Zap, UserCircle,
@@ -8,8 +9,12 @@ import {useDashboardData, TIME_FRAMES} from "@/hooks/useDashboardData";
 import DashboardCard from "@/components/cards/DashboardCard";
 import ClassifyResultsChart from "@/components/charts/ClassifyResultsChart";
 import {ClassifyResultInterface} from "@/interfaces";
-import PieChartFruitDistribution from "@/components/charts/PieChartFruitDistribution";
 import MonthlySalesChart from "@/components/charts/EmployeesEachAreaChart";
+import PieChartFruitDistribution from "@/components/charts/PieChartFruitDistribution";
+// const PieChartFruitDistribution = dynamic(
+//     () => import ("@/components/charts/PieChartFruitDistribution"),
+//     { ssr: false },
+// )
 
 export default function AdminDashboard() {
     const {
