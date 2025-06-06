@@ -7,6 +7,7 @@ import {User} from "@/modules/user/entities/user.entity";
 import {hashPassword} from "@/utils/bcrypt";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {TableMetaData} from "@/interfaces/table";
+import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class UserService {
@@ -112,11 +113,7 @@ export class UserService {
     }
 
     async deleteUsers(userIds: string[]): Promise<DeleteResult> {
-        const checkBeforeDelete = await this.userRepository.findBy({ id: In(userIds) })
-        if (checkBeforeDelete.length) {
-            return await this.userRepository.delete(userIds)
-        } else {
-            throw new BadRequestException('Tài khoản người dùng không tồn tại')
-        }
+        await validateAndGetEntitiesByIds(this.userRepository, userIds);
+        return await this.userRepository.delete(userIds)
     }
 }

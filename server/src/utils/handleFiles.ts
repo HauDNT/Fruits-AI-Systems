@@ -1,14 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { unlink } from 'fs/promises';
 
 export async function deleteFile(filePath: string): Promise<void> {
     try {
-        const fullPath = path.join(__dirname, '..', '..', 'uploads', 'models', path.basename(filePath));
+        const fullPath = path.join(process.cwd(), filePath);
 
         if (fs.existsSync(fullPath)) {
             fs.unlinkSync(fullPath);
-            console.log('Đã xoá file:', fullPath);
         } else {
             console.log('File không tồn tại:', fullPath);
         }
@@ -17,3 +15,14 @@ export async function deleteFile(filePath: string): Promise<void> {
     }
 }
 
+export async function deleteFilesInParallel(filePaths: string[]): Promise<void> {
+    const deletePromises = filePaths.map(async filePath => {
+        try {
+            await fs.unlinkSync(filePath)
+        } catch (error) {
+            console.error('Lỗi khi xoá file:', error.message);
+        }
+    });
+
+    await Promise.allSettled(deletePromises)
+}

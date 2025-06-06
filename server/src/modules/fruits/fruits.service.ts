@@ -2,24 +2,37 @@ import {BadRequestException, HttpException, Injectable, InternalServerErrorExcep
 import {CreateFruitDto} from './dto/create-fruit.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
-import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
+import {DataSource, DeleteResult, In, IsNull, Like, QueryRunner, Repository} from "typeorm";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {TableMetaData} from "@/interfaces/table";
 import {FruitImage} from "@/modules/fruit-images/entities/fruit-image.entity";
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
+import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
+import {deleteFilesInParallel} from "@/utils/handleFiles";
+import {deleteRelationsEntityData} from "@/utils/deleteRelationsEntityData";
+import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class FruitsService {
     constructor(
         @InjectRepository(Fruit)
-        private fruitRepository: Repository<Fruit>,
+        private readonly fruitRepository: Repository<Fruit>,
         @InjectRepository(FruitType)
-        private fruitTypeRepository: Repository<FruitType>,
+        private readonly fruitTypeRepository: Repository<FruitType>,
         @InjectRepository(FruitImage)
-        private fruitImageRepository: Repository<FruitImage>,
+        private readonly fruitImageRepository: Repository<FruitImage>,
+        @InjectRepository(FruitClassification)
+        private readonly fruitClassificationRepository: Repository<FruitClassification>,
+        private readonly dataSource: DataSource,
     ) {
+    }
+
+    private extractFilePathsFromFruits(fruits: Fruit[]): string[] {
+        return fruits.flatMap(fruit =>
+            fruit.fruitImages?.map(image => path.join(process.cwd(), image.image_url))
+        ) || []
     }
 
     async create(createFruitDto: CreateFruitDto, imageUrl: string) {
@@ -117,35 +130,41 @@ export class FruitsService {
     }
 
     async deleteFruits(fruitIds: string[]): Promise<DeleteResult> {
-        if (!Array.isArray(fruitIds) || fruitIds.length === 0) {
-            throw new BadRequestException('Danh sách id trái cây không hợp lệ');
-        }
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
-        const fruits = await this.fruitRepository.find({
-            where: { id: In(fruitIds) },
-            relations: ['fruitImages'],
-        });
+        let fruitImagePaths: string[] = [];
 
-        if (fruits.length !== fruitIds.length) {
-            throw new BadRequestException('Một hoặc nhiều trái cây không tồn tại');
-        }
+        try {
+            const fruits = await queryRunner.manager.find(Fruit, {
+                where: { id: In(fruitIds) },
+                relations: ['fruitImages'],
+            });
 
-        const fruitImages = await this.fruitImageRepository.find({
-            where: { fruit: { id: In(fruitIds) } },
-        });
-
-        for (const fruitImage of fruitImages) {
-            const filePath = path.join(process.cwd(), fruitImage.image_url);
-            try {
-                await fs.unlink(filePath);
-                console.log(`Deleted file: ${filePath}`);
-            } catch (error) {
-                console.error(`Error deleting file ${filePath}: `, error.message);
+            if (fruits.length !== fruitIds.length) {
+                throw new BadRequestException('Một hoặc nhiều trái cây không tồn tại');
             }
+
+            fruitImagePaths = this.extractFilePathsFromFruits(fruits);
+
+            await deleteRelationsEntityData(queryRunner, fruitIds, [
+                {entity: FruitImage, relationField: 'fruit'},
+                {entity: FruitClassification, relationField: 'fruit'},
+            ]);
+
+            const deleteFruit = await queryRunner.manager.delete(Fruit, fruitIds);
+
+            await queryRunner.commitTransaction();
+
+            await deleteFilesInParallel(fruitImagePaths);
+
+            return deleteFruit;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw new InternalServerErrorException('Xoá trái cây thất bại: ' + error.message);
+        } finally {
+            await queryRunner.release();
         }
-
-        await this.fruitImageRepository.delete({ fruit: { id: In(fruitIds) } });
-
-        return await this.fruitRepository.delete(fruitIds);
     }
 }

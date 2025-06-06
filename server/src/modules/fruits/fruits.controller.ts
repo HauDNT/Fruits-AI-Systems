@@ -8,7 +8,6 @@ import {
     UseInterceptors,
     UploadedFile,
     BadRequestException,
-    InternalServerErrorException,
 } from '@nestjs/common';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {diskStorage} from 'multer';
@@ -19,7 +18,6 @@ import {TableMetaData} from "@/interfaces/table";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {DeleteFruitDto} from "./dto/delete-fruit.dto"
 import {DeleteResult} from "typeorm";
-import {plainToInstance} from 'class-transformer';
 import * as fs from 'fs/promises';
 
 @Controller('fruits')

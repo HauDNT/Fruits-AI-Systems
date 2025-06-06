@@ -3,7 +3,6 @@ import {
     Get,
     Post,
     Body,
-    Patch,
     Param,
     Delete,
     Query,
@@ -14,7 +13,6 @@ import {
 import {FileInterceptor} from '@nestjs/platform-express';
 import {diskStorage} from 'multer';
 import {extname} from 'path';
-import {plainToInstance} from 'class-transformer';
 import * as fs from 'fs/promises';
 import {EmployeesService} from './employees.service';
 import {TableMetaData} from "@/interfaces/table";
@@ -59,23 +57,13 @@ export class EmployeesController {
     }))
     async create(
         @UploadedFile() file: Express.Multer.File,
-        @Body() body: any
+        @Body() createEmployeeDto: CreateEmployeeDto
     ) {
         try {
             if (!file) {
                 throw new BadRequestException('Vui lòng gửi file ảnh')
             }
 
-            if (!body.fullname || !body.gender || !body.phone_number || !body.areaId) {
-                throw new BadRequestException('Thiếu thông tin bắt buộc: họ tên, giới tính, số điện thoại, khu làm việc')
-            }
-
-            const createEmployeeDto = plainToInstance(CreateEmployeeDto, {
-                fullname: body.fullname,
-                gender: body.gender,
-                phone_number: body.phone_number,
-                areaId: body.areaId,
-            })
             const imageUrl = `/uploads/images/employees/${file.filename}`;
             
             return await this.employeesService.create(createEmployeeDto, imageUrl);

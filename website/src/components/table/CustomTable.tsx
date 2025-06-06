@@ -71,7 +71,10 @@ export default function CustomTable({
                         deleteItem && (
                             <ActionButton
                                 action={"Delete"}
-                                handleAction={async () => handleDelete(itemSelected)}
+                                handleAction={async () => {
+                                    handleDelete(itemSelected)
+                                    setItemSelect([])
+                                }}
                             />
                         )
                     }

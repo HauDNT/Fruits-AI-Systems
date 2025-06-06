@@ -7,6 +7,7 @@ import {omitFields} from "@/utils/omitFields";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {TableMetaData} from "@/interfaces/table";
 import {Device} from "@/modules/devices/entities/device.entity";
+import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class DeviceTypesService {
@@ -103,26 +104,16 @@ export class DeviceTypesService {
     }
 
     async deleteDeviceTypes(typeIds: string[]): Promise<DeleteResult> {
-        if (!Array.isArray(typeIds) || typeIds.length === 0) {
-            throw new BadRequestException('Danh sách id loại thiết bị không hợp lệ');
-        }
+        await validateAndGetEntitiesByIds(this.deviceTypeRepository, typeIds);
 
-        const types = await this.deviceTypeRepository.find({
-            where: {id: In(typeIds)}
+        const checkDeviceLink = await this.deviceRepository.find({
+            where: {deviceType: {id: In(typeIds)}},
+            select: ['id'],
+            relations: ['deviceType'],
         })
 
-        if (types.length !== typeIds.length) {
-            throw new BadRequestException('Một hoặc nhiều loại thiết bị không tồn tại');
-        }
-
-        for (const type of types) {
-            const checkDeviceLink = await this.deviceRepository.findOne({
-                where: {deviceType: {id: type.id}},
-            })
-
-            if (checkDeviceLink) {
-                throw new BadRequestException(`Loại thiết bị ${type.type_name} đang được liên kết với thiết bị. Vui lòng chuyển hoặc xoá thiết bị trước.`);
-            }
+        if (checkDeviceLink.length > 0) {
+            throw new BadRequestException('Một hoặc nhiều loại thiết bị đang được liên kết với thiết bị. Vui lòng chuyển hoặc xoá thiết bị trước.');
         }
 
         return await this.deviceTypeRepository.delete(typeIds)

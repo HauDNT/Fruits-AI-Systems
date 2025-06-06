@@ -10,6 +10,8 @@ import {Area} from "@/modules/areas/entities/area.entity";
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import {UpdateEmployeeDto} from "@/modules/employees/dto/update-employee.dto";
+import {deleteFilesInParallel} from "@/utils/handleFiles";
+import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class EmployeesService {
@@ -77,125 +79,86 @@ export class EmployeesService {
     }
 
     async getEmployeesByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<Employee>> {
-        try {
-            const {
-                page,
-                limit,
-                queryString,
-                searchFields,
-            } = data;
+        const {
+            page,
+            limit,
+            queryString,
+            searchFields,
+        } = data;
 
-            const skip = (page - 1) * limit;
-            const take = limit;
+        const skip = (page - 1) * limit;
+        const take = limit;
 
-            const where: any = {};
-            where.deleted_at = IsNull();
+        const where: any = {};
+        where.deleted_at = IsNull();
 
-            let searchConditions: any[] = [];
-            if (queryString && searchFields) {
-                const fields = searchFields.split(',').map((field) => field.trim());
-                searchConditions = fields.map((field) => ({
-                    ...where,
-                    [field]: Like(`%${queryString}%`),
-                }));
-            }
-
-            const [employees, total] = await this.employeeRepository.findAndCount({
-                where: searchConditions.length > 0 ? searchConditions : where,
-                select: [
-                    'id',
-                    'employee_code',
-                    'fullname',
-                    'avatar_url',
-                    'gender',
-                    'phone_number',
-                    'created_at',
-                    'updated_at',
-                    'area_id'
-                ],
-                skip,
-                take,
-            })
-
-            const totalPages = Math.ceil(total / limit);
-
-            return {
-                columns: [
-                    {key: "id", displayName: "ID", type: "number"},
-                    {key: "employee_code", displayName: "Mã nhân viên", type: "string"},
-                    {key: "fullname", displayName: "Họ và tên", type: "string"},
-                    {key: "gender", displayName: "Giới tính", type: "gender"},
-                    {key: "phone_number", displayName: "Số điện thoại", type: "string"},
-                    {key: "created_at", displayName: "Ngày tạo", type: "date"},
-                    {key: "updated_at", displayName: "Ngày cập nhật", type: "date"},
-                ],
-                values: employees,
-                meta: {
-                    totalItems: total,
-                    currentPage: page,
-                    totalPages: totalPages,
-                    limit: limit,
-                }
-            };
-        } catch (e) {
-            console.log('Lỗi: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình lấy danh sách nhân viên');
+        let searchConditions: any[] = [];
+        if (queryString && searchFields) {
+            const fields = searchFields.split(',').map((field) => field.trim());
+            searchConditions = fields.map((field) => ({
+                ...where,
+                [field]: Like(`%${queryString}%`),
+            }));
         }
+
+        const [employees, total] = await this.employeeRepository.findAndCount({
+            where: searchConditions.length > 0 ? searchConditions : where,
+            select: [
+                'id',
+                'employee_code',
+                'fullname',
+                'avatar_url',
+                'gender',
+                'phone_number',
+                'created_at',
+                'updated_at',
+                'area_id'
+            ],
+            skip,
+            take,
+        })
+
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            columns: [
+                {key: "id", displayName: "ID", type: "number"},
+                {key: "employee_code", displayName: "Mã nhân viên", type: "string"},
+                {key: "fullname", displayName: "Họ và tên", type: "string"},
+                {key: "gender", displayName: "Giới tính", type: "gender"},
+                {key: "phone_number", displayName: "Số điện thoại", type: "string"},
+                {key: "created_at", displayName: "Ngày tạo", type: "date"},
+                {key: "updated_at", displayName: "Ngày cập nhật", type: "date"},
+            ],
+            values: employees,
+            meta: {
+                totalItems: total,
+                currentPage: page,
+                totalPages: totalPages,
+                limit: limit,
+            }
+        };
     }
 
     async updateEmployeeProfile(data: UpdateEmployeeDto, employeeId: number): Promise<Employee> {
-        try {
-            const employee = await this.employeeRepository.preload({
-                id: employeeId,
-                ...data
-            })
+        const employee = await this.employeeRepository.preload({
+            id: employeeId,
+            ...data
+        })
 
-            if (!employee) {
-                throw new BadRequestException(`Không tìm thấy nhân viên có mã số ${employeeId}`)
-            }
-
-            return await this.employeeRepository.save(employee)
-        } catch (e) {
-            console.log('Error when update profile employee: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình cập nhật thông tin nhân viên');
+        if (!employee) {
+            throw new BadRequestException(`Không tìm thấy nhân viên có mã số ${employeeId}`)
         }
+
+        return await this.employeeRepository.save(employee)
     }
 
     async deleteEmployees(employeeIds: string[]): Promise<DeleteResult> {
-        try {
-            const employees = await this.employeeRepository.find({ where: {id: In(employeeIds)}})
-            if (employees.length !== employeeIds.length) {
-                throw new BadRequestException('Một hoặc nhiều thông tin nhân viên không tồn tại')
-            }
+        const employees = await validateAndGetEntitiesByIds(this.employeeRepository, employeeIds);
+        const deleteEmployeesResult =  await this.employeeRepository.delete(employeeIds);
+        const employeeAvatarPaths = employees.map(employee => path.join(process.cwd(), employee.avatar_url));
+        await deleteFilesInParallel(employeeAvatarPaths);
 
-            for (const employee of employees) {
-                const fileEmployeeImgPath = path.join(process.cwd(), employee.avatar_url)
-                try {
-                    await fs.unlink(fileEmployeeImgPath)
-                } catch (error) {
-                    console.error(`Error deleting file ${fileEmployeeImgPath}: `, error.message);
-                }
-            }
-
-            return await this.employeeRepository.delete(employeeIds)
-        } catch (e) {
-            console.log('Error when delete users: ', e.message)
-
-            if (e instanceof HttpException) {
-                throw e;
-            }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình xoá tài khoản người dùng');
-        }
+        return deleteEmployeesResult;
     }
 }

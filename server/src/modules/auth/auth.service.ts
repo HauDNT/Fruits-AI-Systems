@@ -1,4 +1,4 @@
-import {HttpException, Injectable, InternalServerErrorException, UnauthorizedException} from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {LoginDTO} from "@/modules/auth/dto/login.dto";
 import {LoginResponse} from "@/interfaces";
 import {InjectRepository} from "@nestjs/typeorm";

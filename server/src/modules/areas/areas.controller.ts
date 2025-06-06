@@ -2,7 +2,6 @@ import {extname} from 'path';
 import {DeleteResult} from "typeorm";
 import * as fs from 'fs/promises';
 import {diskStorage} from 'multer';
-import {plainToInstance} from 'class-transformer';
 import {
     Controller,
     Get,

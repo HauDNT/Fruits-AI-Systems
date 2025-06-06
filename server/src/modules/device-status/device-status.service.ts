@@ -1,4 +1,4 @@
-import {BadRequestException, HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {CreateDeviceStatusDto} from './dto/create-device-status.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeviceStatus} from "@/modules/device-status/entities/device-status.entity";
@@ -7,6 +7,7 @@ import {omitFields} from "@/utils/omitFields";
 import {Device} from "@/modules/devices/entities/device.entity";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {TableMetaData} from "@/interfaces/table";
+import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class DeviceStatusService {
@@ -103,26 +104,19 @@ export class DeviceStatusService {
     }
 
     async deleteDevicesStatuses(statusIds: string[]): Promise<DeleteResult> {
-        if (!Array.isArray(statusIds) || statusIds.length === 0) {
-            throw new BadRequestException('Danh sách id trạng thái thiết bị không hợp lệ');
-        }
-
-        const statuses = await this.deviceStatusRepository.find({
-            where: {id: In(statusIds)}
+        await validateAndGetEntitiesByIds(this.deviceStatusRepository, statusIds);
+        const checkDeviceLink = await this.deviceRepository.find({
+            where: {
+                deviceStatus: {
+                    id: In(statusIds),
+                },
+            },
+            select: ['id'],
+            relations: ['deviceStatus']
         })
 
-        if (statuses.length !== statusIds.length) {
-            throw new BadRequestException('Một hoặc nhiều trạng thái thiết bị không tồn tại');
-        }
-
-        for (const status of statuses) {
-            const checkDeviceLink = await this.deviceRepository.findOne({
-                where: {deviceStatus: {id: status.id}}
-            })
-
-            if (checkDeviceLink) {
-                throw new BadRequestException('Trạng thái đang được liên kết với thiết bị. Vui lòng chuyển hoặc xoá thiết bị trước.');
-            }
+        if (checkDeviceLink.length > 0) {
+            throw new BadRequestException('Một hoặc nhiều trạng thái đang được liên kết với thiết bị. Vui lòng chuyển hoặc xoá thiết bị trước.');
         }
 
         return await this.deviceStatusRepository.delete(statusIds)

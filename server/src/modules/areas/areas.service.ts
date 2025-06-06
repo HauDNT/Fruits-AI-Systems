@@ -1,20 +1,27 @@
-import {BadRequestException, Injectable} from '@nestjs/common';
+import {BadRequestException, Injectable, InternalServerErrorException} from '@nestjs/common';
 import * as path from 'path';
-import * as fs from 'fs/promises';
 import {InjectRepository} from "@nestjs/typeorm";
-import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
+import {DataSource, DeleteResult, In, IsNull, Like, Repository} from "typeorm";
 import {CreateAreaDto} from './dto/create-area.dto';
 import {TableMetaData} from "@/interfaces/table";
 import {Area} from "@/modules/areas/entities/area.entity";
 import {generateUniqueCode} from "@/utils/generateUniqueCode";
 import {omitFields} from "@/utils/omitFields";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
+import {deleteFilesInParallel} from "@/utils/handleFiles";
+import {deleteRelationsEntityData} from "@/utils/deleteRelationsEntityData";
+import {Employee} from "@/modules/employees/entities/employee.entity";
+import {Device} from "@/modules/devices/entities/device.entity";
+import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
+import {Raspberry} from "@/modules/raspberry/entities/raspberry.entity";
+import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class AreasService {
     constructor(
         @InjectRepository(Area)
-        private areaRepository: Repository<Area>,
+        private readonly areaRepository: Repository<Area>,
+        private readonly dataSource: DataSource,
     ) {
     }
 
@@ -117,27 +124,31 @@ export class AreasService {
     }
 
     async deleteAreas(areaIds: string[]): Promise<DeleteResult> {
-        if (!Array.isArray(areaIds) || areaIds.length === 0) {
-            throw new BadRequestException('Danh sách mã khu phân loại không hợp lệ');
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const areas = await validateAndGetEntitiesByIds(this.areaRepository, areaIds);
+
+            await deleteRelationsEntityData(queryRunner, areaIds, [
+                {entity: Raspberry, relationField: 'device.areaBelong'},
+                {entity: Employee, relationField: 'areaWorkAt'},
+                {entity: Device, relationField: 'areaBelong'},
+                {entity: FruitClassification, relationField: 'areaBelong'},
+            ]);
+
+            const deleteAreasResult = await queryRunner.manager.delete(Area, { id: In(areaIds) });
+            const areaImagePaths = areas.map(area => path.join(process.cwd(), area.image_url));
+            await deleteFilesInParallel(areaImagePaths);
+            await queryRunner.commitTransaction();
+
+            return deleteAreasResult;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw new InternalServerErrorException('Xoá khu phân loại thất bại: ' + error.message);
+        } finally {
+            await queryRunner.release();
         }
-
-        const areas = await this.areaRepository.find({
-            where: {id: In(areaIds)},
-        })
-
-        if (areas.length !== areaIds.length) {
-            throw new BadRequestException('Một hoặc nhiều khu phân loại không tồn tại');
-        }
-
-        for (const area of areas) {
-            const fileAreaImgPath = path.join(process.cwd(), area.image_url)
-            try {
-                await fs.unlink(fileAreaImgPath);
-            } catch (error) {
-                console.error(`Error deleting file ${fileAreaImgPath}: `, error.message);
-            }
-        }
-
-        return await this.areaRepository.delete(areaIds);
     }
 }

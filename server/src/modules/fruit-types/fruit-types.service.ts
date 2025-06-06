@@ -8,6 +8,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {IsNull, Repository, Like, In, DeleteResult} from "typeorm";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
+import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class FruitTypesService {
@@ -99,11 +100,7 @@ export class FruitTypesService {
     }
 
     async deleteFruitTypes(fruitTypeIds: string[]): Promise<DeleteResult> {
-        const checkBeforeDelete = await this.fruitTypeRepository.findBy({id: In(fruitTypeIds)})
-        if (checkBeforeDelete.length) {
-            return await this.fruitTypeRepository.delete(fruitTypeIds);
-        } else {
-            throw new BadRequestException('Tình trạng trái cây không tồn tại')
-        }
+        await validateAndGetEntitiesByIds(this.fruitTypeRepository, fruitTypeIds);
+        return await this.fruitTypeRepository.delete(fruitTypeIds);
     }
 }
