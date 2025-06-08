@@ -9,6 +9,7 @@ import {TableMetaData} from "@/interfaces/table";
 import {Device} from "@/modules/devices/entities/device.entity";
 import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 import {checkAllRelationsBeforeDelete} from "@/utils/checkAllRelationsBeforeDelete";
+import {getDataWithQueryAndPaginate} from "@/utils/paginateAndSearch";
 
 @Injectable()
 export class DeviceTypesService {
@@ -57,52 +58,20 @@ export class DeviceTypesService {
     }
 
     async getDeviceTypesByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<DeviceType>> {
-        const {
-            page,
-            limit,
-            queryString,
-            searchFields,
-        } = data;
-
-        const skip = (page - 1) * limit;
-        const take = limit;
-
-        const where: any = {};
-        where.deleted_at = IsNull();
-
-        let searchConditions: any[] = [];
-        if (queryString && searchFields) {
-            const fields = searchFields.split(',').map((field) => field.trim());
-            searchConditions = fields.map((field) => ({
-                ...where,
-                [field]: Like(`%${queryString}%`),
-            }));
-        }
-
-        const [types, total] = await this.deviceTypeRepository.findAndCount({
-            where: searchConditions.length > 0 ? searchConditions : where,
-            select: ['id', 'type_name', 'created_at', 'updated_at'],
-            skip,
-            take,
-        })
-
-        const totalPages = Math.ceil(total / limit)
-
-        return {
-            "columns": [
+        return getDataWithQueryAndPaginate({
+            repository: this.deviceTypeRepository,
+            page: data.page,
+            limit: data.limit,
+            queryString: data.queryString,
+            searchFields: data.searchFields?.split(','),
+            selectFields: ['id', 'type_name', 'created_at', 'updated_at'],
+            columnsMeta: [
                 {"key": "id", "displayName": "ID", "type": "number"},
                 {"key": "type_name", "displayName": "Loại thiết bị", "type": "string"},
                 {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
                 {"key": "updated_at", "displayName": "Ngày cập nhật", "type": "date"},
             ],
-            "values": types,
-            "meta": {
-                "totalItems": total,
-                "currentPage": page,
-                "totalPages": totalPages,
-                "limit": limit,
-            },
-        };
+        });
     }
 
     async deleteDeviceTypes(typeIds: string[]): Promise<DeleteResult> {

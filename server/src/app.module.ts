@@ -20,7 +20,7 @@ import {AuthModule} from './modules/auth/auth.module';
 import {UserModule} from './modules/user/user.module';
 import {RaspberryModule} from './modules/raspberry/raspberry.module';
 import {StatisticalModule} from './modules/statistical/statistical.module';
-import {AllExceptionsFilter} from "@/utils/AllExceptionsFilter";
+import {AllExceptionsFilter} from "@/config/AllExceptionsFilter";
 
 @Module({
     imports: [

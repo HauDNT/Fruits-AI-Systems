@@ -14,7 +14,7 @@ export default function Areas() {
     const [data, setData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "area_code, area_desc"
+    const searchFields = "area_code,area_desc"
     const [createFormState, setCreateFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 

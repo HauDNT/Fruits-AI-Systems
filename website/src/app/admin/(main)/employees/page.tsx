@@ -15,7 +15,7 @@ export default function Employees() {
     const [employeesData, setEmployeesData] = useState([])
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "fullname, employee_code, phone_number"
+    const searchFields = "fullname,employee_code,phone_number"
     const [createFormState, setCreateFormState] = useState(false)
     const [employeeDetailData, setEmployeeDetailData] = useState(null)
     const [detailFormState, setDetailFormState] = useState(false)

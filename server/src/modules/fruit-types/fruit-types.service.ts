@@ -11,6 +11,7 @@ import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 import {Fruit} from "@/modules/fruits/entities/fruit.entity";
 import {checkAllRelationsBeforeDelete} from "@/utils/checkAllRelationsBeforeDelete";
+import {getDataWithQueryAndPaginate} from "@/utils/paginateAndSearch";
 
 @Injectable()
 export class FruitTypesService {
@@ -55,53 +56,21 @@ export class FruitTypesService {
     }
 
     async getFruitTypesByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<FruitType>> {
-        const {
-            page,
-            limit,
-            queryString,
-            searchFields,
-        } = data;
-
-        const skip = (page - 1) * limit;
-        const take = limit;
-
-        const where: any = {};
-        where.deleted_at = IsNull();
-
-        let searchConditions: any[] = [];
-        if (queryString && searchFields) {
-            const fields = searchFields.split(',').map((field) => field.trim());
-            searchConditions = fields.map((field) => ({
-                ...where,
-                [field]: Like(`%${queryString}%`),
-            }));
-        };
-
-        const [fruitTypes, total] = await this.fruitTypeRepository.findAndCount({
-            where: searchConditions.length > 0 ? searchConditions : where,
-            select: ['id', 'type_name', 'type_desc', 'created_at', 'updated_at'],
-            skip,
-            take,
-        });
-
-        const totalPages = Math.ceil(total / limit);
-
-        return {
-            "columns": [
+        return getDataWithQueryAndPaginate({
+            repository: this.fruitTypeRepository,
+            page: data.page,
+            limit: data.limit,
+            queryString: data.queryString,
+            searchFields: data.searchFields?.split(','),
+            selectFields: ['id', 'type_name', 'type_desc', 'created_at', 'updated_at'],
+            columnsMeta: [
                 {"key": "id", "displayName": "ID", "type": "number"},
                 {"key": "type_name", "displayName": "Tình trạng", "type": "string"},
                 {"key": "type_desc", "displayName": "Mô tả", "type": "string"},
                 {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
                 {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
             ],
-            "values": fruitTypes,
-            "meta": {
-                "totalItems": total,
-                "currentPage": page,
-                "totalPages": totalPages,
-                "limit": limit,
-            },
-        };
+        });
     }
 
     async deleteFruitTypes(fruitTypeIds: string[]): Promise<DeleteResult> {

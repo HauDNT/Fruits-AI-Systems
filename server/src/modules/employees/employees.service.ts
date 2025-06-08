@@ -12,6 +12,7 @@ import * as fs from 'fs/promises';
 import {UpdateEmployeeDto} from "@/modules/employees/dto/update-employee.dto";
 import {deleteFilesInParallel} from "@/utils/handleFiles";
 import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
+import {getDataWithQueryAndPaginate} from "@/utils/paginateAndSearch";
 
 @Injectable()
 export class EmployeesService {
@@ -79,31 +80,13 @@ export class EmployeesService {
     }
 
     async getEmployeesByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<Employee>> {
-        const {
-            page,
-            limit,
-            queryString,
-            searchFields,
-        } = data;
-
-        const skip = (page - 1) * limit;
-        const take = limit;
-
-        const where: any = {};
-        where.deleted_at = IsNull();
-
-        let searchConditions: any[] = [];
-        if (queryString && searchFields) {
-            const fields = searchFields.split(',').map((field) => field.trim());
-            searchConditions = fields.map((field) => ({
-                ...where,
-                [field]: Like(`%${queryString}%`),
-            }));
-        }
-
-        const [employees, total] = await this.employeeRepository.findAndCount({
-            where: searchConditions.length > 0 ? searchConditions : where,
-            select: [
+        return getDataWithQueryAndPaginate({
+            repository: this.employeeRepository,
+            page: data.page,
+            limit: data.limit,
+            queryString: data.queryString,
+            searchFields: data.searchFields?.split(','),
+            selectFields: [
                 'id',
                 'employee_code',
                 'fullname',
@@ -114,14 +97,7 @@ export class EmployeesService {
                 'updated_at',
                 'area_id'
             ],
-            skip,
-            take,
-        })
-
-        const totalPages = Math.ceil(total / limit);
-
-        return {
-            columns: [
+            columnsMeta: [
                 {key: "id", displayName: "ID", type: "number"},
                 {key: "employee_code", displayName: "Mã nhân viên", type: "string"},
                 {key: "fullname", displayName: "Họ và tên", type: "string"},
@@ -130,14 +106,7 @@ export class EmployeesService {
                 {key: "created_at", displayName: "Ngày tạo", type: "date"},
                 {key: "updated_at", displayName: "Ngày cập nhật", type: "date"},
             ],
-            values: employees,
-            meta: {
-                totalItems: total,
-                currentPage: page,
-                totalPages: totalPages,
-                limit: limit,
-            }
-        };
+        })
     }
 
     async updateEmployeeProfile(data: UpdateEmployeeDto, employeeId: number): Promise<Employee> {

@@ -12,18 +12,19 @@ import {omitFields} from "@/utils/omitFields";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {DeviceClassificationFlat} from "@/interfaces";
 import {TableMetaData} from "@/interfaces/table";
+import {getDataWithQueryAndPaginate} from "@/utils/paginateAndSearch";
 
 @Injectable()
 export class DevicesService {
     constructor(
         @InjectRepository(Device)
-        private deviceRepository: Repository<Device>,
+        private readonly deviceRepository: Repository<Device>,
         @InjectRepository(DeviceStatus)
-        private deviceStatusRepository: Repository<DeviceStatus>,
+        private readonly deviceStatusRepository: Repository<DeviceStatus>,
         @InjectRepository(DeviceType)
-        private deviceTypeRepository: Repository<DeviceType>,
+        private readonly deviceTypeRepository: Repository<DeviceType>,
         @InjectRepository(Area)
-        private areaRepository: Repository<Area>,
+        private readonly areaRepository: Repository<Area>,
     ) {
     }
 
@@ -88,52 +89,13 @@ export class DevicesService {
     }
 
     async getDevicesByQuery(data: GetDataWithQueryParamsDTO): Promise<TableMetaData<DeviceClassificationFlat>> {
-        const {
-            page,
-            limit,
-            queryString,
-            searchFields,
-        } = data;
-
-        const skip = (page - 1) * limit;
-        const take = limit;
-
-        const query = this.deviceRepository
-            .createQueryBuilder('device')
-            .leftJoinAndSelect('device.deviceType', 'deviceType')
-            .leftJoinAndSelect('device.deviceStatus', 'deviceStatus')
-            .leftJoinAndSelect('device.areaBelong', 'areaBelong')
-            .where('device.deleted_at IS NULL')
-
-        if (queryString && searchFields) {
-            const fields = searchFields.split(',').map(f => f.trim());
-
-            const conditions = fields.map(field => {
-                if (field === 'device_code') return 'device.device_code LIKE :query';
-                if (field === 'deviceType') return 'deviceType.type_name LIKE :query';
-                if (field === 'deviceStatus') return 'deviceStatus.status_name LIKE :query';
-                if (field === 'areaBelong') {
-                    return '(areaBelong.area_code LIKE :query OR areaBelong.area_desc LIKE :query)';
-                }
-                if (field === 'areaDesc') return 'areaBelong.area_desc LIKE :query';
-                return `device.${field} LIKE :query`;
-            }).join(' OR ');
-
-
-            query.andWhere(`(${conditions})`, { query: `%${queryString}%`})
-        }
-
-        const [results, total] = await query
-            .skip(skip)
-            .take(take)
-            .getManyAndCount();
-
-        const totalPages = Math.ceil(total / limit);
-
-        const formatResult: DeviceClassificationFlat[] = results.map(device => this.formatDevice(device))
-
-        return {
-            columns: [
+        return getDataWithQueryAndPaginate({
+            repository: this.deviceRepository,
+            page: data.page,
+            limit: data.limit,
+            queryString: data.queryString,
+            searchFields: data.searchFields?.split(','),
+            columnsMeta: [
                 { key: 'id', displayName: 'ID', type: 'number' },
                 { key: 'device_code', displayName: 'Mã thiết bị', type: 'string' },
                 { key: 'deviceType', displayName: 'Loại thiết bị', type: 'string' },
@@ -141,14 +103,7 @@ export class DevicesService {
                 { key: 'area', displayName: 'Khu vực', type: 'string' },
                 { key: 'created_at', displayName: 'Thời điểm lắp đặt', type: 'date' },
             ],
-            values: formatResult,
-            meta: {
-                totalItems: total,
-                currentPage: page,
-                totalPages,
-                limit,
-            },
-        };
+        });
     }
 
     async findAllRaspberry() {

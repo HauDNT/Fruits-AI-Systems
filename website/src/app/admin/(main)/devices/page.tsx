@@ -18,7 +18,7 @@ export default function Devices() {
     });
     const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "device_code, deviceType, deviceStatus, areaBelong"
+    const searchFields = "device_code,deviceType,deviceStatus,areaBelong"
     const [createFormState, setCreateFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 

@@ -13,9 +13,9 @@ import CustomPagination from "@/components/common/CustomPagination";
 export default function FruitTypes() {
     const {toast} = useToast()
     const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
+    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 1})
     const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "type_name, type_desc"
+    const searchFields = "type_name,type_desc"
     const [createFormState, setCreateFormState] = useState(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
