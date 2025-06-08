@@ -45,6 +45,6 @@ export class Area {
     employee: Employee;
 
     // Area <-> Fruit Classification
-    @OneToMany(() => FruitClassification, classify => classify.areaBelong)
+    @OneToMany(() => FruitClassification, classify => classify.areaClassify)
     fruitClassified: FruitClassification;
 }

@@ -2,20 +2,22 @@ import {BadRequestException, Injectable} from '@nestjs/common';
 import {CreateDeviceStatusDto} from './dto/create-device-status.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeviceStatus} from "@/modules/device-status/entities/device-status.entity";
-import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
+import {DataSource, DeleteResult, In, IsNull, Like, Repository} from "typeorm";
 import {omitFields} from "@/utils/omitFields";
 import {Device} from "@/modules/devices/entities/device.entity";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {TableMetaData} from "@/interfaces/table";
 import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
+import {checkAllRelationsBeforeDelete} from "@/utils/checkAllRelationsBeforeDelete";
 
 @Injectable()
 export class DeviceStatusService {
     constructor(
         @InjectRepository(DeviceStatus)
-        private deviceStatusRepository: Repository<DeviceStatus>,
+        private readonly deviceStatusRepository: Repository<DeviceStatus>,
         @InjectRepository(Device)
-        private deviceRepository: Repository<Device>,
+        private readonly deviceRepository: Repository<Device>,
+        private readonly dataSource: DataSource,
     ) {
     }
 
@@ -105,19 +107,15 @@ export class DeviceStatusService {
 
     async deleteDevicesStatuses(statusIds: string[]): Promise<DeleteResult> {
         await validateAndGetEntitiesByIds(this.deviceStatusRepository, statusIds);
-        const checkDeviceLink = await this.deviceRepository.find({
-            where: {
-                deviceStatus: {
-                    id: In(statusIds),
-                },
-            },
-            select: ['id'],
-            relations: ['deviceStatus']
-        })
 
-        if (checkDeviceLink.length > 0) {
-            throw new BadRequestException('Một hoặc nhiều trạng thái đang được liên kết với thiết bị. Vui lòng chuyển hoặc xoá thiết bị trước.');
-        }
+        await checkAllRelationsBeforeDelete(
+            this.dataSource,
+            DeviceStatus,
+            statusIds,
+            {
+                deviceStatus: 'Một hoặc nhiều trạng thái đang được liên kết với thiết bị.'
+            }
+        )
 
         return await this.deviceStatusRepository.delete(statusIds)
     }

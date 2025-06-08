@@ -27,5 +27,5 @@ export class DeviceType {
 
   // Device Types <-> Devices
   @OneToMany(() => Device, device => device.deviceType)
-  device: Device;
+  device: Device[];
 }

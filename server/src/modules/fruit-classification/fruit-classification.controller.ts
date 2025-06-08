@@ -95,7 +95,7 @@ export class FruitClassificationController {
             confidence_level: createdRecord.confidence_level,
             fruit: createdRecord.fruit.fruit_name,
             fruitType: createdRecord.fruitType.type_name,
-            area: `${createdRecord.areaBelong.area_code} - ${createdRecord.areaBelong.area_desc}`,
+            area: `${createdRecord.areaClassify.area_code} - ${createdRecord.areaClassify.area_desc}`,
             image_url: imageUrl,
             created_at: createdRecord.created_at,
         });

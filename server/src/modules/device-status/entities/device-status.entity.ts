@@ -29,6 +29,6 @@ export class DeviceStatus {
   deleted_at: Date | null;
 
   // Device Status <-> Devices
-  @OneToMany(() => Device, device => device.deviceType)
-  device: Device;
+  @OneToMany(() => Device, device => device.deviceStatus)
+  device: Device[];
 }

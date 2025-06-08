@@ -37,9 +37,9 @@ export class FruitType {
 
     // Fruit Types <-> Fruits
     @ManyToMany(() => Fruit, fruit => fruit.fruitTypes)
-    fruits: Fruit;
+    fruits: Fruit[];
 
     // Fruit Types <-> Fruit Classification
     @OneToMany(() => FruitClassification, classify => classify.fruitType)
-    fruitClassified: FruitClassification;
+    fruitClassified: FruitClassification[];
 }

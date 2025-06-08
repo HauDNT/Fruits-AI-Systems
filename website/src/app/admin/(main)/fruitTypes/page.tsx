@@ -54,7 +54,6 @@ export default function FruitTypes() {
     }
 
     const handleAddNewFruitType = async (newType: FruitTypeBodyType) => {
-        console.log(data)
         try {
             if (!newType) {
                 toast({
@@ -129,9 +128,11 @@ export default function FruitTypes() {
                 })
             }
         } catch (error) {
+            const errorMessage = handleAxiosError(error);
+
             toast({
                 title: "Xoá trạng thái thất bại",
-                description: "Hãy thử lại sau",
+                description: errorMessage,
                 variant: "destructive",
             });
         }

@@ -6,7 +6,6 @@ import configuration from "@/config/configuration";
 import {APP_FILTER} from "@nestjs/core";
 import {typeOrmAsyncConfig} from "@/database/typeorm-config";
 import {TypeOrmModule} from "@nestjs/typeorm";
-import {HttpExceptionFilter} from "@/utils/httpExceptionFilter";
 import {LoggerMiddleware} from "@/middleware/LoggerMiddleware";
 import {FruitsModule} from './modules/fruits/fruits.module';
 import {FruitTypesModule} from './modules/fruit-types/fruit-types.module';
@@ -18,9 +17,10 @@ import {DevicesModule} from './modules/devices/devices.module';
 import {EmployeesModule} from './modules/employees/employees.module';
 import {FruitClassificationModule} from './modules/fruit-classification/fruit-classification.module';
 import {AuthModule} from './modules/auth/auth.module';
-import { UserModule } from './modules/user/user.module';
-import { RaspberryModule } from './modules/raspberry/raspberry.module';
-import { StatisticalModule } from './modules/statistical/statistical.module';
+import {UserModule} from './modules/user/user.module';
+import {RaspberryModule} from './modules/raspberry/raspberry.module';
+import {StatisticalModule} from './modules/statistical/statistical.module';
+import {AllExceptionsFilter} from "@/utils/AllExceptionsFilter";
 
 @Module({
     imports: [
@@ -52,7 +52,7 @@ import { StatisticalModule } from './modules/statistical/statistical.module';
         AppService,
         {
             provide: APP_FILTER,
-            useClass: HttpExceptionFilter
+            useClass: AllExceptionsFilter
         }
     ]
 })

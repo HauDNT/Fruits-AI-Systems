@@ -36,8 +36,8 @@ export class FruitClassification {
     @JoinColumn({name: 'type_id'})
     fruitType: FruitType;
 
-    // Fruit Classification <-> Batches
+    // Fruit Classification <-> Area
     @ManyToOne(() => Area, area => area.fruitClassified)
     @JoinColumn({name: 'area_id'})
-    areaBelong: Area;
+    areaClassify: Area;
 }

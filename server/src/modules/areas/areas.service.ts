@@ -15,6 +15,7 @@ import {Device} from "@/modules/devices/entities/device.entity";
 import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
 import {Raspberry} from "@/modules/raspberry/entities/raspberry.entity";
 import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
+import {checkAllRelationsBeforeDelete} from "@/utils/checkAllRelationsBeforeDelete";
 
 @Injectable()
 export class AreasService {
@@ -130,6 +131,17 @@ export class AreasService {
 
         try {
             const areas = await validateAndGetEntitiesByIds(this.areaRepository, areaIds);
+
+            await checkAllRelationsBeforeDelete(
+                this.dataSource,
+                Area,
+                areaIds,
+                {
+                    areaBelong: 'Không thể xoá vì còn thiết bị liên kết với khu vực này. Hãy thay đổi và thử lại!',
+                    areaWorkAt: 'Không thể xoá vì còn nhân viên liên kết với khu vực này. Hãy thay đổi và thử lại!',
+                    areaClassify: 'Không thể xoá vì còn cấu hình Raspberry đang liên kết với khu vực này. Hãy thay đổi và thử lại!',
+                }
+            )
 
             await deleteRelationsEntityData(queryRunner, areaIds, [
                 {entity: Raspberry, relationField: 'device.areaBelong'},

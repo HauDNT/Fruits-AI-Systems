@@ -2,20 +2,22 @@ import {Injectable, BadRequestException} from '@nestjs/common';
 import {CreateDeviceTypeDto} from './dto/create-device-type.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
-import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
+import {DataSource, DeleteResult, In, IsNull, Like, Repository} from "typeorm";
 import {omitFields} from "@/utils/omitFields";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {TableMetaData} from "@/interfaces/table";
 import {Device} from "@/modules/devices/entities/device.entity";
 import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
+import {checkAllRelationsBeforeDelete} from "@/utils/checkAllRelationsBeforeDelete";
 
 @Injectable()
 export class DeviceTypesService {
     constructor(
         @InjectRepository(DeviceType)
-        private deviceTypeRepository: Repository<DeviceType>,
+        private readonly deviceTypeRepository: Repository<DeviceType>,
         @InjectRepository(Device)
-        private deviceRepository: Repository<Device>,
+        private readonly deviceRepository: Repository<Device>,
+        private readonly dataSource: DataSource,
     ) {
     }
 
@@ -106,15 +108,14 @@ export class DeviceTypesService {
     async deleteDeviceTypes(typeIds: string[]): Promise<DeleteResult> {
         await validateAndGetEntitiesByIds(this.deviceTypeRepository, typeIds);
 
-        const checkDeviceLink = await this.deviceRepository.find({
-            where: {deviceType: {id: In(typeIds)}},
-            select: ['id'],
-            relations: ['deviceType'],
-        })
-
-        if (checkDeviceLink.length > 0) {
-            throw new BadRequestException('Một hoặc nhiều loại thiết bị đang được liên kết với thiết bị. Vui lòng chuyển hoặc xoá thiết bị trước.');
-        }
+        await checkAllRelationsBeforeDelete(
+            this.dataSource,
+            DeviceType,
+            typeIds,
+            {
+                deviceType: 'Một hoặc nhiều loại thiết bị đang được liên kết với thiết bị.',
+            },
+        );
 
         return await this.deviceTypeRepository.delete(typeIds)
     }

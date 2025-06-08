@@ -53,7 +53,7 @@ export class FruitClassificationService {
         let newClassifyResult = this.fruitClassificationRepository.create({
             confidence_level,
             fruit,
-            areaBelong: area,
+            areaClassify: area,
             image_url: imageUrl,
             fruitType: type,
             created_at: new Date(),
@@ -63,7 +63,7 @@ export class FruitClassificationService {
 
         newClassifyResult = await this.fruitClassificationRepository.findOne({
             where: {id: newClassifyResult.id},
-            relations: ['fruit', 'fruitType', 'areaBelong'],
+            relations: ['fruit', 'fruitType', 'areaClassify'],
         });
 
         return newClassifyResult;
@@ -85,7 +85,7 @@ export class FruitClassificationService {
             .createQueryBuilder('fc')
             .leftJoinAndSelect('fc.fruit', 'fruit')
             .leftJoinAndSelect('fc.fruitType', 'fruitType')
-            .leftJoinAndSelect('fc.areaBelong', 'areaBelong')
+            .leftJoinAndSelect('fc.areaClassify', 'areaClassify')
             .where('fc.deleted_at IS NULL')
             .addOrderBy('fc.created_at', 'DESC');
 
@@ -95,7 +95,7 @@ export class FruitClassificationService {
             const conditions = fields
                 .map((field) => {
                     if (field === 'fruit') return 'fruit.fruit_name LIKE :query';
-                    if (field === 'areaBelong') return 'areaBelong.area_code LIKE :query';
+                    if (field === 'areaClassify') return 'areaClassify.area_code LIKE :query';
                     return `fc.${field} LIKE :query`;
                 })
                 .join(' OR ');
@@ -116,7 +116,7 @@ export class FruitClassificationService {
             image_url: result.image_url,
             fruit: result.fruit.fruit_name,
             fruitType: result.fruitType.type_name,
-            area: `${result.areaBelong.area_code} - ${result.areaBelong.area_desc}`,
+            area: `${result.areaClassify.area_code} - ${result.areaClassify.area_desc}`,
             created_at: result.created_at,
         }));
 

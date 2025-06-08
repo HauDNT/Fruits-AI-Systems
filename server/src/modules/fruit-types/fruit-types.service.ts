@@ -6,15 +6,20 @@ import {TableMetaData} from "@/interfaces/table";
 import {CreateFruitTypeDto} from './dto/create-fruit-type.dto';
 import {InjectRepository} from "@nestjs/typeorm";
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
-import {IsNull, Repository, Like, In, DeleteResult} from "typeorm";
+import {IsNull, Repository, Like, DeleteResult, DataSource} from "typeorm";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
+import {Fruit} from "@/modules/fruits/entities/fruit.entity";
+import {checkAllRelationsBeforeDelete} from "@/utils/checkAllRelationsBeforeDelete";
 
 @Injectable()
 export class FruitTypesService {
     constructor(
         @InjectRepository(FruitType)
-        private fruitTypeRepository: Repository<FruitType>,
+        private readonly fruitTypeRepository: Repository<FruitType>,
+        @InjectRepository(Fruit)
+        private readonly fruitRepository: Repository<Fruit>,
+        private readonly dataSource: DataSource,
     ) {
     }
 
@@ -101,6 +106,16 @@ export class FruitTypesService {
 
     async deleteFruitTypes(fruitTypeIds: string[]): Promise<DeleteResult> {
         await validateAndGetEntitiesByIds(this.fruitTypeRepository, fruitTypeIds);
+
+        await checkAllRelationsBeforeDelete(
+            this.dataSource,
+            FruitType,
+            fruitTypeIds,
+            {
+                fruitTypes: 'Không thể xóa tình trạng trái cây vì đang được sử dụng',
+            }
+        )
+
         return await this.fruitTypeRepository.delete(fruitTypeIds);
     }
 }
