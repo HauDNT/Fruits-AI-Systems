@@ -6,7 +6,7 @@ import {useToast} from "@/hooks/use-toast";
 import {FruitBodyType} from "@/schemas/fruit.schema";
 import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewFruitForm from "@/components/forms/CreateNewFruitForm";
-import axiosInstance from "@/utils/axiosInstance";
+import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import CustomPagination from "@/components/common/CustomPagination";
 
 export default function Fruits() {
@@ -69,11 +69,11 @@ export default function Fruits() {
                 return true;
             }
         } catch (error) {
-            console.error('Thêm trái cây thất bại:', error);
+            const errorMessage = handleAxiosError(error);
 
             toast({
                 title: "Thêm trái cây thất bại",
-                description: "Vui lòng thử lại sau",
+                description: errorMessage,
                 variant: "destructive",
             });
 

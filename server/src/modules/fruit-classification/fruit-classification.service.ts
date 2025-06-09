@@ -9,6 +9,7 @@ import {FruitType} from '@/modules/fruit-types/entities/fruit-type.entity';
 import {TableMetaData} from '@/interfaces/table';
 import {FruitClassificationFlat} from '@/interfaces';
 import {GetDataWithQueryParamsDTO} from '@/modules/dtoCommons';
+import {deleteFile} from "@/utils/handleFiles";
 
 @Injectable()
 export class FruitClassificationService {
@@ -43,30 +44,38 @@ export class FruitClassificationService {
         createFruitClassificationDto: CreateFruitClassificationDto,
         imageUrl: string,
     ) {
+        let isCreateSuccess = false;
         const {confidence_level, result, areaId} = createFruitClassificationDto;
 
-        const {fruit_name, type_name} = this.splitLabelFromResult(result);
-        const fruit = await this.fruitRepository.findOneBy({fruit_name});
-        const type = await this.fruitTypeRepository.findOneBy({type_name});
-        const area = await this.areaRepository.findOneBy({id: areaId});
+        try {
+            const {fruit_name, type_name} = this.splitLabelFromResult(result);
+            const fruit = await this.fruitRepository.findOneBy({fruit_name});
+            const type = await this.fruitTypeRepository.findOneBy({type_name});
+            const area = await this.areaRepository.findOneBy({id: areaId});
 
-        let newClassifyResult = this.fruitClassificationRepository.create({
-            confidence_level,
-            fruit,
-            areaClassify: area,
-            image_url: imageUrl,
-            fruitType: type,
-            created_at: new Date(),
-        });
+            let newClassifyResult = this.fruitClassificationRepository.create({
+                confidence_level,
+                fruit,
+                areaClassify: area,
+                image_url: imageUrl,
+                fruitType: type,
+                created_at: new Date(),
+            });
 
-        await this.fruitClassificationRepository.save(newClassifyResult);
+            await this.fruitClassificationRepository.save(newClassifyResult);
+            isCreateSuccess = true;
 
-        newClassifyResult = await this.fruitClassificationRepository.findOne({
-            where: {id: newClassifyResult.id},
-            relations: ['fruit', 'fruitType', 'areaClassify'],
-        });
+            newClassifyResult = await this.fruitClassificationRepository.findOne({
+                where: {id: newClassifyResult.id},
+                relations: ['fruit', 'fruitType', 'areaClassify'],
+            });
 
-        return newClassifyResult;
+            return newClassifyResult;
+        } finally {
+            if (!isCreateSuccess && imageUrl) {
+                await deleteFile(imageUrl);
+            }
+        }
     }
 
     async findAll(): Promise<FruitClassification[]> {

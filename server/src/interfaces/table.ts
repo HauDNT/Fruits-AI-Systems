@@ -26,5 +26,5 @@ export interface TableMetaDataQueryOptions<Entity> {
     searchFields?: string[];
     selectFields?: (keyof Entity)[];
     columnsMeta: TableColumn[];
-    where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[]
+    where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[];
 }

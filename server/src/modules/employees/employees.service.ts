@@ -1,16 +1,15 @@
-import {BadRequestException, HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {Employee} from "@/modules/employees/entities/employee.entity";
-import {DeleteResult, In, IsNull, Like, Repository} from "typeorm";
+import {DeleteResult, Repository} from "typeorm";
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {TableMetaData} from "@/interfaces/table";
 import {CreateEmployeeDto} from "@/modules/employees/dto/create-employee.dto";
 import {generateUniqueCode} from "@/utils/generateUniqueCode";
 import {Area} from "@/modules/areas/entities/area.entity";
 import * as path from 'path';
-import * as fs from 'fs/promises';
 import {UpdateEmployeeDto} from "@/modules/employees/dto/update-employee.dto";
-import {deleteFilesInParallel} from "@/utils/handleFiles";
+import {deleteFile, deleteFilesInParallel} from "@/utils/handleFiles";
 import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 import {getDataWithQueryAndPaginate} from "@/utils/paginateAndSearch";
 
@@ -25,8 +24,10 @@ export class EmployeesService {
     }
 
     async create(createEmployeeDto: CreateEmployeeDto, imageUrl: string) {
+        let isCreateSuccess = false;
+        const {fullname, gender, phone_number, area_id} = createEmployeeDto
+
         try {
-            const {fullname, gender, phone_number, area_id} = createEmployeeDto
             const checkEmployeeExist = await this.employeeRepository
                 .createQueryBuilder('existEmployee')
                 .where('LOWER(existEmployee.fullname) = LOWER(:fullname)', {fullname: fullname})
@@ -57,25 +58,19 @@ export class EmployeesService {
                 areaWorkAt: area,
                 created_at: new Date(),
                 updated_at: new Date(),
-            })
+            });
 
-            const saveEmployee = await this.employeeRepository.save(newEmployee)
+            const saveEmployee = await this.employeeRepository.save(newEmployee);
+            isCreateSuccess = true;
 
             return {
                 message: 'Tạo nhân viên mới thành công',
                 data: saveEmployee,
             }
-        } catch (e) {
-            console.log('Lỗi: ', e.message)
-
-            const fileEmployeeImgPath = path.join(process.cwd(), imageUrl)
-            await fs.unlink(fileEmployeeImgPath)
-
-            if (e instanceof HttpException) {
-                throw e;
+        } finally {
+            if (!isCreateSuccess && imageUrl) {
+                await deleteFile(imageUrl);
             }
-
-            throw new InternalServerErrorException('Xảy ra lỗi từ phía server trong quá trình tạo nhân viên mới');
         }
     }
 

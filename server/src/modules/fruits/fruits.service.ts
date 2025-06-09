@@ -6,14 +6,13 @@ import {DataSource, DeleteResult, In, IsNull, Like, QueryRunner, Repository} fro
 import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
 import {TableMetaData} from "@/interfaces/table";
 import {FruitImage} from "@/modules/fruit-images/entities/fruit-image.entity";
-import * as fs from 'fs/promises';
 import * as path from 'path';
 import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
 import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
-import {deleteFilesInParallel} from "@/utils/handleFiles";
+import {deleteFile, deleteFilesInParallel} from "@/utils/handleFiles";
 import {deleteRelationsEntityData} from "@/utils/deleteRelationsEntityData";
-import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 import {getDataWithQueryAndPaginate} from "@/utils/paginateAndSearch";
+import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class FruitsService {
@@ -37,43 +36,56 @@ export class FruitsService {
     }
 
     async create(createFruitDto: CreateFruitDto, imageUrl: string) {
-        const {fruit_name, fruit_desc, fruit_types} = createFruitDto
+        const {fruit_name, fruit_desc, fruit_types} = createFruitDto;
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
-        const getFruitTypes = await this.fruitTypeRepository.findBy({id: In(fruit_types)});
-        if (getFruitTypes.length !== fruit_types.length) {
-            throw new BadRequestException('Trạng thái trái cây không chính xác')
+        try {
+            const getFruitTypes = await queryRunner.manager.find(FruitType);
+            if (getFruitTypes.length !== fruit_types.length) {
+                throw new BadRequestException('Trạng thái trái cây không chính xác')
+            }
+
+            const checkExistFruit = await queryRunner.manager
+                .createQueryBuilder(Fruit, 'fruitName')
+                .where('LOWER(fruitName.fruit_name) = LOWER(:fruit_name)', { fruit_name })
+                .getOne();
+
+            if (checkExistFruit) {
+                throw new BadRequestException('Trái cây đã tồn tại');
+            }
+
+            const newFruit = queryRunner.manager.create(Fruit, {
+                fruit_name,
+                fruit_desc,
+                fruitTypes: getFruitTypes,
+                created_at: new Date(),
+                updated_at: new Date(),
+            });
+            const saveFruit = await queryRunner.manager.save(Fruit, newFruit);
+
+            const fruitImage = queryRunner.manager.create(FruitImage, {
+                fruit: saveFruit,
+                image_url: imageUrl,
+                created_at: new Date(),
+                updated_at: new Date(),
+            });
+
+            await queryRunner.manager.save(FruitImage, fruitImage);
+            await queryRunner.commitTransaction();
+
+            return {
+                message: 'Tạo trái cây thành công',
+                data: saveFruit,
+            };
+        } catch (e) {
+            await deleteFile(imageUrl);
+            await queryRunner.rollbackTransaction();
+            throw new BadRequestException('Xảy ra lỗi khi thêm trái cây mới');
+        } finally {
+            await queryRunner.release();
         }
-
-        const checkExistFruit = await this.fruitRepository
-            .createQueryBuilder('fruitName')
-            .where('LOWER(fruitName.fruit_name) = LOWER(:fruit_name)', {fruit_name: fruit_name})
-            .getOne()
-
-        if (checkExistFruit) {
-            throw new BadRequestException('Trái cây đã tồn tại')
-        }
-
-        const newFruit = this.fruitRepository.create({
-            fruit_name,
-            fruit_desc,
-            fruitTypes: getFruitTypes,
-            created_at: new Date(),
-            updated_at: new Date(),
-        })
-        const saveFruit = await this.fruitRepository.save(newFruit)
-
-        const fruitImage = this.fruitImageRepository.create({
-            fruit: saveFruit,
-            image_url: imageUrl,
-            created_at: new Date(),
-            updated_at: new Date(),
-        })
-        await this.fruitImageRepository.save(fruitImage);
-
-        return {
-            message: 'Tạo trái cây thành công',
-            data: saveFruit,
-        };
     }
 
     async findAll(): Promise<Fruit[]> {

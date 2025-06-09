@@ -13,7 +13,6 @@ export async function getDataWithQueryAndPaginate<Entity>(
         selectFields,
         columnsMeta,
         where = { deleted_at: IsNull() } as unknown as FindOptionsWhere<Entity>,
-        fieldMappings = {},
     } = options;
 
     const skip = (page - 1) * limit;

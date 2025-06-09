@@ -92,7 +92,7 @@ export default function Devices() {
                 variant: "destructive",
             })
 
-            return false
+            return false;
         }
     }
 
