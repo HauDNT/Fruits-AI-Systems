@@ -1,8 +1,8 @@
 'use client'
 import React from "react";
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {FruitTypeBody, FruitTypeBodyType} from '@/schemas/fruit.schema'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { FruitTypeBody, FruitTypeBodyType } from '@/schemas/fruit.schema'
 import {
     Form,
     FormControl,
@@ -11,7 +11,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import {FormInterface} from "@/interfaces"
+import { FormInterface } from "@/interfaces"
 import ComponentCard from "@/components/common/ComponentCard"
 import InputField from "@/components/inputs/InputField"
 import CustomButton from "@/components/buttons/CustomButton"
@@ -19,22 +19,24 @@ import CustomButton from "@/components/buttons/CustomButton"
 const CreateNewFruitTypeForm = ({
     className,
     onSubmit,
-}: FormInterface) => {
-    const handleSubmit = (values: FruitTypeBodyType) => {
-        const submitResult = onSubmit(values);
-
-        if (submitResult) {
-            form.reset();
-        }
-    };
-
+    onClose,
+}: FormInterface<FruitTypeBodyType>) => {
     const form = useForm<FruitTypeBodyType>({
         resolver: zodResolver(FruitTypeBody),
         defaultValues: {
             type_name: '',
             type_desc: '',
         }
-    })
+    });
+
+    const handleSubmit = async (values: FruitTypeBodyType): Promise<void> => {
+        const submitResult = await onSubmit(values);
+
+        if (submitResult) {
+            form.reset();
+            onClose?.();
+        }
+    };
 
     return (
         <ComponentCard title="Thêm trạng thái trái cây mới" className={'w-full'}>
@@ -47,7 +49,7 @@ const CreateNewFruitTypeForm = ({
                         <FormField
                             control={form.control}
                             name={"type_name"}
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem className="col-span-full">
                                     <FormLabel>Trạng thái (Tiếng Anh viết hoa chữ cái)</FormLabel>
                                     <FormControl>
@@ -57,14 +59,14 @@ const CreateNewFruitTypeForm = ({
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
                             name={"type_desc"}
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem className="col-span-full">
                                     <FormLabel>Mô tả (Chú thích tiếng Việt)</FormLabel>
                                     <FormControl>
@@ -74,7 +76,7 @@ const CreateNewFruitTypeForm = ({
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />

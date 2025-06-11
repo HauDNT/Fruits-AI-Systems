@@ -4,18 +4,18 @@ import {
     Injectable,
     InternalServerErrorException
 } from '@nestjs/common';
-import {InjectRepository} from "@nestjs/typeorm";
-import {Raspberry} from "@/modules/raspberry/entities/raspberry.entity";
-import {DataSource, Repository} from "typeorm";
-import {Device} from "@/modules/devices/entities/device.entity";
-import {JwtService} from "@nestjs/jwt";
-import {RaspberryConfigDto} from "@/modules/raspberry/dto/raspberry-config.dto";
-import {FruitTypeIdsDto} from "@/modules/raspberry/dto/fruit-type-ids.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Raspberry } from "@/modules/raspberry/entities/raspberry.entity";
+import { DataSource, Repository } from "typeorm";
+import { Device } from "@/modules/devices/entities/device.entity";
+import { JwtService } from "@nestjs/jwt";
+import { RaspberryConfigDto } from "@/modules/raspberry/dto/raspberry-config.dto";
+import { FruitTypeIdsDto } from "@/modules/raspberry/dto/fruit-type-ids.dto";
 import * as dayjs from "dayjs";
-import {Area} from "@/modules/areas/entities/area.entity";
-import {DeviceType} from "@/modules/device-types/entities/device-type.entity";
-import {omitFields} from "@/utils/omitFields";
-import {deleteFile} from "@/utils/handleFiles";
+import { Area } from "@/modules/areas/entities/area.entity";
+import { DeviceType } from "@/modules/device-types/entities/device-type.entity";
+import { omitFields } from "@/utils/omitFields";
+import { deleteFile } from "@/utils/handleFiles";
 
 @Injectable()
 export class RaspberryService {
@@ -80,12 +80,12 @@ export class RaspberryService {
     }
 
     async getRaspberryAccessToken(device_code: string) {
-        const getRaspberry = await this.deviceRepository.findOneBy({device_code: device_code})
+        const getRaspberry = await this.deviceRepository.findOneBy({ device_code: device_code })
         if (!getRaspberry) {
             throw new BadRequestException(`Mã thiết bị ${device_code} không tồn tại`)
         }
 
-        const raspberryConfig = await this.raspberryRepository.findOneBy({device: getRaspberry})
+        const raspberryConfig = await this.raspberryRepository.findOneBy({ device: getRaspberry })
         const payload = {
             deviceId: getRaspberry.id,
             deviceCode: getRaspberry.device_code,
@@ -96,7 +96,7 @@ export class RaspberryService {
         raspberryConfig.raspAccessToken = accessToken
         await this.raspberryRepository.save(raspberryConfig)
 
-        return {accessToken}
+        return { accessToken }
     }
 
     async getConfigByRaspCode(deviceCode: string, isRaspberry: boolean): Promise<any> {
@@ -173,7 +173,7 @@ export class RaspberryService {
 
         const labelsArray = configData.labels ? JSON.parse(configData.labels) as FruitTypeIdsDto[] : []
         const labelsFormatted = await this.generateLabelsFromFruitAndTypeIds(labelsArray)
-        configData = {...configData, labels: labelsFormatted}
+        configData = { ...configData, labels: labelsFormatted }
 
         return {
             upsertConfig,

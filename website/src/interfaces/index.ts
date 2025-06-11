@@ -1,11 +1,12 @@
 import {Theme, ToggleLabelInputFieldType, ToggleLabelInputOptionsDataType} from "@/types";
-import React from "react";
+import React, { FormEvent } from "react";
 
 // Authen
 export interface LoginResponseInterface {
     userId: string,
     username: string,
     accessToken: string,
+    role: string | number;
 }
 
 // Redux for auth
@@ -14,6 +15,7 @@ export interface ReduxUserState {
     username: string;
     email?: string;
     role?: number;
+    accessToken?: string;
 }
 
 export interface ReduxAuthState {
@@ -34,9 +36,16 @@ export interface ThemeState {
     isInitialized: boolean;
 }
 
+// Meta paginate
+export interface MetaPaginate {
+    totalPages: number; 
+    currentPage: number;
+    limit: number;
+}
+
 // Form
-export interface FormInterface {
-    onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<boolean>;
+export interface FormInterface<T = any> {
+    onSubmit: (formData: T) => Promise<boolean>;
     className?: string;
     onClose?: () => void;
 }
@@ -64,7 +73,6 @@ export interface ListCheckInterface<T> {
     onCheck?: (itemsChecked: number[]) => void;
 }
 
-
 // Toggle label input
 export interface ToggleLabelInputInterface {
     fieldState: boolean;
@@ -73,7 +81,7 @@ export interface ToggleLabelInputInterface {
     fieldType: ToggleLabelInputFieldType;
     optionPlaceHolder?: string;
     dataForOptions?: ToggleLabelInputOptionsDataType[];
-    onFieldChange: () => void;
+    onFieldChange: (item: any) => void;
 }
 
 // Classify result
@@ -93,6 +101,14 @@ export interface ChartTabInterface {
     onTabClicked?: (option: string) => void;
 }
 
+// User info
+export interface UserInfo {
+    id: number;
+    username: string;
+    created_at: string;
+    updated_at: string;
+}
+
 // Employee detail
 export interface EmployeeDetailInterface {
     id: number;
@@ -101,14 +117,16 @@ export interface EmployeeDetailInterface {
     gender: number;
     phone_number: string;
     avatar_url: string;
+    area_id: number;
     created_at: string;
     updated_at: string;
 }
 
-// User info props
-export interface UserInfo {
-    id: number;
-    username: string;
-    created_at: string;
-    updated_at: string;
+// Pagination
+export interface CustomPaginationProps {
+    currentPage: number,
+    totalPages: number,
+    handleNextPage: () => void,
+    handlePreviousPage: () => void,
+    handleClickPage: (page: number) => void,
 }

@@ -22,8 +22,8 @@ const ChangeUserInfoForm = ({
     onSubmit,
 }: {
     className?: string,
-    userData: UserInfo,
-    onSubmit?: () => boolean,
+    userData: UserInfo | null,
+    onSubmit?: (formData: any) => Promise<boolean>,
 }) => {
     const form = useForm<ChangeUserInfoBodyType>({
         resolver: zodResolver(ChangeUserInfoBody),
@@ -33,13 +33,13 @@ const ChangeUserInfoForm = ({
         }
     })
 
-    const handleSubmit = (values: ChangeUserInfoBodyType) => {
+    const handleSubmit = async (values: ChangeUserInfoBodyType): Promise<void> => {
         const formValue = {
             ...values,
-            username: userData.username,
+            username: userData?.username,
         }
         
-        const submitResult = onSubmit(formValue);
+        const submitResult = await onSubmit?.(formValue);
 
         if (submitResult) {
             form.reset();

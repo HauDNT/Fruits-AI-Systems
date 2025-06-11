@@ -2,7 +2,8 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from 'axios';
 
 const axiosInstance: AxiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_URL_SERVER,
+    baseURL: "http://localhost:8080",
+    // baseURL: process.env.NEXT_PUBLIC_URL_SERVER,
     timeout: 10000,
     headers: {
         "Content-Type": "application/json",
@@ -30,7 +31,7 @@ axiosInstance.interceptors.response.use(
 
 export default axiosInstance;
 
-export const handleAxiosError = (error) => {
+export const handleAxiosError = (error: unknown): string => {
     if (axios.isAxiosError(error) && error.response) {
         return error.response.data.message || "Axios error fetch API (No description)";
     }

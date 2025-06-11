@@ -10,27 +10,32 @@ import { Gender } from "@/enums";
 import ToggleLabelInput from "@/components/common/ToggleLabelInput";
 import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import { useToast } from "@/hooks/use-toast";
+import { ToggleLabelInputOptionsDataType } from "@/types";
 
 const EmployeeDetailForm = ({
     data: initialData,
     opUpdateSuccess,
 }: {
     data: EmployeeDetailInterface,
-    opUpdateSuccess?: () => void,
+    opUpdateSuccess?: (form: EmployeeDetailInterface) => void,
 }) => {
     const { toast } = useToast();
-    const [editState, setEditState] = useState(false);
-    const [areas, setAreas] = useState<{ label: string; value: number }[]>([]);
+    const [editState, setEditState] = useState<boolean>(false);
+    const [areas, setAreas] = useState<ToggleLabelInputOptionsDataType[]>([]);
     const [formData, setFormData] = useState<EmployeeDetailInterface>(initialData);
 
     const onChangeDataEachFieldChange = (newValue: any, nameField: string) => {
         if (!nameField) {
-            console.warn("nameField is required");
+            toast({
+                title: "Xảy ra lỗi khi thay đổi thông tin",
+                variant: "destructive",
+            });
+
             return;
         }
         setFormData(prev => ({
             ...prev,
-            [nameField]: newValue
+            [nameField]: +newValue
         }));
     };
 
@@ -44,19 +49,16 @@ const EmployeeDetailForm = ({
                 }));
                 setAreas(formattedAreasData);
             }
-        } catch (error) {
-            const errorMessage = handleAxiosError(error);
-            console.log('Tải dữ liệu khu làm việc thất bại: ', error);
-
+        } catch (e) {
             toast({
                 title: "Tải dữ liệu khu làm việc thất bại",
-                description: errorMessage,
+                description: handleAxiosError(e),
                 variant: "destructive",
             });
         }
     };
 
-    const updateProfile = async () => {
+    const updateProfile = async (): Promise<void> => {
         try {
             const resData = await axiosInstance.put(
                 `/employees/update-profile/${formData.id}`,
@@ -69,7 +71,7 @@ const EmployeeDetailForm = ({
                     variant: "success",
                 });
 
-                opUpdateSuccess(formData)
+                await opUpdateSuccess?.(formData);
             }
         } catch (error) {
             const errorMessage = handleAxiosError(error);
@@ -131,14 +133,14 @@ const EmployeeDetailForm = ({
                                     }}
                                     className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
                                 >
-                                    <CheckCircle/>
+                                    <CheckCircle />
                                 </button>
                             ) : (
                                 <button
                                     onClick={() => setEditState(prev => !prev)}
                                     className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
                                 >
-                                    <Edit/>
+                                    <Edit />
                                 </button>
                             )
                         }

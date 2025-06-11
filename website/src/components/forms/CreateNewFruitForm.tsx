@@ -17,16 +17,18 @@ import ComponentCard from "@/components/common/ComponentCard"
 import InputField from "@/components/inputs/InputField"
 import { Input } from "@/components/ui/input"
 import CustomButton from "@/components/buttons/CustomButton"
-import axiosInstance from "@/utils/axiosInstance";
+import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import ListCheck from "@/components/common/ListCheck";
+import { FruitTypeSelect } from "@/types/fruitTypeSelect";
 
 const CreateNewFruitForm = ({
     className,
     onSubmit,
-}: FormInterface) => {
+    onClose,
+}: FormInterface<FormData>) => {
     const {toast} = useToast()
-    const [fruitTypesData, setFruitTypesData] = useState([])
-    const [storeFruitTypeChecked, setStoreFruitTypeChecked] = useState<string[]>([]);
+    const [fruitTypesData, setFruitTypesData] = useState<FruitTypeSelect[]>([])
+    const [storeFruitTypeChecked, setStoreFruitTypeChecked] = useState<number[]>([]);
     const form = useForm<FruitBodyType>({
         resolver: zodResolver(FruitBody),
         defaultValues: {
@@ -37,9 +39,9 @@ const CreateNewFruitForm = ({
         }
     })
 
-    const fetchAllFruitTypes = async () => {
+    const fetchAllFruitTypes = async (): Promise<void> => {
         try {
-            const resData = (await axiosInstance.get('/fruit-types/all')).data;
+            const resData = (await axiosInstance.get<FruitTypeSelect[]>('/fruit-types/all')).data;
 
             if (resData.length > 0) {
                 setFruitTypesData(resData);
@@ -49,26 +51,29 @@ const CreateNewFruitForm = ({
                     variant: "warning",
                 });
             }
-        } catch (error) {
-            console.error('Error fetching fruit types:', error);
+        } catch (e) {
+            const error = handleAxiosError(e);
+            
             toast({
                 title: "Lỗi khi lấy danh sách loại trái cây",
+                description: error,
                 variant: "destructive",
             });
         }
     }
 
-    const handleSubmit = (values: FruitBodyType) => {
+    const handleSubmit = async (values: FruitBodyType): Promise<void> => {
         const formData = new FormData();
         formData.append('fruit_name', values.fruit_name);
         formData.append('fruit_desc', values.fruit_desc);
         formData.append('fruit_types', JSON.stringify(storeFruitTypeChecked));
         formData.append('fruit_image', values.fruit_image);
 
-        const submitResult = onSubmit(formData);
+        const submitResult = await onSubmit(formData);
         if (submitResult) {
             form.reset();
             setStoreFruitTypeChecked([]);
+            onClose?.();
         }
     };
 

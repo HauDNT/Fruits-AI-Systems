@@ -7,18 +7,22 @@ import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import CreateNewDeviceStatusForm from "@/components/forms/CreateNewDeviceStatusForm";
-import {DeviceStatusBodyType} from "@/schemas/device.schema";
+import { CustomTableData } from "@/interfaces/table";
+import { MetaPaginate } from "@/interfaces";
 
 export default function DeviceStatuses() {
     const {toast} = useToast()
-    const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
-    const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "status_name"
-    const [createFormState, setCreateFormState] = useState(false)
+    const [data, setData] = useState<CustomTableData>({
+        columns: [],
+        values: [],
+    })
+    const [meta, setMeta] = useState<MetaPaginate>({totalPages: 1, currentPage: 1, limit: 10})
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const searchFields: string = "status_name"
+    const [createFormState, setCreateFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
-    const fetchDeviceStatusesByQuery = async (searchQuery: string, searchFields: string) => {
+    const fetchDeviceStatusesByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
         try {
             const resData = (await axiosInstance.get(
                 '/device-status',
@@ -50,7 +54,7 @@ export default function DeviceStatuses() {
         }
     }
 
-    const createNewDeviceStatus = async (formData: DeviceStatusBodyType): Promise<boolean> => {
+    const createNewDeviceStatus = async (formData: FormData): Promise<boolean> => {
         try {
             const resData = await axiosInstance.post(
                 '/device-status/create-status',
@@ -68,6 +72,7 @@ export default function DeviceStatuses() {
                 toast({ title: "Thêm trạng thái mới thành công" , variant: "success"});
                 return true;
             }
+            return false;
         } catch (error) {
             const errorMessage = handleAxiosError(error);
 
@@ -81,7 +86,7 @@ export default function DeviceStatuses() {
         }
     }
 
-    const deleteDeviceStatuses = async (statusesSelected: string[]) => {
+    const deleteDeviceStatuses = async (statusesSelected: string[]): Promise<void> => {
         try {
             if (statusesSelected.length > 0) {
                 await axiosInstance.delete(
@@ -172,7 +177,7 @@ export default function DeviceStatuses() {
                     maxWidth="max-w-3xl"
                 >
                     <CreateNewDeviceStatusForm
-                        onSubmit={(formData: DeviceStatusBodyType) => createNewDeviceStatus(formData)}
+                        onSubmit={(formData: FormData) => createNewDeviceStatus(formData)}
                         onClose={() => setCreateFormState(false)}
                     />
                 </ModelLayer>

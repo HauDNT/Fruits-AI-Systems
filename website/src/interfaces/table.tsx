@@ -2,19 +2,20 @@ import React, {ReactNode} from "react";
 
 // Props for Table
 export interface TableProps {
-    children: ReactNode; // Table content (thead, tbody, etc.)
+    children?: ReactNode; // Table content (thead, tbody, etc.)
     className?: string; // Optional className for styling
     tableTitle?: string;
     createItem?: boolean;
     detailItem?: boolean;
     deleteItem?: boolean;
     search?: boolean;
+    searchFields?: string;
     restoreItem?: boolean;
-    handleCreate?: void;
-    handleDetail?: void;
-    handleDelete?: void;
-    handleRestore?: void;
-    handleSearch?: void;
+    handleCreate?: () => void;
+    handleDetail?: (item: Record<string, any>) => void;
+    handleDelete?: (item: any) => void;
+    handleRestore?: () => void;
+    handleSearch?: (item: any) => void;
 }
 
 // Props for TableHeader
@@ -41,7 +42,7 @@ export interface TableCellProps {
     key?: number;       // Key for map loop
     isHeader?: boolean; // If true, renders as <th>, otherwise <td>
     className?: string; // Optional className for styling
-    onClick?: void;
+    onClick?: () => void;
 }
 
 // Table Props
@@ -50,6 +51,7 @@ export interface CustomTableProps extends TableProps {
     onSort?: (key: string) => void; // Hàm xử lý sắp xếp
 }
 
+// Table column
 export interface CustomTableColumn {
     key: string;
     displayName: string;

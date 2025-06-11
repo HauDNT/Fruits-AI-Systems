@@ -29,7 +29,7 @@ const CreateNewAreaForm = ({
         }
     })
 
-    const handleSubmit = async (values: AreaBodyType) => {
+    const handleSubmit = async (values: AreaBodyType): Promise<void> => {
         const formData = new FormData();
         formData.append('area_desc', values.area_desc);
         formData.append('area_image', values.area_image);

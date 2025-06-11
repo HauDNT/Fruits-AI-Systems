@@ -1,5 +1,4 @@
 "use client";
-import dynamic from "next/dynamic";
 import {
     Apple, Cpu, Users, HeartPulse, ScanEye,
     Computer, Zap, UserCircle,
@@ -11,10 +10,7 @@ import ClassifyResultsChart from "@/components/charts/ClassifyResultsChart";
 import {ClassifyResultInterface} from "@/interfaces";
 import MonthlySalesChart from "@/components/charts/EmployeesEachAreaChart";
 import PieChartFruitDistribution from "@/components/charts/PieChartFruitDistribution";
-// const PieChartFruitDistribution = dynamic(
-//     () => import ("@/components/charts/PieChartFruitDistribution"),
-//     { ssr: false },
-// )
+import { DashboardCardItem } from "@/types";
 
 export default function AdminDashboard() {
     const {
@@ -23,7 +19,7 @@ export default function AdminDashboard() {
         onUpdateEventSocketListener,
     } = useDashboardData();
 
-    const cardItems = [
+    const cardItems: DashboardCardItem[] = [
         {name: "Tài khoản", number: cardData.amountAccounts, icon: UserCircle, disableAnimation: false},
         {name: "Loại trái cây", number: cardData.amountFruits, icon: Apple, disableAnimation: false},
         {
@@ -52,8 +48,8 @@ export default function AdminDashboard() {
             <div className="col-span-12 space-y-6">
                 {[0, 4].map(i => (
                     <div key={i} className="grid grid-cols-4 gap-4 md:gap-4">
-                        {cardItems.slice(i, i + 4).map((item, idx) => (
-                            <DashboardCard key={idx} item={item} className={item.className} disableAnimation={item.disableAnimation} />
+                        {cardItems.slice(i, i + 4).map((item, index) => (
+                            <DashboardCard key={index} item={item} />
                         ))}
                     </div>
                 ))}

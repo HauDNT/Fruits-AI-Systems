@@ -7,7 +7,7 @@ import React from "react";
 import Alert from "@/components/alert/Alert";
 
 const PreviewClassifyResult = ({ data }: { data: ClassifyResultInterface }) => {
-    const [loaded, setLoaded] = useState(false);
+    const [loaded, setLoaded] = useState<boolean>(false);
 
     return (
         <ComponentCard title="Chi tiết kết quả phân loại" className="w-full h-auto">
@@ -29,7 +29,7 @@ const PreviewClassifyResult = ({ data }: { data: ClassifyResultInterface }) => {
                         className="h-full"
                         message={
                             <div className="space-y-2 text-sm leading-relaxed text-gray-700 dark:text-gray-200">
-                                <p><span className="font-semibold">Độ tin cậy:</span> {parseFloat(data.confidence_level * 100).toFixed(2)} %</p>
+                                <p><span className="font-semibold">Độ tin cậy:</span> {(data.confidence_level * 100).toFixed(2)} %</p>
                                 <p><span className="font-semibold">Khu vực:</span> {data.area}</p>
                                 <p><span className="font-semibold">Trái cây:</span> {data.fruit} - {data.fruitType}</p>
                                 <p><span className="font-semibold">Thời gian:</span> {new Date(data.created_at).toLocaleString("vi-VN")}</p>

@@ -20,7 +20,7 @@ const CreateNewDeviceTypeForm = ({
     className,
     onSubmit,
     onClose,
-}: FormInterface) => {
+}: FormInterface<FormData>) => {
     const form = useForm<DeviceTypeBodyType>({
         resolver: zodResolver(DeviceTypeBody),
         defaultValues: {
@@ -28,14 +28,14 @@ const CreateNewDeviceTypeForm = ({
         }
     })
 
-    const handleSubmit = (values: DeviceTypeBodyType) => {
+    const handleSubmit = async (values: DeviceTypeBodyType): Promise<void> => {
         const formData = new FormData();
         formData.append('type_name', values.type_name);
 
-        const submitResult = onSubmit(formData);
+        const submitResult = await onSubmit(formData);
         if (submitResult) {
             form.reset();
-            onClose()
+            onClose?.();
         }
     };
 

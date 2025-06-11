@@ -8,17 +8,22 @@ import ModelLayer from "@/components/common/ModelLayer";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import {AreaBodyType} from "@/schemas/area.schema";
 import CreateNewAreaForm from "@/components/forms/CreateNewAreaForm";
+import { CustomTableData } from "@/interfaces/table";
+import { MetaPaginate } from "@/interfaces";
 
 export default function Areas() {
     const {toast} = useToast()
-    const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
-    const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "area_code,area_desc"
-    const [createFormState, setCreateFormState] = useState(false)
+    const [data, setData] = useState<CustomTableData>({
+        columns: [],
+        values: [],
+    })
+    const [meta, setMeta] = useState<MetaPaginate>({totalPages: 1, currentPage: 1, limit: 10})
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const searchFields: string = "area_code,area_desc"
+    const [createFormState, setCreateFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
-    const fetchAreasByQuery = async (searchQuery: string, searchFields: string) => {
+    const fetchAreasByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
         try {
             const resData = (await axiosInstance.get(
                 '/areas',
@@ -42,7 +47,7 @@ export default function Areas() {
                 totalPages: resData.meta.totalPages,
             })
         } catch (e) {
-            const errorMessage = handleAxiosError(error);
+            const errorMessage = handleAxiosError(e);
 
             toast({
                 title: 'Không thể tải lên danh sách khu',
@@ -72,6 +77,8 @@ export default function Areas() {
                 toast({ title: "Thêm khu thành công" , variant: "success"});
                 return true;
             }
+
+            return false;
         } catch (error) {
             const errorMessage = handleAxiosError(error);
 
@@ -85,7 +92,7 @@ export default function Areas() {
         }
     }
 
-    const deleteAreas = async (areasSelected: string[]) => {
+    const deleteAreas = async (areasSelected: string[]): Promise<void> => {
         try {
             if (areasSelected.length > 0) {
                 await axiosInstance.delete(
@@ -171,7 +178,7 @@ export default function Areas() {
                     totalPages={meta.totalPages}
                     handlePreviousPage={() => handlePrevPage()}
                     handleNextPage={() => handleNextPage()}
-                    handleClickPage={(page) => setMeta(prev => ({
+                    handleClickPage={(page: number) => setMeta(prev => ({
                         ...prev,
                         currentPage: page
                     }))}

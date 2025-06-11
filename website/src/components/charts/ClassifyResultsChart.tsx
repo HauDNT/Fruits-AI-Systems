@@ -4,7 +4,6 @@ import {ApexOptions} from "apexcharts";
 import ChartTab from "@/components/common/ChartTab";
 import dynamic from "next/dynamic";
 
-// Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
     ssr: false,
 });
@@ -22,8 +21,8 @@ interface ClassifiResultsChartInterface {
     defaultTab2: number,
     chartTabs1: string[],
     chartTabs2: string[],
-    onChartTab1Selected?: void,
-    onChartTab2Selected?: void,
+    onChartTab1Selected?: (option: string) => void,
+    onChartTab2Selected?: (option: string) => void,
 }
 
 export default function ClassifyResultsChart({
@@ -134,12 +133,12 @@ export default function ClassifyResultsChart({
                     <ChartTab
                         defaultOptions={defaultTab1}
                         options = {chartTabs1}
-                        onTabClicked={(optionSelected) => onChartTab1Selected(optionSelected)}
+                        onTabClicked={(optionSelected) => onChartTab1Selected?.(optionSelected)}
                     />
                     <ChartTab
                         defaultOptions={defaultTab2}
                         options = {chartTabs2}
-                        onTabClicked={(optionSelected) => onChartTab2Selected(optionSelected)}
+                        onTabClicked={(optionSelected) => onChartTab2Selected?.(optionSelected)}
                     />
                 </div>
             </div>

@@ -1,9 +1,8 @@
 'use client'
-import React, {useEffect, useState} from "react";
-import {useToast} from "@/hooks/use-toast";
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-
+import React, { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
     Form,
     FormControl,
@@ -12,11 +11,11 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import {FormInterface} from "@/interfaces"
+import { FormInterface } from "@/interfaces"
 import ComponentCard from "@/components/common/ComponentCard"
 import { Input } from "@/components/ui/input"
 import CustomButton from "@/components/buttons/CustomButton"
-import axiosInstance from "@/utils/axiosInstance";
+import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import {
     Select,
     SelectContent,
@@ -24,17 +23,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import {Gender} from "@/enums";
-import {EmployeeBody, EmployeeBodyType} from "@/schemas/employee.schema";
+import { Gender } from "@/enums";
+import { EmployeeBody, EmployeeBodyType } from "@/schemas/employee.schema";
 import InputField from "@/components/inputs/InputField";
+import { AreaSelect } from "@/types/areaSelect";
 
 const CreateNewEmployeeForm = ({
     className,
     onSubmit,
     onClose
-}: FormInterface) => {
+}: FormInterface<FormData>) => {
     const { toast } = useToast()
-    const [areas, setAreas] = useState([])
+    const [areas, setAreas] = useState<AreaSelect[]>([])
     const form = useForm<EmployeeBodyType>({
         resolver: zodResolver(EmployeeBody),
         defaultValues: {
@@ -46,22 +46,24 @@ const CreateNewEmployeeForm = ({
         }
     })
 
-    const fetchAreas = async () => {
+    const fetchAreas = async (): Promise<void> => {
         try {
-            const resData = await axiosInstance.get('/areas/all')
+            const resData = await axiosInstance.get<AreaSelect[]>('/areas/all')
             if (resData.data) {
                 setAreas(resData.data)
             }
-        } catch (error) {
+        } catch (e) {
+            const error = handleAxiosError(e);
+
             toast({
                 title: 'Đã xảy ra lỗi khi lấy danh sách khu phân loại',
-                description: error.message,
+                description: error,
                 variant: 'destructive'
-            })
+            });
         }
     }
 
-    const handleSubmit = (values: EmployeeBodyType) => {
+    const handleSubmit = async (values: EmployeeBodyType): Promise<void> => {
         const formData = new FormData()
         formData.append('fullname', values.fullname)
         formData.append('gender', values.gender)
@@ -69,10 +71,10 @@ const CreateNewEmployeeForm = ({
         formData.append('area_id', values.area_id)
         formData.append('employee_image', values.employee_image)
 
-        const submitResult = onSubmit(formData);
+        const submitResult = await onSubmit(formData);
         if (submitResult) {
             form.reset()
-            onClose()
+            onClose?.()
         }
     }
 
@@ -91,7 +93,7 @@ const CreateNewEmployeeForm = ({
                         <FormField
                             control={form.control}
                             name="fullname"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem className="mb-0">
                                     <FormLabel>Họ và tên</FormLabel>
                                     <FormControl>
@@ -100,14 +102,14 @@ const CreateNewEmployeeForm = ({
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
                             name="phone_number"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem className="mb-0">
                                     <FormLabel>Số điện thoại</FormLabel>
                                     <FormControl>
@@ -116,34 +118,34 @@ const CreateNewEmployeeForm = ({
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
                             name="gender"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem className="mb-0">
                                     <FormLabel>Giới tính</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Chọn giới tính"/>
+                                                <SelectValue placeholder="Chọn giới tính" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem key={Gender.Male} value={Gender.Male}>
+                                            <SelectItem key={Gender.Male} value={Gender.Male + ''}>
                                                 <div className="flex justify-between w-full text-left cursor-pointer">
                                                     <span className="w-[130px] truncate">{'Nam'}</span>
                                                 </div>
                                             </SelectItem>
-                                            <SelectItem key={Gender.Female} value={Gender.Female}>
+                                            <SelectItem key={Gender.Female} value={Gender.Female + ''}>
                                                 <div className="flex justify-between w-full text-left cursor-pointer">
                                                     <span className="w-[130px] truncate">{'Nữ'}</span>
                                                 </div>
                                             </SelectItem>
-                                            <SelectItem key={Gender.Other} value={Gender.Other}>
+                                            <SelectItem key={Gender.Other} value={Gender.Other + ''}>
                                                 <div className="flex justify-between w-full text-left cursor-pointer">
                                                     <span className="w-[130px] truncate">{'Khác'}</span>
                                                 </div>
@@ -157,18 +159,18 @@ const CreateNewEmployeeForm = ({
                         <FormField
                             control={form.control}
                             name="area_id"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem className="mb-0">
                                     <FormLabel>Khu vực làm việc</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Chọn khu vực làm việc"/>
+                                                <SelectValue placeholder="Chọn khu vực làm việc" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             {areas.map(area => (
-                                                <SelectItem key={area.id} value={area.id}>
+                                                <SelectItem key={area.id} value={area.id + ''}>
                                                     <div className="flex justify-between w-full text-left cursor-pointer">
                                                         <span className="w-[130px] truncate">{area.area_code}</span>
                                                         <span className="flex-1 truncate text-gray-600">{area.area_desc}</span>

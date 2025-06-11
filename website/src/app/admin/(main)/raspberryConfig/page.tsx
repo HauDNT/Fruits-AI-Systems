@@ -1,65 +1,78 @@
 'use client'
 import Image from "next/image";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import {Select} from "@radix-ui/react-select";
-import {SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import React, {useEffect, useState} from "react";
-import {useToast} from "@/hooks/use-toast";
-import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
-import {Checkbox} from "@/components/ui/checkbox";
+import { Select } from "@radix-ui/react-select";
+import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React, { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
+import { Checkbox } from "@/components/ui/checkbox";
 import CustomButton from "@/components/buttons/CustomButton";
-import {HttpStatusCode} from "axios";
-import {Input} from "@/components/ui/input";
+import { HttpStatusCode } from "axios";
+import { Input } from "@/components/ui/input";
+
+interface Label {
+    fruit_id: number;
+    type_id: number;
+    label?: string;
+}
+
+interface Raspberry {
+    id: number;
+    device_code: string;
+}
+
+interface RaspberryConfig {
+    id?: number;
+    device_id: number;
+    device_code: string;
+    labels: Label[] | null;
+    updatedAt: Date | null;
+    raspberry_model?: File;
+}
 
 export default function RaspberryConfig() {
-    const {toast} = useToast()
-    const [labels, setLabels] = useState([])
-    const [raspberries, setRaspberries] = useState([])
-    const [raspberrySelected, setRaspberrySelected] = useState({
-        id: null,
-        device_code: null,
-    })
-    const [raspberryConfig, setRaspberryConfig] = useState(null)
+    const { toast } = useToast()
+    const [labels, setLabels] = useState<Label[]>([])
+    const [raspberries, setRaspberries] = useState<Raspberry[]>([])
+    const [raspberrySelected, setRaspberrySelected] = useState<Raspberry | null>(null)
+    const [raspberryConfig, setRaspberryConfig] = useState<RaspberryConfig | null>(null)
 
-    const fetchRaspberryList = async () => {
+    const fetchRaspberryList = async (): Promise<void> => {
         try {
-            const resData = await axiosInstance.get('/devices/raspberry-all')
+            const resData = await axiosInstance.get<Raspberry[]>('/devices/raspberry-all')
             if (resData.data) {
                 setRaspberries(resData.data)
             }
         } catch (error) {
-            const errorMessage = handleAxiosError(error);
-            console.log('Lỗi khi tải danh sách Raspberry: ', error)
-
             toast({
                 title: "Tải danh sách raspberry thất bại",
-                description: errorMessage,
+                description: handleAxiosError(error),
                 variant: "destructive",
             })
         }
     }
 
-    const getAvailableLabels = async () => {
+    const getAvailableLabels = async (): Promise<void> => {
         try {
-            const resData = await axiosInstance.get('/raspberry/raspberry-fruit-types')
+            const resData = await axiosInstance.get<Label[]>('/raspberry/raspberry-fruit-types')
             if (resData) {
                 setLabels(resData.data)
             }
         } catch (error) {
-            const errorMessage = handleAxiosError(error);
-            console.log('Tải danh sách nhãn thất bại: ', error)
-
             toast({
                 title: "Tải danh sách nhãn thất bại",
-                description: errorMessage,
+                description: handleAxiosError(error),
                 variant: "destructive",
             })
         }
     }
 
-    const getRaspberryConfig = async () => {
+    const getRaspberryConfig = async (): Promise<void> => {
+        if (!raspberrySelected) return;
+
         try {
-            const config = (await axiosInstance.get(`/raspberry/config?device_code=${encodeURIComponent(raspberrySelected.device_code)}&isRaspberry=false`)).data
+            const config = (await axiosInstance.get(`/raspberry/config?device_code=${encodeURIComponent(raspberrySelected?.device_code)}&isRaspberry=false`)).data
 
             if (config && config.id) {
                 if (typeof config.labels === 'string') {
@@ -82,7 +95,7 @@ export default function RaspberryConfig() {
                     updatedAt: new Date(),
                 })
             }
-        } catch (error) {
+        } catch (error: any) {
             if (error.response?.status === 400) {
                 setRaspberryConfig({
                     id: raspberrySelected.id,
@@ -106,7 +119,7 @@ export default function RaspberryConfig() {
         }
     }
 
-    const handleCheckboxChange = (checked, label) => {
+    const handleCheckboxChange = (checked: boolean, label: Label): void => {
         setRaspberryConfig((prev) => {
             if (!prev) return prev;
 
@@ -115,10 +128,10 @@ export default function RaspberryConfig() {
                 (item) => item.fruit_id === label.fruit_id && item.type_id === label.type_id
             );
 
-            let updatedLabels;
+            let updatedLabels: Label[];
 
             if (checked && !exists) {
-                updatedLabels = [...existingLabels, {fruit_id: label.fruit_id, type_id: label.type_id}];
+                updatedLabels = [...existingLabels, { fruit_id: label.fruit_id, type_id: label.type_id }];
             } else if (!checked && exists) {
                 updatedLabels = existingLabels.filter(
                     (item) =>
@@ -136,19 +149,11 @@ export default function RaspberryConfig() {
     };
 
     const handleUpdateRaspberryConfig = async () => {
+        if (!raspberrySelected || !raspberryConfig) return;
+
         try {
-            if (!raspberrySelected.id || !raspberrySelected.device_code) {
-                toast({
-                    title: "Hãy chọn Raspberry để cấu hình",
-                    variant: "info",
-                })
-
-                return
-            }
-
             const formData = new FormData()
-            formData.append('id', raspberryConfig.id)
-            formData.append('device_id', raspberryConfig.device_id)
+            formData.append('device_id', String(raspberryConfig.device_id))
             formData.append('device_code', raspberrySelected.device_code)
             formData.append('labels', JSON.stringify(raspberryConfig.labels))
 
@@ -192,15 +197,14 @@ export default function RaspberryConfig() {
     }, [])
 
     useEffect(() => {
-        if (raspberrySelected.id !== null) {
-            getRaspberryConfig()
-            console.log("Loaded config labels:", raspberryConfig?.labels);
+        if (raspberrySelected) {
+            getRaspberryConfig();
         }
     }, [raspberrySelected])
 
     return (
         <>
-            <PageBreadcrumb pageTitle={'Cấu hình máy chủ Raspberry'} pageTitleSmall={'Raspberry'}/>
+            <PageBreadcrumb pageTitle={'Cấu hình máy chủ Raspberry'} pageTitleSmall={'Raspberry'} />
             <div className="space-y-6">
                 <div
                     className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]`}>
@@ -215,7 +219,7 @@ export default function RaspberryConfig() {
                             />
                             <Select
                                 onValueChange={async (value) => {
-                                    const selectedRasp = raspberries.find(rasp => rasp.id === value);
+                                    const selectedRasp = raspberries.find(rasp => rasp.id === +value);
                                     if (selectedRasp) {
                                         await resetRaspberryConfigWindows()
                                         setRaspberrySelected(selectedRasp)
@@ -223,21 +227,22 @@ export default function RaspberryConfig() {
                                 }}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Chọn Raspberry cần cấu hình"/>
+                                    <SelectValue placeholder="Chọn Raspberry cần cấu hình" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {
                                         raspberries.length > 0 ? (
-                                            raspberries.map(rasp => (
+                                            raspberries.map((rasp, index) => (
                                                 <SelectItem
+                                                    key={index}
                                                     className={'cursor-pointer'}
-                                                    value={rasp.id}
+                                                    value={rasp.id + ''}
                                                 >
                                                     {rasp.device_code}
                                                 </SelectItem>
                                             ))
                                         ) : (
-                                            <SelectItem className={'cursor-pointer'} value={NaN}>-</SelectItem>
+                                            <SelectItem className={'cursor-pointer'} value={'#'}>-</SelectItem>
                                         )
                                     }
                                 </SelectContent>
@@ -281,7 +286,7 @@ export default function RaspberryConfig() {
                                                     <Checkbox
                                                         id={checkboxValue}
                                                         checked={isChecked || false}
-                                                        onCheckedChange={(checked) =>
+                                                        onCheckedChange={(checked: boolean) =>
                                                             handleCheckboxChange(checked, label)
                                                         }
                                                         className="cursor-pointer"
@@ -301,12 +306,12 @@ export default function RaspberryConfig() {
                                             type="file"
                                             accept=".tflite"
                                             multiple={false}
-                                            disabled={!raspberrySelected.device_code}
+                                            disabled={!raspberrySelected?.device_code}
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
                                                 setRaspberryConfig(prevConfig => ({
-                                                    ...prevConfig,
+                                                    ...prevConfig!,
                                                     raspberry_model: file,
                                                 }))
                                             }}

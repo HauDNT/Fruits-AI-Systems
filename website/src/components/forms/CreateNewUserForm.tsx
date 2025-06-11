@@ -19,7 +19,8 @@ import {UserBody, UserBodyType} from "@/schemas/user.schema"
 const CreateNewUserForm = ({
     className,
     onSubmit,
-}: FormInterface) => {
+    onClose,
+}: FormInterface<UserBodyType>) => {
     const form = useForm<UserBodyType>({
         resolver: zodResolver(UserBody),
         defaultValues: {
@@ -28,11 +29,12 @@ const CreateNewUserForm = ({
         }
     })
 
-    const handleSubmit = (values: UserBodyType) => {
-        const submitResult = onSubmit(values);
+    const handleSubmit = async (values: UserBodyType): Promise<void> => {
+        const submitResult = await onSubmit(values);
 
         if (submitResult) {
             form.reset();
+            onClose?.();
         }
     };
 

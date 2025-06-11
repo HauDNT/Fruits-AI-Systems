@@ -8,7 +8,7 @@ const ListCheck = ({title, data, onCheck}: ListCheckInterface<FruitType>) => {
     const [itemSelected, setItemSelect] = useState<number[]>([]);
 
     useEffect(() => {
-        onCheck(itemSelected);
+        onCheck?.(itemSelected);
     }, [itemSelected]);
 
     const handleItemCheck = (itemId: number, checked: boolean) => {

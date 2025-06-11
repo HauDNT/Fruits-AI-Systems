@@ -1,24 +1,28 @@
 'use client'
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import CustomTable from "@/components/table/CustomTable";
-import {useToast} from "@/hooks/use-toast";
-import {FruitBodyType} from "@/schemas/fruit.schema";
+import { useToast } from "@/hooks/use-toast";
 import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewFruitForm from "@/components/forms/CreateNewFruitForm";
-import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
+import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import CustomPagination from "@/components/common/CustomPagination";
+import { CustomTableData } from "@/interfaces/table";
+import { MetaPaginate } from "@/interfaces";
 
 export default function Fruits() {
-    const {toast} = useToast()
-    const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
-    const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "fruit_name,fruit_desc"
-    const [createFormState, setCreateFormState] = useState(false)
+    const { toast } = useToast()
+    const [data, setData] = useState<CustomTableData>({
+        columns: [],
+        values: [],
+    })
+    const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 })
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const searchFields: string = "fruit_name,fruit_desc"
+    const [createFormState, setCreateFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
-    const fetchFruitsByQuery = async (searchQuery: string, searchFields: string) => {
+    const fetchFruitsByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
         try {
             const resData = (await axiosInstance.get(
                 `/fruits`,
@@ -51,7 +55,7 @@ export default function Fruits() {
         }
     }
 
-    const createNewFruits = async (formData: FruitBodyType): Promise<boolean> => {
+    const createNewFruits = async (formData: FormData): Promise<boolean> => {
         try {
             const resData = await axiosInstance.post('/fruits/create-fruit', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -65,9 +69,10 @@ export default function Fruits() {
                     values: [...prev.values, resData.data.data]
                 }))
 
-                toast({ title: "Thêm trái cây thành công" , variant: "success"});
+                toast({ title: "Thêm trái cây thành công", variant: "success" });
                 return true;
             }
+            return false;
         } catch (error) {
             const errorMessage = handleAxiosError(error);
 
@@ -81,7 +86,7 @@ export default function Fruits() {
         }
     }
 
-    const deleteFruits = async (fruitsSeleted: string[]) => {
+    const deleteFruits = async (fruitsSeleted: string[]): Promise<void> => {
         try {
             if (fruitsSeleted.length > 0) {
                 await axiosInstance.delete(
@@ -128,13 +133,13 @@ export default function Fruits() {
 
     const handleNextPage = () => {
         if (meta.currentPage < meta.totalPages) {
-            setMeta({...meta, currentPage: +meta.currentPage + 1});
+            setMeta({ ...meta, currentPage: +meta.currentPage + 1 });
         }
     }
 
     const handlePrevPage = () => {
         if (meta.currentPage > 1) {
-            setMeta({...meta, currentPage: +meta.currentPage - 1});
+            setMeta({ ...meta, currentPage: +meta.currentPage - 1 });
         }
     }
 
@@ -144,7 +149,7 @@ export default function Fruits() {
 
     return (
         <>
-            <PageBreadcrumb pageTitle={'Trái cây'}/>
+            <PageBreadcrumb pageTitle={'Trái cây'} />
 
             <div className="space-y-6">
                 <CustomTable
@@ -177,7 +182,7 @@ export default function Fruits() {
                     maxWidth="max-w-3xl"
                 >
                     <CreateNewFruitForm
-                        onSubmit={(formData: FruitBodyType) => createNewFruits(formData)}
+                        onSubmit={(formData: FormData) => createNewFruits(formData)}
                     />
                 </ModelLayer>
             </div>

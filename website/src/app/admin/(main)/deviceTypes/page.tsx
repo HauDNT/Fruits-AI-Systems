@@ -7,18 +7,22 @@ import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
 import CreateNewDeviceTypeForm from "@/components/forms/CreateNewDeviceTypeForm";
-import { DeviceTypeBodyType } from "@/schemas/device.schema"
+import { CustomTableData } from "@/interfaces/table";
+import { MetaPaginate } from "@/interfaces";
 
 export default function DeviceTypes() {
     const {toast} = useToast()
-    const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
-    const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "type_name"
-    const [createFormState, setCreateFormState] = useState(false)
+    const [data, setData] = useState<CustomTableData>({
+        columns: [],
+        values: [],
+    })
+    const [meta, setMeta] = useState<MetaPaginate>({totalPages: 1, currentPage: 1, limit: 10})
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const searchFields: string = "type_name"
+    const [createFormState, setCreateFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
-    const fetchDeviceTypesByQuery = async (searchQuery: string, searchFields: string) => {
+    const fetchDeviceTypesByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
         try {
             const resData = (await axiosInstance.get(
                 '/device-types',
@@ -50,7 +54,7 @@ export default function DeviceTypes() {
         }
     }
 
-    const createNewDeviceType = async (formData: DeviceTypeBodyType): Promise<boolean> => {
+    const createNewDeviceType = async (formData: FormData): Promise<boolean> => {
         try {
             const resData = await axiosInstance.post(
                 '/device-types/create-type',
@@ -68,6 +72,7 @@ export default function DeviceTypes() {
                 toast({ title: "Thêm loại thiết bị thành công" , variant: "success"});
                 return true;
             }
+            return false;
         } catch (error) {
             const errorMessage = handleAxiosError(error);
 
@@ -81,7 +86,7 @@ export default function DeviceTypes() {
         }
     }
 
-    const deleteDeviceTypes = async (typesSelected: string[]) => {
+    const deleteDeviceTypes = async (typesSelected: string[]): Promise<void> => {
         try {
             if (typesSelected.length > 0) {
                 await axiosInstance.delete(
@@ -172,7 +177,7 @@ export default function DeviceTypes() {
                     maxWidth="max-w-3xl"
                 >
                     <CreateNewDeviceTypeForm
-                        onSubmit={(formData: DeviceTypeBodyType) => createNewDeviceType(formData)}
+                        onSubmit={(formData: FormData) => createNewDeviceType(formData)}
                         onClose={() => setCreateFormState(false)}
                     />
                 </ModelLayer>

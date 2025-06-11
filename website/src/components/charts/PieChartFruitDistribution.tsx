@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import dynamic from "next/dynamic";
+import { ApexOptions } from "apexcharts";
 
 interface FruitDistribution {
     fruit: string;
@@ -12,12 +13,12 @@ interface Props {
     data: FruitDistribution[];
 }
 
-const Chart = dynamic(() => import("react-apexcharts"), {ssr: false})
+const Chart = dynamic(() => import("react-apexcharts"), { ssr: false })
 
 export default function PieChartFruitDistribution({ chartName, data }: Props) {
     const labels = data.map(item => item.fruit);
-    const series = data.map(item => +item.count);
-    const options = {
+    const series = data.map(item => Number(item.count ?? 0));
+    const options: ApexOptions = {
         chart: {
             type: "pie",
         },
@@ -47,6 +48,15 @@ export default function PieChartFruitDistribution({ chartName, data }: Props) {
         plotOptions: {
             pie: {},
         },
+        noData: {
+            text: "Không có dữ liệu",
+            align: "center",
+            verticalAlign: "middle",
+            style: {
+                color: '#ccc',
+                fontSize: '14px',
+            }
+        }
     };
 
     return (
@@ -54,7 +64,7 @@ export default function PieChartFruitDistribution({ chartName, data }: Props) {
             <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
                 <div className="w-full">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        { chartName }
+                        {chartName}
                     </h3>
                 </div>
             </div>

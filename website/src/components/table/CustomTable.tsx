@@ -1,5 +1,5 @@
 'use client'
-import React, {useState} from "react";
+import React, { useState } from "react";
 import {
     Table,
     TableBody,
@@ -7,31 +7,33 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/table/index";
-import {MdMore} from "react-icons/md";
-import {CustomTableProps} from "@/interfaces/table";
-import {renderCellValues} from "@/utils/customTableUtils";
+import { MdMore } from "react-icons/md";
+import { CustomTableProps } from "@/interfaces/table";
+import { renderCellValues } from "@/utils/customTableUtils";
 import ComponentCard from "@/components/common/ComponentCard";
 import ActionButton from "@/components/common/ActionButton";
-import {Checkbox} from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox"
 import Searchbar from "@/components/common/Searchbar";
 
 export default function CustomTable({
-                                        tableTitle,
-                                        tableData,
-                                        onSort,
-                                        classname,
-                                        createItem,
-                                        deleteItem,
-                                        restoreItem,
-                                        detailItem,
-                                        search,
-                                        handleCreate,
-                                        handleDetail,
-                                        handleDelete,
-                                        handleRestore,
-                                        handleSearch,
-                                    }: CustomTableProps) {
-    const {columns, values} = tableData;
+    children,
+    className,
+    searchFields,
+    tableTitle = "",
+    tableData,
+    onSort,
+    createItem,
+    deleteItem,
+    restoreItem,
+    detailItem,
+    search,
+    handleCreate,
+    handleDetail,
+    handleDelete,
+    handleRestore,
+    handleSearch,
+}: CustomTableProps) {
+    const { columns, values } = tableData;
     const [itemSelected, setItemSelect] = useState<number[]>([]);
 
     const handleItemChecked = (itemId: number, checked: boolean) => {
@@ -55,7 +57,7 @@ export default function CustomTable({
                     {
                         search && (
                             <Searchbar
-                                onSearch={(queryString) => handleSearch(queryString)}
+                                onSearch={(queryString) => handleSearch?.(queryString)}
                             />
                         )
                     }
@@ -72,7 +74,7 @@ export default function CustomTable({
                             <ActionButton
                                 action={"Delete"}
                                 handleAction={async () => {
-                                    handleDelete(itemSelected)
+                                    handleDelete?.(itemSelected)
                                     setItemSelect([])
                                 }}
                             />
@@ -90,7 +92,7 @@ export default function CustomTable({
             }
         >
             <div
-                className={`${classname} overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]`}>
+                className={`${className} overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]`}>
                 <div className="max-w-full overflow-x-auto">
                     <div className="min-w-[1102px]">
                         <Table>
@@ -103,7 +105,7 @@ export default function CustomTable({
                                                 isHeader
                                                 className="px-3 pb-2 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
                                             >
-                                                <Checkbox className={'table-select-all'}/>
+                                                <Checkbox className={'table-select-all'} />
                                             </TableCell>
                                         )
                                     }
@@ -137,9 +139,9 @@ export default function CustomTable({
                                                 isHeader
                                                 className="px-3 pb-2 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
                                             >
-                                               <span>
+                                                <span>
                                                     Chi tiết
-                                               </span>
+                                                </span>
                                             </TableCell>
                                         )
                                     }
@@ -155,12 +157,11 @@ export default function CustomTable({
                                                 {
                                                     (deleteItem || restoreItem) && (
                                                         row.disableCheck ? (
-                                                            <span/>
+                                                            <span />
                                                         ) : (
                                                             <TableCell
                                                                 key={index}
-                                                                onClick={() => {
-                                                                }}
+                                                                onClick={() => { }}
                                                                 className="px-5 py-3 font-medium text-black-500 text-center text-theme-sm dark:text-gray-400"
                                                             >
                                                                 <Checkbox
@@ -173,10 +174,10 @@ export default function CustomTable({
                                                     )
                                                 }
                                                 {
-                                                    columns.map((col) => (
+                                                    columns.map((col, index) => (
                                                         col.key !== 'id' && col.key !== 'image_url' ? (
-                                                            <TableCell key={col.key}
-                                                                       className="px-5 py-4 sm:px-6 text-center">
+                                                            <TableCell key={index}
+                                                                className="px-5 py-4 sm:px-6 text-center">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className={'w-full'}>
                                                                         <span className="block text-gray-600 text-center text-theme-sm">
@@ -200,7 +201,7 @@ export default function CustomTable({
                                                                 <MdMore
                                                                     size={20}
                                                                     className={'dark:white m-auto cursor-pointer'}
-                                                                    onClick={() => handleDetail(row)}
+                                                                    onClick={() => handleDetail?.(row)}
                                                                 />
                                                             </span>
                                                         </TableCell>

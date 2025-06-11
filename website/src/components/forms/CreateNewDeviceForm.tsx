@@ -24,16 +24,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { DeviceTypeSelect } from "@/types/deviceTypeSelect";
+import { DeviceStatusSelect } from "@/types/deviceStatusSelect";
+import { AreaSelect } from "@/types/areaSelect";
 
 const CreateNewDeviceForm = ({
     className,
     onSubmit,
     onClose,
-}: FormInterface) => {
+}: FormInterface<FormData>) => {
     const {toast} = useToast()
-    const [deviceTypes, setDeviceTypes] = useState([])
-    const [deviceStatuses, setDeviceStatuses] = useState([])
-    const [areas, setAreas] = useState([])
+    const [deviceTypes, setDeviceTypes] = useState<DeviceTypeSelect[]>([])
+    const [deviceStatuses, setDeviceStatuses] = useState<DeviceStatusSelect[]>([])
+    const [areas, setAreas] = useState<AreaSelect[]>([])
     const form = useForm<DeviceBodyType>({
         resolver: zodResolver(DeviceBody),
         defaultValues: {
@@ -44,12 +47,12 @@ const CreateNewDeviceForm = ({
         }
     })
 
-    const fetchFormData = async () => {
+    const fetchFormData = async (): Promise<void> => {
         Promise
             .all([
-                axiosInstance.get('/device-status/all'),
-                axiosInstance.get('/device-types/all'),
-                axiosInstance.get('/areas/all'),
+                axiosInstance.get<DeviceStatusSelect[]>('/device-status/all'),
+                axiosInstance.get<DeviceTypeSelect[]>('/device-types/all'),
+                axiosInstance.get<AreaSelect[]>('/areas/all'),
             ])
             .then(([resStatuses, resTypes, resAreas]) => {
                 setDeviceStatuses(resStatuses.data)
@@ -65,17 +68,17 @@ const CreateNewDeviceForm = ({
             })
     }
 
-    const handleSubmit = (values: DeviceBodyType) => {
+    const handleSubmit = async (values: DeviceBodyType): Promise<void> => {
         const formData = new FormData();
         formData.append('type_id', values.type_id);
         formData.append('area_id', values.area_id);
         formData.append('status_id', values.status_id);
         formData.append('device_image', values.device_image);
 
-        const submitResult = onSubmit(formData);
+        const submitResult = await onSubmit(formData);
         if (submitResult) {
             form.reset()
-            onClose()
+            onClose?.()
         }
     };
 
@@ -105,8 +108,8 @@ const CreateNewDeviceForm = ({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className={'text-black'}>
-                                            { deviceTypes.map(type => (
-                                                <SelectItem className={'cursor-pointer'} value={type.id}>{type.type_name}</SelectItem>
+                                            { deviceTypes.map((type, index) => (
+                                                <SelectItem key={index} className={'cursor-pointer'} value={type.id + ''}>{type.type_name}</SelectItem>
                                             )) }
                                         </SelectContent>
                                     </Select>
@@ -127,8 +130,8 @@ const CreateNewDeviceForm = ({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                        { deviceStatuses.map(status => (
-                                            <SelectItem className={'cursor-pointer'} value={status.id}>{status.status_name}</SelectItem>
+                                        { deviceStatuses.map((status, index) => (
+                                            <SelectItem key={index} className={'cursor-pointer'} value={status.id + ''}>{status.status_name}</SelectItem>
                                         )) }
                                         </SelectContent>
                                     </Select>
@@ -149,8 +152,8 @@ const CreateNewDeviceForm = ({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {areas.map(area => (
-                                                <SelectItem key={area.id} value={area.id}>
+                                            {areas.map((area, index) => (
+                                                <SelectItem key={index} value={area.id + ''}>
                                                     <div className="flex justify-between w-full text-left cursor-pointer">
                                                         <span className="w-[130px] truncate">{area.area_code}</span>
                                                         <span className="flex-1 truncate text-gray-600">{area.area_desc}</span>

@@ -1,24 +1,30 @@
 'use client'
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import {useToast} from "@/hooks/use-toast";
-import {useEffect, useState} from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
 import CustomTable from "@/components/table/CustomTable";
-import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
+import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewUserForm from "@/components/forms/CreateNewUserForm";
 import ChangeUserInfoForm from "@/components/forms/ChangeUserInfoForm";
-import {ChangeUserInfoBodyType, UserBodyType} from "@/schemas/user.schema";
+import { ChangeUserInfoBodyType, UserBodyType } from "@/schemas/user.schema";
+import { CustomTableData } from "@/interfaces/table";
+import { MetaPaginate } from "@/interfaces";
+import {UserInfo} from "@/interfaces"
 
 export default function Users() {
-    const {toast} = useToast()
-    const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
-    const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "username"
-    const [userSelected, setUserSelected] = useState(null)
-    const [createFormState, setCreateFormState] = useState(false)
-    const [editFormState, setEditFormState] = useState(false)
+    const { toast } = useToast()
+    const [data, setData] = useState<CustomTableData>({
+        columns: [],
+        values: [],
+    })
+    const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 })
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const searchFields: string = "username"
+    const [userSelected, setUserSelected] = useState<UserInfo>()
+    const [createFormState, setCreateFormState] = useState<boolean>(false)
+    const [editFormState, setEditFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
     const fetchUsersByQuery = async (searchQuery: string, searchFields: string) => {
@@ -67,15 +73,15 @@ export default function Users() {
                     values: [...prev.values, resData.data.data]
                 }))
 
-                toast({ title: "Thêm tài khoản thành công" , variant: "success"});
+                toast({ title: "Thêm tài khoản thành công", variant: "success" });
                 return true;
             }
-        } catch (error) {
-            const errorMessage = handleAxiosError(error);
 
+            return false;
+        } catch (error) {
             toast({
                 title: "Thêm tài khoản thất bại",
-                description: errorMessage,
+                description: handleAxiosError(error),
                 variant: "destructive",
             });
 
@@ -83,7 +89,7 @@ export default function Users() {
         }
     }
 
-    const updateUserInfo = async (formData: any): Promise<boolean> => {
+    const updateUserInfo = async (formData: ChangeUserInfoBodyType): Promise<boolean> => {
         try {
             const resData = await axiosInstance.put(
                 'user/update',
@@ -91,16 +97,16 @@ export default function Users() {
             )
 
             if (resData.status === 200) {
-                toast({ title: "Cập nhật tài khoản thành công" , variant: "success"});
+                toast({ title: "Cập nhật tài khoản thành công", variant: "success" });
                 setEditFormState(false);
                 return true;
             }
-        } catch (error) {
-            const errorMessage = handleAxiosError(error);
 
+            return false;
+        } catch (error) {
             toast({
                 title: "Cập nhật tài khoản thất bại",
-                description: errorMessage,
+                description: handleAxiosError(error),
                 variant: "destructive",
             });
 
@@ -108,7 +114,7 @@ export default function Users() {
         }
     }
 
-    const deleteUsers = async (usersSelected: string[]) => {
+    const deleteUsers = async (usersSelected: string[]): Promise<void> => {
         try {
             if (usersSelected.length > 0) {
                 await axiosInstance.delete(
@@ -157,13 +163,13 @@ export default function Users() {
 
     const handleNextPage = () => {
         if (meta.currentPage < meta.totalPages) {
-            setMeta({...meta, currentPage: +meta.currentPage + 1});
+            setMeta({ ...meta, currentPage: +meta.currentPage + 1 });
         }
     }
 
     const handlePrevPage = () => {
         if (meta.currentPage > 1) {
-            setMeta({...meta, currentPage: +meta.currentPage - 1});
+            setMeta({ ...meta, currentPage: +meta.currentPage - 1 });
         }
     }
 
@@ -173,7 +179,7 @@ export default function Users() {
 
     return (
         <>
-            <PageBreadcrumb pageTitle={'Nhân viên'}/>
+            <PageBreadcrumb pageTitle={'Nhân viên'} />
 
             <div className="space-y-6">
                 <CustomTable
@@ -188,7 +194,7 @@ export default function Users() {
                     handleCreate={toggleCreateFormState}
                     handleDelete={(itemSelected) => deleteUsers(itemSelected)}
                     handleDetail={(itemSelected) => {
-                        setUserSelected(itemSelected);
+                        setUserSelected(itemSelected as UserInfo);
                         setEditFormState(true);
                     }}
                     handleSearch={(query) => setSearchQuery(query)}
@@ -220,10 +226,13 @@ export default function Users() {
                     onClose={() => setEditFormState(false)}
                     maxWidth="max-w-3xl"
                 >
-                    <ChangeUserInfoForm
-                        userData={userSelected}
-                        onSubmit={(formData: ChangeUserInfoBodyType) => updateUserInfo(formData)}
-                    />
+                    {
+                        userSelected &&
+                        <ChangeUserInfoForm
+                            userData={userSelected}
+                            onSubmit={(formData: ChangeUserInfoBodyType) => updateUserInfo(formData)}
+                        />
+                    }
                 </ModelLayer>
             </div>
         </>

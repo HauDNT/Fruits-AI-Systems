@@ -1,25 +1,25 @@
 'use client'
-
 import {useToast} from "@/hooks/use-toast";
 import {useEffect, useState} from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import CustomTable from "@/components/table/CustomTable";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
-import {DeviceBodyType} from '@/schemas/device.schema';
 import CreateNewDeviceForm from "@/components/forms/CreateNewDeviceForm";
 import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
+import { CustomTableData } from "@/interfaces/table";
+import { MetaPaginate } from "@/interfaces";
 
 export default function Devices() {
     const {toast} = useToast()
-    const [data, setData] = useState({
+    const [data, setData] = useState<CustomTableData>({
         columns: [],
         values: [],
-    });
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
-    const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "device_code,deviceType,deviceStatus,areaBelong"
-    const [createFormState, setCreateFormState] = useState(false)
+    })
+    const [meta, setMeta] = useState<MetaPaginate>({totalPages: 1, currentPage: 1, limit: 10})
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const searchFields: string = "device_code,deviceType,deviceStatus,areaBelong"
+    const [createFormState, setCreateFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
     const handleNextPage = () => {
@@ -34,7 +34,7 @@ export default function Devices() {
         }
     }
 
-    const fetchDevicesByQueryParams = async (searchQuery: string, searchFields: string) => {
+    const fetchDevicesByQueryParams = async (searchQuery: string, searchFields: string): Promise<void> => {
         try {
             const resData = (await axiosInstance.get(
                 '/devices',
@@ -66,7 +66,7 @@ export default function Devices() {
         }
     }
 
-    const handleCreateNewDevice = async (formData: DeviceBodyType) => {
+    const handleCreateNewDevice = async (formData: FormData): Promise<boolean> => {
         try {
             const resData = await axiosInstance.post('/devices/create-device', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -83,6 +83,7 @@ export default function Devices() {
                 toast({ title: "Thêm thiết bị thành công" , variant: "success"})
                 return true
             }
+            return false
         }  catch (error) {
             const errorMessage = handleAxiosError(error);
 
@@ -135,7 +136,7 @@ export default function Devices() {
                     maxWidth="max-w-3xl"
                 >
                     <CreateNewDeviceForm
-                        onSubmit={(formData: DeviceBodyType) => handleCreateNewDevice(formData)}
+                        onSubmit={(formData: FormData) => handleCreateNewDevice(formData)}
                         onClose={() => setCreateFormState(false)}
                     />
                 </ModelLayer>

@@ -1,9 +1,9 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ReduxAuthState, ReduxUserState } from '@/interfaces'
 
 const initialState: ReduxAuthState = {
     user: null,
-    token: undefined,
+    token: '',
 }
 
 const authSlice = createSlice({
@@ -17,7 +17,7 @@ const authSlice = createSlice({
                 email: action.payload.email ?? undefined,
                 role: action.payload.role ?? 1,
             };
-            state.token = action.payload.accessToken;
+            state.token = action.payload.accessToken ?? '';
         },
         removeReduxAuthToken: (state) => {
             state.user = null;

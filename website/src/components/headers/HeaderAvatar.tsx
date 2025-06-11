@@ -39,6 +39,8 @@ const HeaderAvatar = ({uri}: { uri?: string }) => {
     const router = useRouter()
 
     const handleLogout = async () => {
+        if (!user) return;
+        
         const userIdentifier = user['username'] || user['email'];
         const userRole = user['role'];
 

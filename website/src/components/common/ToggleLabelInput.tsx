@@ -16,7 +16,7 @@ const ToggleLabelInput = ({
     fieldValue,
     fieldType,
     optionPlaceHolder = 'Chọn',
-    dataForOptions,
+    dataForOptions = [],
     onFieldChange,
 }: ToggleLabelInputInterface) => {
     const [state, setState] = useState(fieldState);
@@ -39,14 +39,14 @@ const ToggleLabelInput = ({
                 ) : fieldType === 'options' ? (
                     <Select
                         onValueChange={(value) => onFieldChange(value)}
-                        defaultValue={selectedOption ? selectedOption.value : undefined}
+                        defaultValue={selectedOption ? String(selectedOption.value) : undefined}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder={optionPlaceHolder} />
                         </SelectTrigger>
                         <SelectContent>
                             {dataForOptions?.map((item, index) => (
-                                <SelectItem key={index} value={item.value}>
+                                <SelectItem key={index} value={item.value + ''}>
                                     <div className="flex justify-between w-full text-left cursor-pointer">
                                         <span className="w-[130px] truncate">{item.label}</span>
                                     </div>

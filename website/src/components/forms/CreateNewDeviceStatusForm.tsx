@@ -20,7 +20,7 @@ const CreateNewDeviceStatusForm = ({
     className,
     onSubmit,
     onClose,
-}: FormInterface) => {
+}: FormInterface<FormData>) => {
     const form = useForm<DeviceStatusBodyType>({
         resolver: zodResolver(DeviceStatusBody),
         defaultValues: {
@@ -28,13 +28,14 @@ const CreateNewDeviceStatusForm = ({
         }
     })
 
-    const handleSubmit = (values: DeviceStatusBodyType) => {
+    const handleSubmit = async (values: DeviceStatusBodyType): Promise<void> => {
         const formData = new FormData();
         formData.append('status_name', values.status_name);
 
-        const submitResult = onSubmit(formData);
+        const submitResult = await onSubmit(formData);
         if (submitResult) {
             form.reset();
+            onClose?.();
         }
     };
 

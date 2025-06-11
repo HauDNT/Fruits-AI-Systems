@@ -9,17 +9,22 @@ import CreateNewFruitTypeForm from "@/components/forms/CreateNewFruitTypeForm";
 import ModelLayer from "@/components/common/ModelLayer";
 import {FruitTypeBodyType} from "@/schemas/fruit.schema";
 import CustomPagination from "@/components/common/CustomPagination";
+import { CustomTableData } from "@/interfaces/table";
+import { MetaPaginate } from "@/interfaces";
 
 export default function FruitTypes() {
     const {toast} = useToast()
-    const [data, setData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 1})
-    const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "type_name,type_desc"
-    const [createFormState, setCreateFormState] = useState(false)
+        const [data, setData] = useState<CustomTableData>({
+        columns: [],
+        values: [],
+    })
+    const [meta, setMeta] = useState<MetaPaginate>({totalPages: 1, currentPage: 1, limit: 10})
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const searchFields: string = "type_name,type_desc"
+    const [createFormState, setCreateFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
-    const fetchFruitTypesByQuery = async (searchQuery: string, searchFields: string) => {
+    const fetchFruitTypesByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
         try {
             const resData = (await axiosInstance.get(
                 `/fruit-types`,
@@ -53,20 +58,21 @@ export default function FruitTypes() {
         }
     }
 
-    const handleAddNewFruitType = async (newType: FruitTypeBodyType) => {
+    const handleAddNewFruitType = async (newType: FruitTypeBodyType): Promise<boolean> => {
         try {
             if (!newType) {
                 toast({
                     title: "Vui lòng điền đẩy đủ thông tin",
                     variant: "destructive",
                 });
-                return;
+                return false;
             }
 
             const result = await axiosInstance.post<any>('/fruit-types/create-type', newType);
 
             if (result.status !== HttpStatusCode.Created) {
                 throw new Error(result?.data?.message || 'Tạo thất bại, vui lòng thử lại');
+                return false;
             }
 
             toast({
@@ -80,18 +86,19 @@ export default function FruitTypes() {
                 values: [...prev.values, result.data.data],
             }));
 
+            return true;
         } catch (error) {
-            const errorMessage = handleAxiosError(error);
-
             toast({
                 title: "Xảy ra lỗi khi tạo trạng thái mới",
                 variant: "destructive",
-                description: errorMessage,
+                description: handleAxiosError(error),
             });
+
+            return false;
         }
     }
 
-    const deleteFruitTypes = async (fruitTypeSeleted: string[]) => {
+    const deleteFruitTypes = async (fruitTypeSeleted: string[]): Promise<void> => {
         try {
             if (fruitTypeSeleted.length > 0) {
                 await axiosInstance.delete(

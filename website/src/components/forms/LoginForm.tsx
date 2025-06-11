@@ -10,8 +10,7 @@ import Link from "next/link";
 import React, {useState} from "react";
 
 const LoginForm = () => {
-    const [showPassword, setShowPassword] = useState(false);
-    const [isChecked, setIsChecked] = useState(false);
+    const [showPassword, setShowPassword] = useState<boolean>(false);
 
     return (
         <div className="flex flex-col flex-1 lg:w-1/2 w-full">

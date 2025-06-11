@@ -1,32 +1,8 @@
-import React from "react";
-
-export type SidebarType = 'Admin' | 'Student' | 'Teacher';
-
-export type NavItem = {
-    name: string;
-    icon: React.ReactNode;
-    path?: string;
-    subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
-};
-
-export type Theme = "light" | "dark";
-
-export type DashboardCardItem = {
-    name: string;
-    number: number;
-    icon: React.ReactNode;
-    upOrDown?: boolean;
-    diffRatio: number;
-}
-
-export type FruitType = {
-    id: number;
-    type_name: string;
-    type_desc: string;
-}
-
-export type ToggleLabelInputFieldType = "input" | "options"
-export type ToggleLabelInputOptionsDataType = {
-    label: string;
-    value: string | number;
-}
+export * from '@/types/sidebarType'
+export * from '@/types/theme'
+export * from '@/types/navItem'
+export * from '@/types/dashboardCardItem'
+export * from '@/types/fruitType'
+export * from '@/types/toggleLabelInputFieldType'
+export * from '@/types/toggleLabelInputOptionsDataType'
+export * from '@/types/subMenu'

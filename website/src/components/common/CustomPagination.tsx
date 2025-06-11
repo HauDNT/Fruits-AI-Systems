@@ -8,22 +8,20 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
+import { CustomPaginationProps } from "@/interfaces";
 
 const CustomPagination = ({
-                              currentPage,
-                              totalPages,
-                              handleNextPage,
-                              handlePreviousPage,
-                              handleClickPage,
-                              displayLimit = 10,
-                          }) => {
+    currentPage,
+    totalPages,
+    handleNextPage,
+    handlePreviousPage,
+    handleClickPage,
+}: CustomPaginationProps) => {
     const renderPageNumbers = () => {
-        const pages = [];
+        const pages: React.JSX.Element[] = [];
 
-        // Nếu tổng số trang <= 1 thì không cần phân trang
         if (totalPages <= 1) return pages;
 
-        // Tạo danh sách tất cả các trang
         for (let i = 1; i <= totalPages; i++) {
             pages.push(
                 <PaginationLink

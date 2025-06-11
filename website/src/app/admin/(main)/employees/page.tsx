@@ -1,40 +1,44 @@
 'use client'
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import {useToast} from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import CustomTable from "@/components/table/CustomTable";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewEmployeeForm from "@/components/forms/CreateNewEmployeeForm";
-import {EmployeeBodyType} from "@/schemas/employee.schema";
-import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
+import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import EmployeeDetailForm from "@/components/forms/EmployeeDetailForm";
+import { CustomTableData } from "@/interfaces/table";
+import { EmployeeDetailInterface, MetaPaginate } from "@/interfaces";
 
 export default function Employees() {
-    const {toast} = useToast()
-    const [employeesData, setEmployeesData] = useState([])
-    const [meta, setMeta] = useState({totalPages: 1, currentPage: 1, limit: 10})
-    const [searchQuery, setSearchQuery] = useState("")
-    const searchFields = "fullname,employee_code,phone_number"
-    const [createFormState, setCreateFormState] = useState(false)
-    const [employeeDetailData, setEmployeeDetailData] = useState(null)
-    const [detailFormState, setDetailFormState] = useState(false)
+    const { toast } = useToast()
+    const [employeesData, setEmployeesData] = useState<CustomTableData>({
+        columns: [],
+        values: [],
+    })
+    const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 })
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const searchFields: string = "fullname,employee_code,phone_number"
+    const [createFormState, setCreateFormState] = useState<boolean>(false)
+    const [employeeDetailData, setEmployeeDetailData] = useState<EmployeeDetailInterface>()
+    const [detailFormState, setDetailFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
     const toggleDetailFormState = () => setDetailFormState(prev => !prev)
 
     const handleNextPage = () => {
         if (meta.currentPage < meta.totalPages) {
-            setMeta({...meta, currentPage: +meta.currentPage + 1});
+            setMeta({ ...meta, currentPage: +meta.currentPage + 1 });
         }
     }
 
     const handlePrevPage = () => {
         if (meta.currentPage > 1) {
-            setMeta({...meta, currentPage: +meta.currentPage - 1});
+            setMeta({ ...meta, currentPage: +meta.currentPage - 1 });
         }
     }
 
-    const fetchEmployeesByQueryParams = async (searchQuery: string, searchFields: string) => {
+    const fetchEmployeesByQueryParams = async (searchQuery: string, searchFields: string): Promise<void> => {
         try {
             const resData = (await axiosInstance.get(
                 '/employees',
@@ -67,7 +71,7 @@ export default function Employees() {
         }
     }
 
-    const handleCreateNewEmployee = async (formData: EmployeeBodyType) => {
+    const handleCreateNewEmployee = async (formData: FormData): Promise<boolean> => {
         try {
             const resData = await axiosInstance.post(
                 '/employees/create-employee',
@@ -77,15 +81,16 @@ export default function Employees() {
                 })
 
             if (resData.status === 201) {
-                setCreateFormState(false)
+                setCreateFormState(false);
                 setEmployeesData(prev => ({
                     ...prev,
                     values: [...prev.values, resData.data.data]
-                }))
+                }));
 
-                toast({ title: 'Thêm nhân viên mới thành công', variant: 'success' })
-                return true
+                toast({ title: 'Thêm nhân viên mới thành công', variant: 'success' });
+                return true;
             }
+            return false;
         } catch (error) {
             const errorMessage = handleAxiosError(error);
             console.log('Thêm nhân viên thất bại: ', error)
@@ -100,7 +105,7 @@ export default function Employees() {
         }
     }
 
-    const deleteEmployees = async (employeesSelected: string[]) => {
+    const deleteEmployees = async (employeesSelected: string[]): Promise<void> => {
         try {
             if (employeesSelected.length > 0) {
                 await axiosInstance.delete(
@@ -154,7 +159,7 @@ export default function Employees() {
 
     return (
         <>
-            <PageBreadcrumb pageTitle={'Nhân viên'}/>
+            <PageBreadcrumb pageTitle={'Nhân viên'} />
 
             <div className="space-y-6">
                 <CustomTable
@@ -169,7 +174,7 @@ export default function Employees() {
                     handleCreate={toggleCreateFormState}
                     handleDetail={(item) => {
                         toggleDetailFormState()
-                        setEmployeeDetailData(item)
+                        setEmployeeDetailData(item as EmployeeDetailInterface)
                     }}
                     handleDelete={(itemSelected) => deleteEmployees(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
@@ -192,7 +197,7 @@ export default function Employees() {
                     maxWidth="max-w-3xl"
                 >
                     <CreateNewEmployeeForm
-                        onSubmit={(formData: EmployeeBodyType) => handleCreateNewEmployee(formData)}
+                        onSubmit={(formData: FormData) => handleCreateNewEmployee(formData)}
                         onClose={() => setCreateFormState(false)}
                     />
                 </ModelLayer>
@@ -202,12 +207,17 @@ export default function Employees() {
                     onClose={() => setDetailFormState(false)}
                     maxWidth="max-w-3xl"
                 >
-                    <EmployeeDetailForm data={employeeDetailData} opUpdateSuccess={(newEmployeeProfile) => {
-                        setEmployeesData(prev =>({
-                            ...prev,
-                            values: prev.values.map(employee => employee.id === newEmployeeProfile.id ? newEmployeeProfile : employee)
-                        }))
-                    }}/>
+                    {
+                        employeeDetailData &&
+                        <EmployeeDetailForm
+                            data={employeeDetailData}
+                            opUpdateSuccess={(newEmployeeProfile) => {
+                                setEmployeesData(prev => ({
+                                    ...prev,
+                                    values: prev.values.map(employee => employee.id === newEmployeeProfile.id ? newEmployeeProfile : employee)
+                                }))
+                            }} />
+                    }
                 </ModelLayer>
             </div>
         </>

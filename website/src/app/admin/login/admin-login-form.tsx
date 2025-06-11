@@ -56,7 +56,7 @@ const AdminLoginForm: React.FC = () => {
                     }
                 ))
 
-            if (result.payload.accessToken) {
+            if (result.payload) {
                 await setCookie('fruitflow-authentication', JSON.stringify({
                     userId: result.payload.userId,
                     username: result.payload.username,
@@ -68,7 +68,7 @@ const AdminLoginForm: React.FC = () => {
                     userId: result.payload.userId,
                     username: result.payload.username,
                     accessToken: result.payload.accessToken,
-                    role: result.payload.role,
+                    role: Number(result.payload.role),
                 }))
 
                 router.push('/admin/dashboard')
