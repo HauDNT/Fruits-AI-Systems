@@ -91,7 +91,6 @@ const EmployeeDetailForm = ({
 
     useEffect(() => {
         setFormData(initialData);
-        console.log(process.env.NEXT_PUBLIC_URL_SERVER + (initialData.avatar_url ?? ''))
     }, [initialData]);
 
     return (

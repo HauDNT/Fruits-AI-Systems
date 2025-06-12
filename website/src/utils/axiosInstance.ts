@@ -21,11 +21,9 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
     response => {
-        console.log('=> Axios Response: ', response.status, response.data);
         return response;
     },
     error => {
-        console.log('=> Axios Response Error: ', error.message);
         return Promise.reject(error);
     }
 );
@@ -34,7 +32,6 @@ export default axiosInstance;
 
 export const handleAxiosError = (error: unknown): string => {
     if (axios.isAxiosError(error) && error.response) {
-        console.log('=> Check URL API: ', process.env.NEXT_PUBLIC_URL_SERVER);
         return error.response.data.message || "Axios error fetch API (No description)";
     }
 
