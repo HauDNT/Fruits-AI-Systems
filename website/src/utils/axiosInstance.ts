@@ -2,8 +2,7 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from 'axios';
 
 const axiosInstance: AxiosInstance = axios.create({
-    baseURL: "http://localhost:8080",
-    // baseURL: process.env.NEXT_PUBLIC_URL_SERVER,
+    baseURL: process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_URL_SERVER,
     timeout: 10000,
     headers: {
         "Content-Type": "application/json",
@@ -22,9 +21,11 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
     response => {
+        console.log('=> Axios Response: ', response.status, response.data);
         return response;
     },
     error => {
+        console.log('=> Axios Response Error: ', error.message);
         return Promise.reject(error);
     }
 );
@@ -33,6 +34,7 @@ export default axiosInstance;
 
 export const handleAxiosError = (error: unknown): string => {
     if (axios.isAxiosError(error) && error.response) {
+        console.log('=> Check URL API: ', process.env.NEXT_PUBLIC_URL_SERVER);
         return error.response.data.message || "Axios error fetch API (No description)";
     }
 

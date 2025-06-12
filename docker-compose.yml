@@ -1,30 +1,23 @@
-version: "3.8"
-
 services:
     mysql:
         image: mysql:8.0
         container_name: fruitsflow_database
         restart: always
-        environment:
-            MYSQL_DATABASE: fruitsflow
-            MYSQL_ROOT_PASSWORD: rootpassword
-            MYSQL_USER: fruitsflow_db_user
-            MYSQL_PASSWORD: fruitsflow_db_user
+        env_file:
+            - .env.docker
         ports:
             - "3306:3306"
         volumes:
             - mysql_data:/var/lib/mysql
-    
+
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         container_name: fruitsflow_phpmyadmin
         restart: always
         ports:
             - "8081:80"
-        environment:
-            PMA_HOST: mysql
-            PMA_USER: root
-            PMA_PASSWORD: rootpassword
+        env_file:
+            - .env.docker
         depends_on:
             - mysql
 
@@ -34,15 +27,10 @@ services:
         container_name: fruitsflow_server
         ports:
             - "8080:8080"
-        environment:
-            PORT: 8080
-            NODE_ENV: development
-            SECRET_KEY: THO_18X2#SAD@*1111
-            DB_HOST: mysql
-            DB_PORT: 3306
-            DB_USERNAME: fruitsflow_db_user
-            DB_PASSWORD: fruitsflow_db_user
-            DB_NAME: fruitsflow
+        volumes:
+            -   ./Server/uploads:/app/uploads
+        env_file:
+            - .env.docker
         depends_on:
             - mysql
 
@@ -52,9 +40,10 @@ services:
         container_name: fruitsflow_website
         ports:
             - "3000:3000"
-        environment:
-            NEXT_PUBLIC_URL_SERVER: http://localhost:8080
-            NODE_ENV: development
+        volumes:
+            -   ./Website/public:/app/public
+        env_file:
+            - .env.docker
         depends_on:
             - server
 

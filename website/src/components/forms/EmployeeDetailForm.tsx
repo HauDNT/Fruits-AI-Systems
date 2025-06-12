@@ -91,6 +91,7 @@ const EmployeeDetailForm = ({
 
     useEffect(() => {
         setFormData(initialData);
+        console.log(process.env.NEXT_PUBLIC_URL_SERVER + (initialData.avatar_url ?? ''))
     }, [initialData]);
 
     return (
@@ -106,8 +107,9 @@ const EmployeeDetailForm = ({
                                 <Image
                                     width={80}
                                     height={80}
-                                    src={process.env.NEXT_PUBLIC_URL_SERVER + (formData.avatar_url ?? '')}
+                                    src={`${process.env.NEXT_PUBLIC_URL_SERVER}${formData.avatar_url ?? ''}`}
                                     alt="image profile"
+                                    unoptimized
                                 />
                             </div>
                             <div className="order-3 xl:order-2">
