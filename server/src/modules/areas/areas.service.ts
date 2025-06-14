@@ -1,22 +1,23 @@
-import {BadRequestException, Injectable, InternalServerErrorException} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as path from 'path';
-import {InjectRepository} from "@nestjs/typeorm";
-import {DataSource, DeleteResult, In, IsNull, Like, Repository} from "typeorm";
-import {CreateAreaDto} from './dto/create-area.dto';
-import {TableMetaData} from "@/interfaces/table";
-import {Area} from "@/modules/areas/entities/area.entity";
-import {generateUniqueCode} from "@/utils/generateUniqueCode";
-import {omitFields} from "@/utils/omitFields";
-import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
-import {deleteFilesInParallel} from "@/utils/handleFiles";
-import {deleteRelationsEntityData} from "@/utils/deleteRelationsEntityData";
-import {Employee} from "@/modules/employees/entities/employee.entity";
-import {Device} from "@/modules/devices/entities/device.entity";
-import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
-import {Raspberry} from "@/modules/raspberry/entities/raspberry.entity";
-import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
-import {checkAllRelationsBeforeDelete} from "@/utils/checkAllRelationsBeforeDelete";
-import {getDataWithQueryAndPaginate} from "@/utils/paginateAndSearch";
+import { InjectRepository } from "@nestjs/typeorm";
+import { DataSource, DeleteResult, In, IsNull, Like, Repository } from "typeorm";
+import { CreateAreaDto } from './dto/create-area.dto';
+import { TableMetaData } from "@/interfaces/table";
+import { Area } from "@/modules/areas/entities/area.entity";
+import { generateUniqueCode } from "@/utils/generateUniqueCode";
+import { omitFields } from "@/utils/omitFields";
+import { GetDataWithQueryParamsDTO } from "@/modules/dtoCommons";
+import { deleteFile, deleteFilesInParallel } from "@/utils/handleFiles";
+import { deleteRelationsEntityData } from "@/utils/deleteRelationsEntityData";
+import { Employee } from "@/modules/employees/entities/employee.entity";
+import { Device } from "@/modules/devices/entities/device.entity";
+import { FruitClassification } from "@/modules/fruit-classification/entities/fruit-classification.entity";
+import { Raspberry } from "@/modules/raspberry/entities/raspberry.entity";
+import { validateAndGetEntitiesByIds } from "@/utils/validateAndGetEntitiesByIds";
+import { checkAllRelationsBeforeDelete } from "@/utils/checkAllRelationsBeforeDelete";
+import { getDataWithQueryAndPaginate } from "@/utils/paginateAndSearch";
+import { UpdateAreaDto } from '@/modules/areas/dto/update-area.dto';
 
 @Injectable()
 export class AreasService {
@@ -25,44 +26,6 @@ export class AreasService {
         private readonly areaRepository: Repository<Area>,
         private readonly dataSource: DataSource,
     ) {
-    }
-
-    async create(createAreaDto: CreateAreaDto, imageUrl: string) {
-        const {area_desc} = createAreaDto;
-
-        const areaExist = await this.areaRepository
-            .createQueryBuilder('ar')
-            .where('LOWER(ar.area_desc) = LOWER(:area_desc)', {area_desc: area_desc})
-            .getOne()
-
-        if (areaExist) {
-            throw new BadRequestException('Khu phân loại đã tồn tại!')
-        }
-
-        let areaCode: string;
-        let areaCodeExist;
-
-        do {
-            areaCode = generateUniqueCode("Area", 6)
-            areaCodeExist = await this.areaRepository.findOneBy({
-                area_code: areaCode,
-            });
-        } while (areaCodeExist);
-
-        const newArea = this.areaRepository.create({
-            area_code: areaCode,
-            area_desc,
-            image_url: imageUrl,
-            created_at: new Date(),
-            updated_at: new Date(),
-        })
-
-        const saveArea = await this.areaRepository.save(newArea)
-
-        return {
-            message: 'Tạo khu phân loại thành công',
-            data: saveArea,
-        }
     }
 
     async findAll() {
@@ -82,15 +45,72 @@ export class AreasService {
             limit: data.limit,
             queryString: data.queryString,
             searchFields: data.searchFields?.split(','),
-            selectFields: ['id', 'area_code', 'area_desc', 'created_at', 'updated_at'],
+            selectFields: ['id', 'area_code', 'area_desc', 'image_url', 'created_at', 'updated_at'],
             columnsMeta: [
-                {"key": "id", "displayName": "ID", "type": "number"},
-                {"key": "area_code", "displayName": "Mã khu", "type": "string"},
-                {"key": "area_desc", "displayName": "Mô tả", "type": "string"},
-                {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
-                {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
+                { "key": "id", "displayName": "ID", "type": "number" },
+                { "key": "area_code", "displayName": "Mã khu", "type": "string" },
+                { "key": "area_desc", "displayName": "Mô tả", "type": "string" },
+                { "key": "created_at", "displayName": "Ngày tạo", "type": "date" },
+                { "key": "updated_at", "displayName": "Ngày thay đổi", "type": "date" },
             ],
         });
+    }
+
+    async create(createAreaDto: CreateAreaDto, imageUrl: string) {
+        const { area_desc } = createAreaDto;
+
+        const areaExist = await this.areaRepository
+            .createQueryBuilder('ar')
+            .where('LOWER(ar.area_desc) = LOWER(:area_desc)', { area_desc: area_desc })
+            .getOne()
+
+        if (areaExist) {
+            throw new BadRequestException('Khu phân loại đã tồn tại!')
+        }
+
+        let areaCode: string;
+        let areaCodeExist: Area;
+
+        do {
+            areaCode = generateUniqueCode("Area", 6)
+            areaCodeExist = await this.areaRepository.findOneBy({
+                area_code: areaCode,
+            });
+        } while (areaCodeExist);
+
+        const newArea = this.areaRepository.create({
+            area_code: areaCode,
+            area_desc,
+            image_url: imageUrl,
+            created_at: new Date(),
+            updated_at: new Date(),
+        });
+
+        const saveArea = await this.areaRepository.save(newArea)
+
+        return {
+            message: 'Tạo khu phân loại thành công',
+            data: saveArea,
+        }
+    }
+
+    async update(data: UpdateAreaDto, imageUrl?: string) {
+        const { area_code, area_desc } = data;
+        const area = await this.areaRepository.findOneBy({ area_code });
+
+        if (!area) {
+            throw new NotFoundException('Khu phân loại không tồn tại');
+        }
+
+        area.area_desc = area_desc;
+        area.updated_at = new Date();
+
+        if (imageUrl) {
+            await deleteFile(area.image_url);
+            area.image_url = imageUrl;
+        }
+
+        return await this.areaRepository.save(area);
     }
 
     async deleteAreas(areaIds: string[]): Promise<DeleteResult> {
@@ -110,14 +130,7 @@ export class AreasService {
                     areaWorkAt: 'Không thể xoá vì còn nhân viên liên kết với khu vực này. Hãy thay đổi và thử lại!',
                     areaClassify: 'Không thể xoá vì còn cấu hình Raspberry đang liên kết với khu vực này. Hãy thay đổi và thử lại!',
                 }
-            )
-
-            await deleteRelationsEntityData(queryRunner, areaIds, [
-                {entity: Raspberry, relationField: 'device.areaBelong'},
-                {entity: Employee, relationField: 'areaWorkAt'},
-                {entity: Device, relationField: 'areaBelong'},
-                {entity: FruitClassification, relationField: 'areaBelong'},
-            ]);
+            );
 
             const deleteAreasResult = await queryRunner.manager.delete(Area, { id: In(areaIds) });
             const areaImagePaths = areas.map(area => path.join(process.cwd(), area.image_url));

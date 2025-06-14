@@ -5,39 +5,22 @@ import {
     CheckCircle,
     Edit
 } from "lucide-react";
-import { EmployeeDetailInterface } from "@/interfaces";
+import { EmployeeDetailInterface, FormDetailInterface } from "@/interfaces";
 import { Gender } from "@/enums";
 import ToggleLabelInput from "@/components/common/ToggleLabelInput";
 import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import { useToast } from "@/hooks/use-toast";
 import { ToggleLabelInputOptionsDataType } from "@/types";
+import { onChangeDataEachFieldChange } from "@/utils/onChangeDataEachFieldChange";
 
 const EmployeeDetailForm = ({
     data: initialData,
-    opUpdateSuccess,
-}: {
-    data: EmployeeDetailInterface,
-    opUpdateSuccess?: (form: EmployeeDetailInterface) => void,
-}) => {
+    onUpdateSuccess,
+}: FormDetailInterface<EmployeeDetailInterface>) => {
     const { toast } = useToast();
     const [editState, setEditState] = useState<boolean>(false);
     const [areas, setAreas] = useState<ToggleLabelInputOptionsDataType[]>([]);
     const [formData, setFormData] = useState<EmployeeDetailInterface>(initialData);
-
-    const onChangeDataEachFieldChange = (newValue: any, nameField: string) => {
-        if (!nameField) {
-            toast({
-                title: "Xảy ra lỗi khi thay đổi thông tin",
-                variant: "destructive",
-            });
-
-            return;
-        }
-        setFormData(prev => ({
-            ...prev,
-            [nameField]: +newValue
-        }));
-    };
 
     const fetchAreas = async () => {
         try {
@@ -71,15 +54,12 @@ const EmployeeDetailForm = ({
                     variant: "success",
                 });
 
-                await opUpdateSuccess?.(formData);
+                await onUpdateSuccess?.(formData);
             }
         } catch (error) {
-            const errorMessage = handleAxiosError(error);
-            console.log('Cập nhật thông tin nhân viên thất bại: ', error);
-
             toast({
                 title: "Cập nhật thông tin nhân viên thất bại",
-                description: errorMessage,
+                description: handleAxiosError(error),
                 variant: "destructive",
             });
         }
@@ -161,7 +141,14 @@ const EmployeeDetailForm = ({
                                             fieldName={'fullname'}
                                             fieldValue={formData.fullname}
                                             fieldType={'input'}
-                                            onFieldChange={(value) => onChangeDataEachFieldChange(value, 'fullname')}
+                                            onFieldChange={(value) => onChangeDataEachFieldChange(
+                                                'fullname',
+                                                value,
+                                                (field, value) => setFormData(prev => ({
+                                                    ...prev,
+                                                    [field]: value
+                                                }))
+                                            )}
                                         />
                                     </p>
                                 </div>
@@ -191,7 +178,14 @@ const EmployeeDetailForm = ({
                                                     value: Gender.Other
                                                 },
                                             ]}
-                                            onFieldChange={(value) => onChangeDataEachFieldChange(value, 'gender')}
+                                            onFieldChange={(value) => onChangeDataEachFieldChange(
+                                                'gender',
+                                                value,
+                                                (field, value) => setFormData(prev => ({
+                                                    ...prev,
+                                                    [field]: +value
+                                                }))
+                                            )}
                                         />
                                     </p>
                                 </div>
@@ -206,7 +200,14 @@ const EmployeeDetailForm = ({
                                             fieldName={'phone_number'}
                                             fieldValue={formData.phone_number}
                                             fieldType={'input'}
-                                            onFieldChange={(value) => onChangeDataEachFieldChange(value, 'phone_number')}
+                                            onFieldChange={(value) => onChangeDataEachFieldChange(
+                                                'phone_number',
+                                                value,
+                                                (field, value) => setFormData(prev => ({
+                                                    ...prev,
+                                                    [field]: value
+                                                }))
+                                            )}
                                         />
                                     </p>
                                 </div>
@@ -218,12 +219,19 @@ const EmployeeDetailForm = ({
                                     <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                                         <ToggleLabelInput
                                             fieldState={editState}
-                                            fieldName={'areaWorkAt'}
+                                            fieldName={'area_id'}
                                             fieldValue={formData.area_id}
                                             fieldType={'options'}
                                             optionPlaceHolder={'Chọn khu vực làm việc'}
                                             dataForOptions={areas}
-                                            onFieldChange={(value) => onChangeDataEachFieldChange(value, 'area_id')}
+                                            onFieldChange={(value) => onChangeDataEachFieldChange(
+                                                'area_id',
+                                                value,
+                                                (field, value) => setFormData(prev => ({
+                                                    ...prev,
+                                                    [field]: +value
+                                                }))
+                                            )}
                                         />
                                     </p>
                                 </div>

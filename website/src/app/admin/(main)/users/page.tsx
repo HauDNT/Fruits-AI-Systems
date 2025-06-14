@@ -11,7 +11,7 @@ import ChangeUserInfoForm from "@/components/forms/ChangeUserInfoForm";
 import { ChangeUserInfoBodyType, UserBodyType } from "@/schemas/user.schema";
 import { CustomTableData } from "@/interfaces/table";
 import { MetaPaginate } from "@/interfaces";
-import {UserInfo} from "@/interfaces"
+import { UserInfo } from "@/interfaces"
 
 export default function Users() {
     const { toast } = useToast()

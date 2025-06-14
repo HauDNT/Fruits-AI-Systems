@@ -211,12 +211,13 @@ export default function Employees() {
                         employeeDetailData &&
                         <EmployeeDetailForm
                             data={employeeDetailData}
-                            opUpdateSuccess={(newEmployeeProfile) => {
+                            onUpdateSuccess={async (newEmployeeProfile) => {
                                 setEmployeesData(prev => ({
                                     ...prev,
                                     values: prev.values.map(employee => employee.id === newEmployeeProfile.id ? newEmployeeProfile : employee)
                                 }))
-                            }} />
+                            }}
+                        />
                     }
                 </ModelLayer>
             </div>

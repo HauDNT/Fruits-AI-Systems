@@ -142,7 +142,7 @@ export class RaspberryService {
 
         if (!raspberry) {
             throw new BadRequestException('Raspberry không tồn tại');
-        }
+        };
 
         // Bắt đầu khởi tạo configData
         let configData: any = {
@@ -161,7 +161,7 @@ export class RaspberryService {
             }
 
             configData.model_path = modelFilePath;
-        }
+        };
 
         const upsertConfig = await this.raspberryRepository.upsert(
             configData,

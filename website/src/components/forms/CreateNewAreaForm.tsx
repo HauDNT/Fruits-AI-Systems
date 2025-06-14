@@ -20,23 +20,25 @@ import {AreaBody, AreaBodyType} from "@/schemas/area.schema"
 const CreateNewAreaForm = ({
     className,
     onSubmit,
+    onClose,
 }: FormInterface) => {
     const form = useForm<AreaBodyType>({
         resolver: zodResolver(AreaBody),
         defaultValues: {
             area_desc: '',
-            area_image: undefined,
+            image_url: undefined,
         }
     })
 
     const handleSubmit = async (values: AreaBodyType): Promise<void> => {
         const formData = new FormData();
         formData.append('area_desc', values.area_desc);
-        formData.append('area_image', values.area_image);
+        formData.append('image_url', values.image_url);
 
         const submitResult = await onSubmit(formData);
         if (submitResult) {
             form.reset();
+            onClose?.();
         }
     };
 
@@ -67,7 +69,7 @@ const CreateNewAreaForm = ({
                         />
                         <FormField
                             control={form.control}
-                            name="area_image"
+                            name="image_url"
                             render={({ field: { onChange, value, ...field } }) => (
                                 <FormItem className="col-span-full">
                                     <FormLabel>Hình ảnh</FormLabel>

@@ -1,26 +1,30 @@
 'use client'
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import CustomTable from "@/components/table/CustomTable";
-import {useToast} from "@/hooks/use-toast";
-import {useEffect, useState} from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
 import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
-import axiosInstance, {handleAxiosError} from "@/utils/axiosInstance";
-import {AreaBodyType} from "@/schemas/area.schema";
+import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
+import { AreaBodyType } from "@/schemas/area.schema";
 import CreateNewAreaForm from "@/components/forms/CreateNewAreaForm";
 import { CustomTableData } from "@/interfaces/table";
 import { MetaPaginate } from "@/interfaces";
+import { AreaDetail } from "@/interfaces";
+import ChangeAreaInfoForm from "@/components/forms/ChangeAreaInfoForm";
 
 export default function Areas() {
-    const {toast} = useToast()
+    const { toast } = useToast()
     const [data, setData] = useState<CustomTableData>({
         columns: [],
         values: [],
     })
-    const [meta, setMeta] = useState<MetaPaginate>({totalPages: 1, currentPage: 1, limit: 10})
+    const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 })
     const [searchQuery, setSearchQuery] = useState<string>("")
     const searchFields: string = "area_code,area_desc"
+    const [areaDetailData, setAreaDetailData] = useState<AreaDetail>();
     const [createFormState, setCreateFormState] = useState<boolean>(false)
+    const [detailFormState, setDetailFormState] = useState<boolean>(false)
     const toggleCreateFormState = () => setCreateFormState(prev => !prev)
 
     const fetchAreasByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
@@ -74,7 +78,7 @@ export default function Areas() {
                     values: [...prev.values, resData.data.data]
                 }))
 
-                toast({ title: "Thêm khu thành công" , variant: "success"});
+                toast({ title: "Thêm khu thành công", variant: "success" });
                 return true;
             }
 
@@ -141,13 +145,13 @@ export default function Areas() {
 
     const handleNextPage = () => {
         if (meta.currentPage < meta.totalPages) {
-            setMeta({...meta, currentPage: +meta.currentPage + 1});
+            setMeta({ ...meta, currentPage: +meta.currentPage + 1 });
         }
     }
 
     const handlePrevPage = () => {
         if (meta.currentPage > 1) {
-            setMeta({...meta, currentPage: +meta.currentPage - 1});
+            setMeta({ ...meta, currentPage: +meta.currentPage - 1 });
         }
     }
 
@@ -157,7 +161,7 @@ export default function Areas() {
 
     return (
         <>
-            <PageBreadcrumb pageTitle={'Khu phân loại'}/>
+            <PageBreadcrumb pageTitle={'Khu phân loại'} />
 
             <div className="space-y-6">
                 <CustomTable
@@ -165,10 +169,15 @@ export default function Areas() {
                     tableData={data}
                     onSort={(key) => console.log(`Sorting by ${key}`)}
                     createItem={true}
+                    detailItem={true}
                     deleteItem={true}
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
+                    handleDetail={(areaSelected) => {
+                        setAreaDetailData(areaSelected as AreaDetail);
+                        setDetailFormState(true);
+                    }}
                     handleDelete={(itemSelected) => deleteAreas(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
                 />
@@ -193,6 +202,27 @@ export default function Areas() {
                         onSubmit={(formData: AreaBodyType) => createNewArea(formData)}
                     />
                 </ModelLayer>
+
+                <ModelLayer
+                    isOpen={detailFormState}
+                    onClose={() => setDetailFormState(false)}
+                    maxWidth="max-w-3xl"
+                > 
+                    {
+                        areaDetailData &&
+                        <ChangeAreaInfoForm
+                            key={areaDetailData?.id}
+                            data={areaDetailData}
+                            onUpdateSuccess={async (newAreaData) => {
+                                setData(prev => ({
+                                    ...prev,
+                                    values: prev.values.map(area => area.id === newAreaData.id ? newAreaData : area)
+                                }))
+                            }}
+                        />
+                    }
+                </ModelLayer>
+
             </div>
         </>
     )

@@ -1,12 +1,12 @@
 import { z } from 'zod'
 
-// Fruit schema
+// Area schema
 export const AreaBody = z
     .object({
         area_desc: z.string()
             .min(8, 'Mô tả khu có ít nhất 8 ký tự')
             .max(50, 'Mô tả khu có tối đa 50 ký tự'),
-        area_image: z
+        image_url: z
             .instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
             .refine(
                 (file) => file !== null,
