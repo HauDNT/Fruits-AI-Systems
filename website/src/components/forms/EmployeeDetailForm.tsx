@@ -12,6 +12,8 @@ import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import { useToast } from "@/hooks/use-toast";
 import { ToggleLabelInputOptionsDataType } from "@/types";
 import { onChangeDataEachFieldChange } from "@/utils/onChangeDataEachFieldChange";
+import { displayImageUrlSwitchBlob } from "@/utils/displayImageUrlSwitchBlob";
+import { Input } from "@/components/ui/input";
 
 const EmployeeDetailForm = ({
     data: initialData,
@@ -21,6 +23,7 @@ const EmployeeDetailForm = ({
     const [editState, setEditState] = useState<boolean>(false);
     const [areas, setAreas] = useState<ToggleLabelInputOptionsDataType[]>([]);
     const [formData, setFormData] = useState<EmployeeDetailInterface>(initialData);
+    const [newImageFile, setNewImageFile] = useState<File | null>(null);
 
     const fetchAreas = async () => {
         try {
@@ -43,10 +46,22 @@ const EmployeeDetailForm = ({
 
     const updateProfile = async (): Promise<void> => {
         try {
+            const form = new FormData();
+            form.append('employee_code', formData.employee_code);
+            form.append('fullname', formData.fullname);
+            form.append('gender', formData.gender + '');
+            form.append('phone_number', formData.phone_number);
+            form.append('area_id', formData.area_id + '');
+
+            if (newImageFile) {
+                form.append('avatar_url', newImageFile);
+            };
+
             const resData = await axiosInstance.put(
-                `/employees/update-profile/${formData.id}`,
-                formData
-            )
+                `/employees/update/`,
+                form,
+                { headers: { 'Content-Type': 'multipart/form-data' } },
+            );
 
             if (resData.data) {
                 toast({
@@ -55,7 +70,7 @@ const EmployeeDetailForm = ({
                 });
 
                 await onUpdateSuccess?.(formData);
-            }
+            };
         } catch (error) {
             toast({
                 title: "Cập nhật thông tin nhân viên thất bại",
@@ -84,10 +99,10 @@ const EmployeeDetailForm = ({
                         <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
                             <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
                                 <Image
-                                    width={80}
-                                    height={80}
-                                    src={`${process.env.NEXT_PUBLIC_URL_SERVER}${formData.avatar_url ?? ''}`}
-                                    alt="image profile"
+                                    width={100}
+                                    height={100}
+                                    src={displayImageUrlSwitchBlob(formData?.avatar_url)}
+                                    alt="Employee avatar"
                                     unoptimized
                                 />
                             </div>
@@ -129,7 +144,7 @@ const EmployeeDetailForm = ({
                 </div>
                 <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                        <div>
+                        <div className="w-full">
                             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
                                 <div>
                                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
@@ -152,7 +167,6 @@ const EmployeeDetailForm = ({
                                         />
                                     </p>
                                 </div>
-
                                 <div>
                                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                                         Giới tính
@@ -189,7 +203,6 @@ const EmployeeDetailForm = ({
                                         />
                                     </p>
                                 </div>
-
                                 <div>
                                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                                         Số điện thoại
@@ -211,7 +224,6 @@ const EmployeeDetailForm = ({
                                         />
                                     </p>
                                 </div>
-
                                 <div>
                                     <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                                         Khu làm việc
@@ -238,6 +250,32 @@ const EmployeeDetailForm = ({
                             </div>
                         </div>
                     </div>
+                    {
+                        editState &&
+                        <div className="mt-6 grid grid-cols-1">
+                            <div>
+                                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                                    Chọn hình ảnh mới
+                                </p>
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    className="w-full mb-0"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+
+                                        if (file) {
+                                            setNewImageFile(file);
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                avatar_url: URL.createObjectURL(file)
+                                            }));
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

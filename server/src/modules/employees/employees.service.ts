@@ -104,17 +104,29 @@ export class EmployeesService {
         })
     }
 
-    async updateEmployeeProfile(data: UpdateEmployeeDto, employeeId: number): Promise<Employee> {
-        const employee = await this.employeeRepository.preload({
-            id: employeeId,
-            ...data
-        })
+    async updateEmployeeProfile(data: UpdateEmployeeDto, imageUrl?: string): Promise<Employee> {
+        const { employee_code, fullname, gender, phone_number, area_id } = data;
+        
+        const employee = await this.employeeRepository.findOneBy({
+            employee_code
+        });
 
         if (!employee) {
-            throw new BadRequestException(`Không tìm thấy nhân viên có mã số ${employeeId}`)
-        }
+            throw new BadRequestException(`Không tìm thấy nhân viên có mã số ${employee_code}`)
+        };
 
-        return await this.employeeRepository.save(employee)
+        employee.fullname = fullname;
+        employee.gender = +gender;
+        employee.phone_number = phone_number;
+        employee.area_id = +area_id;
+        employee.updated_at = new Date();
+
+        if (imageUrl) {
+            await deleteFile(employee.avatar_url);
+            employee.avatar_url = imageUrl;
+        };
+
+        return await this.employeeRepository.save(employee);
     }
 
     async deleteEmployees(employeeIds: string[]): Promise<DeleteResult> {

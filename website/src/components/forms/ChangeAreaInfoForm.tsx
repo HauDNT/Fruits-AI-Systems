@@ -32,8 +32,6 @@ const ChangeAreaInfoForm = ({
                 form.append('image_url', newImageFile);
             };
 
-            console.log('Form data: ', form);
-
             const resData = await axiosInstance.put(
                 '/areas/update',
                 form,
@@ -45,7 +43,7 @@ const ChangeAreaInfoForm = ({
                     title: `Cập nhật thông tin ${formData.area_desc} thành công`,
                     variant: "success",
                 });
-                
+
                 await onUpdateSuccess?.(formData);
             }
 
