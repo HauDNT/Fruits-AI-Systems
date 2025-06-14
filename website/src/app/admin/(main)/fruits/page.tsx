@@ -15,12 +15,12 @@ export default function Fruits() {
     const [data, setData] = useState<CustomTableData>({
         columns: [],
         values: [],
-    })
-    const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 })
-    const [searchQuery, setSearchQuery] = useState<string>("")
-    const searchFields: string = "fruit_name,fruit_desc"
-    const [createFormState, setCreateFormState] = useState<boolean>(false)
-    const toggleCreateFormState = () => setCreateFormState(prev => !prev)
+    });
+    const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const searchFields: string = "fruit_name,fruit_desc";
+    const [createFormState, setCreateFormState] = useState<boolean>(false);
+    const toggleCreateFormState = () => setCreateFormState(prev => !prev);
 
     const fetchFruitsByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
         try {

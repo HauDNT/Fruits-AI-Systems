@@ -1,18 +1,18 @@
-import {BadRequestException, HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
-import {CreateFruitDto} from './dto/create-fruit.dto';
-import {InjectRepository} from "@nestjs/typeorm";
-import {Fruit} from "@/modules/fruits/entities/fruit.entity";
-import {DataSource, DeleteResult, In, IsNull, Like, QueryRunner, Repository} from "typeorm";
-import {FruitType} from "@/modules/fruit-types/entities/fruit-type.entity";
-import {TableMetaData} from "@/interfaces/table";
-import {FruitImage} from "@/modules/fruit-images/entities/fruit-image.entity";
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { CreateFruitDto } from './dto/create-fruit.dto';
+import { InjectRepository } from "@nestjs/typeorm";
+import { Fruit } from "@/modules/fruits/entities/fruit.entity";
+import { DataSource, DeleteResult, In, IsNull, Like, QueryRunner, Repository } from "typeorm";
+import { FruitType } from "@/modules/fruit-types/entities/fruit-type.entity";
+import { TableMetaData } from "@/interfaces/table";
+import { FruitImage } from "@/modules/fruit-images/entities/fruit-image.entity";
 import * as path from 'path';
-import {GetDataWithQueryParamsDTO} from "@/modules/dtoCommons";
-import {FruitClassification} from "@/modules/fruit-classification/entities/fruit-classification.entity";
-import {deleteFile, deleteFilesInParallel} from "@/utils/handleFiles";
-import {deleteRelationsEntityData} from "@/utils/deleteRelationsEntityData";
-import {getDataWithQueryAndPaginate} from "@/utils/paginateAndSearch";
-import {validateAndGetEntitiesByIds} from "@/utils/validateAndGetEntitiesByIds";
+import { GetDataWithQueryParamsDTO } from "@/modules/dtoCommons";
+import { FruitClassification } from "@/modules/fruit-classification/entities/fruit-classification.entity";
+import { deleteFile, deleteFilesInParallel } from "@/utils/handleFiles";
+import { deleteRelationsEntityData } from "@/utils/deleteRelationsEntityData";
+import { getDataWithQueryAndPaginate } from "@/utils/paginateAndSearch";
+import { validateAndGetEntitiesByIds } from "@/utils/validateAndGetEntitiesByIds";
 
 @Injectable()
 export class FruitsService {
@@ -35,8 +35,8 @@ export class FruitsService {
         ) || []
     }
 
-    async create(createFruitDto: CreateFruitDto, imageUrl: string) {
-        const {fruit_name, fruit_desc, fruit_types} = createFruitDto;
+    async create(createFruitDto: CreateFruitDto, imageUrls: string[]) {
+        const { fruit_name, fruit_desc, fruit_types } = createFruitDto;
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -65,14 +65,18 @@ export class FruitsService {
             });
             const saveFruit = await queryRunner.manager.save(Fruit, newFruit);
 
-            const fruitImage = queryRunner.manager.create(FruitImage, {
-                fruit: saveFruit,
-                image_url: imageUrl,
-                created_at: new Date(),
-                updated_at: new Date(),
-            });
+            if (imageUrls.length > 0) {
+                const fruitImages = imageUrls.map(imageUrl =>
+                    queryRunner.manager.create(FruitImage, {
+                        fruit: saveFruit,
+                        image_url: imageUrl,
+                        created_at: new Date(),
+                        updated_at: new Date(),
+                    }));
 
-            await queryRunner.manager.save(FruitImage, fruitImage);
+                await queryRunner.manager.save(FruitImage, fruitImages);
+            }
+
             await queryRunner.commitTransaction();
 
             return {
@@ -80,7 +84,9 @@ export class FruitsService {
                 data: saveFruit,
             };
         } catch (e) {
-            await deleteFile(imageUrl);
+            if (Array.isArray(imageUrls)) {
+                imageUrls.forEach(imageUrl => deleteFile(imageUrl));
+            }
             await queryRunner.rollbackTransaction();
             throw new BadRequestException('Xảy ra lỗi khi thêm trái cây mới');
         } finally {
@@ -101,11 +107,11 @@ export class FruitsService {
             searchFields: data.searchFields?.split(','),
             selectFields: ['id', 'fruit_name', 'fruit_desc', 'created_at', 'updated_at'],
             columnsMeta: [
-                {"key": "id", "displayName": "ID", "type": "number"},
-                {"key": "fruit_name", "displayName": "Tên trái cây", "type": "string"},
-                {"key": "fruit_desc", "displayName": "Mô tả", "type": "string"},
-                {"key": "created_at", "displayName": "Ngày tạo", "type": "date"},
-                {"key": "updated_at", "displayName": "Ngày thay đổi", "type": "date"},
+                { "key": "id", "displayName": "ID", "type": "number" },
+                { "key": "fruit_name", "displayName": "Tên trái cây", "type": "string" },
+                { "key": "fruit_desc", "displayName": "Mô tả", "type": "string" },
+                { "key": "created_at", "displayName": "Ngày tạo", "type": "date" },
+                { "key": "updated_at", "displayName": "Ngày thay đổi", "type": "date" },
             ],
         });
     }
@@ -130,8 +136,8 @@ export class FruitsService {
             fruitImagePaths = this.extractFilePathsFromFruits(fruits);
 
             await deleteRelationsEntityData(queryRunner, fruitIds, [
-                {entity: FruitImage, relationField: 'fruit'},
-                {entity: FruitClassification, relationField: 'fruit'},
+                { entity: FruitImage, relationField: 'fruit' },
+                { entity: FruitClassification, relationField: 'fruit' },
             ]);
 
             const deleteFruit = await queryRunner.manager.delete(Fruit, fruitIds);

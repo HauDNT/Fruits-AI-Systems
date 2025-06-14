@@ -8,8 +8,9 @@ import {
     UseInterceptors,
     UploadedFile,
     BadRequestException,
+    UploadedFiles,
 } from '@nestjs/common';
-import {FileInterceptor} from '@nestjs/platform-express';
+import {FileInterceptor, FilesInterceptor} from '@nestjs/platform-express';
 import {diskStorage} from 'multer';
 import {extname} from 'path';
 import {FruitsService} from './fruits.service';
@@ -27,7 +28,7 @@ export class FruitsController {
     }
 
     @Post('create-fruit')
-    @UseInterceptors(FileInterceptor('fruit_image', {
+    @UseInterceptors(FilesInterceptor('fruit_image', 5, {
         storage: diskStorage({
             destination: async (req, file, callback) => {
                 const uploadPath = './uploads/images/fruits';
@@ -42,7 +43,7 @@ export class FruitsController {
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
                 const ext = extname(file.originalname);
                 callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-            }
+            },
         }),
         fileFilter: (req, file, cb) => {
             if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
@@ -55,19 +56,19 @@ export class FruitsController {
         },
     }))
     async create(
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFiles() files: Express.Multer.File[],
         @Body() createFruitDto: CreateFruitDto) {
-        if (!file) {
-            throw new BadRequestException('Vui lòng gửi file ảnh');
+        if (!files || files.length === 0) {
+            throw new BadRequestException('Vui lòng gửi ít nhất 1 file ảnh');
         }
 
         if (!createFruitDto.fruit_types) {
             throw new BadRequestException('Không tìm thấy dữ liệu về tình trạng trái cây từ kết quả');
         }
 
-        const imageUrl = `/uploads/images/fruits/${file.filename}`;
+        const imageUrls = files.map(file => `/uploads/images/fruits/${file.filename}`);
 
-        return await this.fruitsService.create(createFruitDto, imageUrl);
+        return await this.fruitsService.create(createFruitDto, imageUrls);
     }
 
     @Get('/all')

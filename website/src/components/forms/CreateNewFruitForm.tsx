@@ -1,9 +1,10 @@
 'use client'
-import React, {useEffect, useState} from "react";
-import {useToast} from "@/hooks/use-toast";
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {FruitBody, FruitBodyType} from '@/schemas/fruit.schema'
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { FruitBody, FruitBodyType } from '@/schemas/fruit.schema'
 import {
     Form,
     FormControl,
@@ -12,7 +13,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import {FormInterface} from "@/interfaces"
+import { FormInterface } from "@/interfaces"
 import ComponentCard from "@/components/common/ComponentCard"
 import InputField from "@/components/inputs/InputField"
 import { Input } from "@/components/ui/input"
@@ -20,14 +21,16 @@ import CustomButton from "@/components/buttons/CustomButton"
 import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import ListCheck from "@/components/common/ListCheck";
 import { FruitTypeSelect } from "@/types/fruitTypeSelect";
+import { error } from "console";
 
 const CreateNewFruitForm = ({
     className,
     onSubmit,
     onClose,
 }: FormInterface<FormData>) => {
-    const {toast} = useToast()
-    const [fruitTypesData, setFruitTypesData] = useState<FruitTypeSelect[]>([])
+    const { toast } = useToast();
+    const [images, setImages] = useState<string[]>([]);
+    const [fruitTypesData, setFruitTypesData] = useState<FruitTypeSelect[]>([]);
     const [storeFruitTypeChecked, setStoreFruitTypeChecked] = useState<number[]>([]);
     const form = useForm<FruitBodyType>({
         resolver: zodResolver(FruitBody),
@@ -35,9 +38,9 @@ const CreateNewFruitForm = ({
             fruit_name: '',
             fruit_desc: '',
             fruit_types: [],
-            fruit_image: undefined,
+            fruit_images: [],
         }
-    })
+    });
 
     const fetchAllFruitTypes = async (): Promise<void> => {
         try {
@@ -52,22 +55,25 @@ const CreateNewFruitForm = ({
                 });
             }
         } catch (e) {
-            const error = handleAxiosError(e);
-            
             toast({
                 title: "Lỗi khi lấy danh sách loại trái cây",
-                description: error,
+                description: handleAxiosError(e),
                 variant: "destructive",
             });
         }
-    }
+    };
 
     const handleSubmit = async (values: FruitBodyType): Promise<void> => {
         const formData = new FormData();
         formData.append('fruit_name', values.fruit_name);
         formData.append('fruit_desc', values.fruit_desc);
         formData.append('fruit_types', JSON.stringify(storeFruitTypeChecked));
-        formData.append('fruit_image', values.fruit_image);
+
+        if (Array.isArray(values.fruit_images)) {
+            values.fruit_images.forEach((file) => {
+                formData.append(`fruit_image`, file);
+            });
+        }
 
         const submitResult = await onSubmit(formData);
         if (submitResult) {
@@ -77,9 +83,33 @@ const CreateNewFruitForm = ({
         }
     };
 
+    const onSelectImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        const imagePromises = files.map(file => {
+            return new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = () => reject(reader.error);
+            });
+        });
+
+        Promise
+            .all(imagePromises)
+            .then((imgUrls) => {
+                setImages((prev) => [...prev, ...imgUrls]);
+            })
+            .catch((error) => {
+                toast({
+                    title: "Lỗi khi tải ảnh",
+                    variant: "destructive",
+                });
+            })
+    };
+
     useEffect(() => {
         fetchAllFruitTypes();
-    }, [])
+    }, []);
 
     return (
         <ComponentCard title="Thêm trạng thái trái cây mới" className={'w-full'}>
@@ -88,11 +118,11 @@ const CreateNewFruitForm = ({
                     onSubmit={form.handleSubmit(handleSubmit)}
                     className={` ${className}`}
                 >
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-1">
                         <FormField
                             control={form.control}
                             name={"fruit_name"}
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem className="col-span-full">
                                     <FormLabel>Tên trái cây (Tiếng Anh)</FormLabel>
                                     <FormControl>
@@ -102,14 +132,14 @@ const CreateNewFruitForm = ({
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
                             name={"fruit_desc"}
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem className="col-span-full">
                                     <FormLabel>Mô tả</FormLabel>
                                     <FormControl>
@@ -119,13 +149,13 @@ const CreateNewFruitForm = ({
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
-                            name="fruit_image"
+                            name="fruit_images"
                             render={({ field: { onChange, value, ...field } }) => (
                                 <FormItem className="col-span-full">
                                     <FormLabel>Hình ảnh</FormLabel>
@@ -134,14 +164,34 @@ const CreateNewFruitForm = ({
                                             type="file"
                                             accept="image/*"
                                             {...field}
-                                            onChange={(e) => onChange(e.target.files?.[0] || null)}
+                                            onChange={(e) => {
+                                                onSelectImages(e);
+                                                const files = Array.from(e.target.files || []);
+                                                onChange(files);
+                                            }}
+                                            multiple
                                         />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-
+                        {
+                            images &&
+                            <div className="flex w-full">
+                                {images.map((imgSrc) => (
+                                    <div className="mr-3 overflow-hidden border border-gray-200 rounded-sm dark:border-gray-800">
+                                        <Image
+                                            width={100}
+                                            height={100}
+                                            src={imgSrc}
+                                            alt="Fruit image"
+                                            unoptimized
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        }
                         <ListCheck
                             title={'Chọn tình trạng của loại trái này'}
                             data={fruitTypesData}

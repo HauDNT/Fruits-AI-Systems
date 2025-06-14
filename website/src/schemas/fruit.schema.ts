@@ -15,20 +15,20 @@ export const FruitBody = z
                 (arr) => new Set(arr).size === arr.length,
                 { message: 'Các loại trái cây không được trùng nhau' }
             ),
-        fruit_image: z
-            .instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
-            .refine(
-                (file) => file !== null,
-                { message: 'Vui lòng chọn một file ảnh' }
+        fruit_images: z
+            .array(
+                z.instanceof(File, { message: 'Vui lòng chọn một file ảnh' })
+                    .refine(
+                        (file) => file.size <= 5 * 1024 * 1024,
+                        { message: 'Ảnh phải nhỏ hơn 5MB' }
+                    )
+                    .refine(
+                        (file) => ['image/jpeg', 'image/png', 'image/gif'].includes(file.type),
+                        { message: 'Chỉ chấp nhận định dạng JPG, PNG hoặc GIF' }
+                    )
             )
-            .refine(
-                (file) => file.size <= 5 * 1024 * 1024, // Giới hạn 5MB
-                { message: 'Ảnh phải nhỏ hơn 5MB' }
-            )
-            .refine(
-                (file) => ['image/jpeg', 'image/png', 'image/gif'].includes(file.type),
-                { message: 'Chỉ chấp nhận định dạng JPG, PNG hoặc GIF' }
-            ),
+            .min(1, 'Vui lòng chọn ít nhất 1 ảnh')
+            .max(5, 'Chỉ được chọn tối đa 5 ảnh'),
     })
 
 // Fruit type schema

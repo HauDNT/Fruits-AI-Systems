@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from "react";
-import {ModelLayerInterface} from "@/interfaces";
+import { ModelLayerInterface } from "@/interfaces";
 
 const ModelLayer = ({
     isOpen,
@@ -18,7 +18,6 @@ const ModelLayer = ({
 
         if (isOpen) {
             document.addEventListener("keydown", handleEscape);
-            // Ngăn cuộn trang khi modal mở
             document.body.style.overflow = "hidden";
         }
 
@@ -36,7 +35,7 @@ const ModelLayer = ({
                 className="absolute -top-[100%] inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
             />
-            <div className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full mx-4 ${maxWidth}`}>
+            <div className={`relative -top-[4%] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full mx-4 ${maxWidth} max-h-[95vh] overflow-y-auto`}>
                 <button
                     onClick={onClose}
                     className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -49,4 +48,4 @@ const ModelLayer = ({
     );
 }
 
-export default ModelLayer
+export default ModelLayer;
