@@ -201,7 +201,12 @@ export default function Fruits() {
                         fruitDetailData &&
                         <ChangeFruitInfoForm
                             data={fruitDetailData}
-                            onUpdateSuccess={async () => {}}
+                            onUpdateSuccess={async (newFruitData) => {
+                                setData(prev => ({
+                                    ...prev,
+                                    values: prev.values.map(fruit => fruit.id === newFruitData.id ? newFruitData : fruit)
+                                }))
+                            }}
                         />
                     }
                 </ModelLayer>
