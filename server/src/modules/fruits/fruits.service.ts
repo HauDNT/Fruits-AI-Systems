@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateFruitDto } from './dto/create-fruit.dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Fruit } from "@/modules/fruits/entities/fruit.entity";
@@ -13,6 +13,7 @@ import { deleteFile, deleteFilesInParallel } from "@/utils/handleFiles";
 import { deleteRelationsEntityData } from "@/utils/deleteRelationsEntityData";
 import { getDataWithQueryAndPaginate } from "@/utils/paginateAndSearch";
 import { validateAndGetEntitiesByIds } from "@/utils/validateAndGetEntitiesByIds";
+import { UpdateFruitDto } from '@/modules/fruits/dto/update-fruit.dto';
 
 @Injectable()
 export class FruitsService {
@@ -59,7 +60,7 @@ export class FruitsService {
             const newFruit = queryRunner.manager.create(Fruit, {
                 fruit_name,
                 fruit_desc,
-                fruitTypes: getFruitTypes,
+                fruitTypes: getFruitTypes,      // Coi lại logic này!!!
                 created_at: new Date(),
                 updated_at: new Date(),
             });
@@ -114,6 +115,80 @@ export class FruitsService {
                 { "key": "updated_at", "displayName": "Ngày thay đổi", "type": "date" },
             ],
         });
+    }
+
+    async updateFruit(fruit_id: number, data: UpdateFruitDto, imageUrls?: string[]) {
+        const {
+            fruit_name,
+            fruit_desc,
+            fruit_types,
+            kept_image_ids,
+        } = data;
+
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const fruit = await queryRunner.manager.findOneBy(Fruit, { id: fruit_id });
+            if (!fruit) {
+                throw new NotFoundException('Không tìm thấy trái cây này');
+            }
+
+            const getFruitTypesBySelected = await queryRunner.manager.find(FruitType, { 
+                where: { 
+                    id: In(fruit_types) 
+                },
+            });
+
+            const fruitExistImages = await queryRunner.manager.find(FruitImage, {
+                where: {
+                    fruit: fruit,
+                },
+            });
+            
+            const imageIdsToDelete = fruitExistImages
+                .map(img => img.id)
+                .filter(id => !kept_image_ids.includes(id));
+
+            if (imageIdsToDelete.length > 0) {
+                await queryRunner.manager.delete(FruitImage, imageIdsToDelete);
+            }
+
+            fruit.fruit_name = fruit_name;
+            fruit.fruit_desc = fruit_desc;
+            fruit.fruitTypes = getFruitTypesBySelected;
+            fruit.updated_at = new Date();
+
+            const saveFruit = await queryRunner.manager.save(fruit);
+
+            if (imageUrls && imageUrls.length > 0) {
+                const newImagesSave = imageUrls.map(imageUrl =>
+                    queryRunner.manager.create(FruitImage, {
+                        fruit: saveFruit,
+                        image_url: imageUrl,
+                        created_at: new Date(),
+                        updated_at: new Date(),
+                    }));
+
+                await queryRunner.manager.save(FruitImage, newImagesSave);
+            }
+
+            await queryRunner.commitTransaction();
+
+            return {
+                message: 'Cập nhật trái cây thành công',
+                data: saveFruit,
+            };
+        } catch (e) {
+            if (Array.isArray(imageUrls)) {
+                imageUrls.forEach(imageUrl => deleteFile(imageUrl));
+            }
+            await queryRunner.rollbackTransaction();
+            throw new BadRequestException('Xảy ra lỗi khi cập nhật thông tin trái cây');
+        } finally {
+            await queryRunner.release();
+        }
     }
 
     async deleteFruits(fruitIds: string[]): Promise<DeleteResult> {

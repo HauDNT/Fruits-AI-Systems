@@ -12,10 +12,10 @@ import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import { useToast } from "@/hooks/use-toast";
 import { ToggleLabelInputOptionsDataType } from "@/types";
 import { onChangeDataEachFieldChange } from "@/utils/onChangeDataEachFieldChange";
-import { displayImageUrlSwitchBlob } from "@/utils/displayImageUrlSwitchBlob";
+import { getValidImageUrl } from "@/utils/displayImageUrlSwitchBlob";
 import { Input } from "@/components/ui/input";
 
-const EmployeeDetailForm = ({
+const ChangeEmployeeInfoForm = ({
     data: initialData,
     onUpdateSuccess,
 }: FormDetailInterface<EmployeeDetailInterface>) => {
@@ -101,7 +101,7 @@ const EmployeeDetailForm = ({
                                 <Image
                                     width={100}
                                     height={100}
-                                    src={displayImageUrlSwitchBlob(formData?.avatar_url)}
+                                    src={getValidImageUrl(formData?.avatar_url)}
                                     alt="Employee avatar"
                                     unoptimized
                                 />
@@ -282,4 +282,4 @@ const EmployeeDetailForm = ({
     );
 };
 
-export default EmployeeDetailForm;
+export default ChangeEmployeeInfoForm;

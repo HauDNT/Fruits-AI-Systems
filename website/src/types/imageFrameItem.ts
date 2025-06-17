@@ -1,0 +1,1 @@
+export type ImageFrameElement = 'image_url' | 'avatar_url'

@@ -16,4 +16,5 @@ export * from '@/interfaces/employeeDetail'
 export * from '@/interfaces/toggleLabelInput'
 export * from '@/interfaces/customPaginationProps'
 export * from '@/interfaces/areaDetail'
+export * from '@/interfaces/imageFrame'
 

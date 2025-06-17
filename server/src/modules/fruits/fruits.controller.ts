@@ -6,25 +6,47 @@ import {
     Delete,
     Query,
     UseInterceptors,
-    UploadedFile,
     BadRequestException,
     UploadedFiles,
+    Put,
+    Param,
 } from '@nestjs/common';
-import {FileInterceptor, FilesInterceptor} from '@nestjs/platform-express';
-import {diskStorage} from 'multer';
-import {extname} from 'path';
-import {FruitsService} from './fruits.service';
-import {CreateFruitDto} from './dto/create-fruit.dto';
-import {TableMetaData} from "@/interfaces/table";
-import {Fruit} from "@/modules/fruits/entities/fruit.entity";
-import {DeleteFruitDto} from "./dto/delete-fruit.dto"
-import {DeleteResult} from "typeorm";
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { FruitsService } from './fruits.service';
+import { CreateFruitDto } from './dto/create-fruit.dto';
+import { TableMetaData } from "@/interfaces/table";
+import { Fruit } from "@/modules/fruits/entities/fruit.entity";
+import { DeleteFruitDto } from "./dto/delete-fruit.dto"
+import { DeleteResult } from "typeorm";
 import * as fs from 'fs/promises';
+import { UpdateFruitDto } from '@/modules/fruits/dto/update-fruit.dto';
 
 @Controller('fruits')
 export class FruitsController {
     constructor(
         private readonly fruitsService: FruitsService) {
+    }
+
+    @Get('/all')
+    async findAll() {
+        return await this.fruitsService.findAll();
+    }
+
+    @Get()
+    async getFruitsByQuery(
+        @Query('page') page: number,
+        @Query('limit') limit: number,
+        @Query('queryString') queryString: string,
+        @Query('searchFields') searchFields: string,
+    ): Promise<TableMetaData<Fruit>> {
+        return await this.fruitsService.getFruitsByQuery({
+            page,
+            limit,
+            queryString,
+            searchFields,
+        })
     }
 
     @Post('create-fruit')
@@ -33,7 +55,7 @@ export class FruitsController {
             destination: async (req, file, callback) => {
                 const uploadPath = './uploads/images/fruits';
                 try {
-                    await fs.mkdir(uploadPath, {recursive: true});
+                    await fs.mkdir(uploadPath, { recursive: true });
                     callback(null, uploadPath);
                 } catch (error) {
                     callback(new Error('Không thể tạo thư mục lưu trữ ảnh trái cây'), null);
@@ -71,31 +93,53 @@ export class FruitsController {
         return await this.fruitsService.create(createFruitDto, imageUrls);
     }
 
-    @Get('/all')
-    async findAll() {
-        return await this.fruitsService.findAll();
-    }
+    @Put('/update/:fruit_id')
+    @UseInterceptors(FilesInterceptor('fruit_image', 5, {
+        storage: diskStorage({
+            destination: async (req, file, callback) => {
+                const uploadPath = './uploads/images/fruits';
+                try {
+                    await fs.mkdir(uploadPath, { recursive: true });
+                    callback(null, uploadPath);
+                } catch (error) {
+                    callback(new Error('Không thể tạo thư mục lưu trữ ảnh trái cây'), null);
+                }
+            },
+            filename(req, file: Express.Multer.File, callback: (error: (Error | null), filename: string) => void) {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                const ext = extname(file.originalname);
+                callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+            },
+        }),
+        fileFilter: (req, file, cb) => {
+            if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+                return cb(new Error('Chỉ chấp nhận file ảnh!'), false);
+            }
+            cb(null, true);
+        },
+        limits: {
+            fileSize: 5 * 1024 * 1024,
+        },
+    }))
+    async updateFruit(
+        @Param('fruit_id') fruit_id: number,
+        @UploadedFiles() files: Express.Multer.File[],
+        @Body() data: UpdateFruitDto,
+    ): Promise<any> {
+        let imageUrls: string[];
 
-    @Get()
-    async getFruitsByQuery(
-        @Query('page') page: number,
-        @Query('limit') limit: number,
-        @Query('queryString') queryString: string,
-        @Query('searchFields') searchFields: string,
-    ): Promise<TableMetaData<Fruit>> {
-        return await this.fruitsService.getFruitsByQuery({
-            page,
-            limit,
-            queryString,
-            searchFields,
-        })
+        if (files && files.length > 0) {
+            imageUrls = files.map(file => `/uploads/images/fruits/${file.filename}`);
+        }
+
+        return await this.fruitsService.updateFruit(fruit_id, data, imageUrls);
     }
 
     @Delete('/delete-fruits')
     async deleteFruits(
         @Body() data: DeleteFruitDto
     ): Promise<DeleteResult> {
-        const {fruitIds} = data
+        const { fruitIds } = data
         return await this.fruitsService.deleteFruits(fruitIds);
     }
 }

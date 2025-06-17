@@ -18,7 +18,7 @@ import { EmployeesService } from './employees.service';
 import { TableMetaData } from "@/interfaces/table";
 import { Employee } from "@/modules/employees/entities/employee.entity";
 import { CreateEmployeeDto } from "@/modules/employees/dto/create-employee.dto";
-import { DeleteResult, UpdateResult } from "typeorm";
+import { DeleteResult } from "typeorm";
 import { DeleteEmployeeDto } from "@/modules/employees/dto/delete-employee.dto";
 import { UpdateEmployeeDto } from "@/modules/employees/dto/update-employee.dto";
 

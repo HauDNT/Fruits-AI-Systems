@@ -9,6 +9,8 @@ import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import CustomPagination from "@/components/common/CustomPagination";
 import { CustomTableData } from "@/interfaces/table";
 import { MetaPaginate } from "@/interfaces";
+import { FruitDetailInterface } from "@/interfaces/fruitDetail";
+import ChangeFruitInfoForm from "@/components/forms/ChangeFruitInfoForm";
 
 export default function Fruits() {
     const { toast } = useToast()
@@ -19,7 +21,9 @@ export default function Fruits() {
     const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
     const [searchQuery, setSearchQuery] = useState<string>("");
     const searchFields: string = "fruit_name,fruit_desc";
+    const [fruitDetailData, setFruitDetailData] = useState<FruitDetailInterface>();
     const [createFormState, setCreateFormState] = useState<boolean>(false);
+    const [detailFormState, setDetailFormState] = useState<boolean>(false);
     const toggleCreateFormState = () => setCreateFormState(prev => !prev);
 
     const fetchFruitsByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
@@ -47,7 +51,6 @@ export default function Fruits() {
                 totalPages: resData.meta.totalPages,
             })
         } catch (e) {
-            console.log('Error: ', e)
             toast({
                 title: "Xảy ra lỗi khi lấy thông tin",
                 variant: "destructive",
@@ -74,11 +77,9 @@ export default function Fruits() {
             }
             return false;
         } catch (error) {
-            const errorMessage = handleAxiosError(error);
-
             toast({
                 title: "Thêm trái cây thất bại",
-                description: errorMessage,
+                description: handleAxiosError(error),
                 variant: "destructive",
             });
 
@@ -157,10 +158,15 @@ export default function Fruits() {
                     tableData={data}
                     onSort={(key) => console.log(`Sorting by ${key}`)}
                     createItem={true}
+                    detailItem={true}
                     deleteItem={true}
                     search={true}
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
+                    handleDetail={(item) => {
+                        setDetailFormState(true);
+                        setFruitDetailData(item as FruitDetailInterface);
+                    }}
                     handleDelete={(itemSelected) => deleteFruits(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
                 />
@@ -184,6 +190,20 @@ export default function Fruits() {
                     <CreateNewFruitForm
                         onSubmit={(formData: FormData) => createNewFruits(formData)}
                     />
+                </ModelLayer>
+
+                <ModelLayer
+                    isOpen={detailFormState}
+                    onClose={() => setDetailFormState(false)}
+                    maxWidth="max-w-3xl"
+                >
+                    {
+                        fruitDetailData &&
+                        <ChangeFruitInfoForm
+                            data={fruitDetailData}
+                            onUpdateSuccess={async () => {}}
+                        />
+                    }
                 </ModelLayer>
             </div>
         </>

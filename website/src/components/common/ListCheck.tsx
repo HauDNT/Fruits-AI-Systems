@@ -29,7 +29,7 @@ const ListCheck = ({title, data, onCheck}: ListCheckInterface<FruitType>) => {
         <div>
             {
                 title ? (
-                    <h3 className={'mb-3'}>{title}</h3>
+                    <h3 className={'mb-3 text-gray-500 dark:text-gray-400'}>{title}</h3>
                 ) : null
             }
             {

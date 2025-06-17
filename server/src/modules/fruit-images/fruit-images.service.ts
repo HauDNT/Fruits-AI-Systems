@@ -1,26 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { CreateFruitImageDto } from './dto/create-fruit-image.dto';
-import { UpdateFruitImageDto } from './dto/update-fruit-image.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { FruitImage } from '@/modules/fruit-images/entities/fruit-image.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { omitFields } from '@/utils/omitFields';
 
 @Injectable()
 export class FruitImagesService {
-  create(createFruitImageDto: CreateFruitImageDto) {
-    return 'This action adds a new fruitImage';
-  }
+    constructor(
+        @InjectRepository(FruitImage)
+        private readonly fruitImageRepository: Repository<FruitImage>,
+    ) { }
 
-  findAll() {
-    return `This action returns all fruitImages`;
-  }
+    async findAllImages(fruit_id: number) {
+        const fruitImages = await this.fruitImageRepository.find({
+            where: { fruit: { id: fruit_id } }
+        });
 
-  findOne(id: number) {
-    return `This action returns a #${id} fruitImage`;
-  }
+        if (fruitImages.length === 0) {
+            throw new NotFoundException('Không tìm thấy ảnh của trái cây này');
+        };
 
-  update(id: number, updateFruitImageDto: UpdateFruitImageDto) {
-    return `This action updates a #${id} fruitImage`;
-  }
+        const images = fruitImages.map(image =>
+            omitFields(image, ['created_at', 'updated_at', 'deleted_at'])
+        );
 
-  remove(id: number) {
-    return `This action removes a #${id} fruitImage`;
-  }
+        return images;
+    }
+
 }

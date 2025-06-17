@@ -21,7 +21,6 @@ import CustomButton from "@/components/buttons/CustomButton"
 import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import ListCheck from "@/components/common/ListCheck";
 import { FruitTypeSelect } from "@/types/fruitTypeSelect";
-import { error } from "console";
 
 const CreateNewFruitForm = ({
     className,
@@ -71,7 +70,7 @@ const CreateNewFruitForm = ({
 
         if (Array.isArray(values.fruit_images)) {
             values.fruit_images.forEach((file) => {
-                formData.append(`fruit_image`, file);
+                formData.append('fruit_image', file);
             });
         }
 
@@ -85,6 +84,7 @@ const CreateNewFruitForm = ({
 
     const onSelectImages = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
+        
         const imagePromises = files.map(file => {
             return new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
@@ -104,7 +104,9 @@ const CreateNewFruitForm = ({
                     title: "Lỗi khi tải ảnh",
                     variant: "destructive",
                 });
-            })
+            });
+
+        e.target.value = '';
     };
 
     useEffect(() => {
@@ -165,8 +167,8 @@ const CreateNewFruitForm = ({
                                             accept="image/*"
                                             {...field}
                                             onChange={(e) => {
-                                                onSelectImages(e);
                                                 const files = Array.from(e.target.files || []);
+                                                onSelectImages(e);
                                                 onChange(files);
                                             }}
                                             multiple
@@ -179,9 +181,10 @@ const CreateNewFruitForm = ({
                         {
                             images &&
                             <div className="flex w-full">
-                                {images.map((imgSrc) => (
+                                {images.map((imgSrc, index) => (
                                     <div className="mr-3 overflow-hidden border border-gray-200 rounded-sm dark:border-gray-800">
                                         <Image
+                                            key={`${imgSrc}-${index}`}
                                             width={100}
                                             height={100}
                                             src={imgSrc}

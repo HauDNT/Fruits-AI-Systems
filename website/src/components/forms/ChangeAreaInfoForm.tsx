@@ -11,7 +11,7 @@ import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
 import ToggleLabelInput from "@/components/common/ToggleLabelInput";
 import { onChangeDataEachFieldChange } from "@/utils/onChangeDataEachFieldChange";
 import { Input } from "@/components/ui/input";
-import { displayImageUrlSwitchBlob } from "@/utils/displayImageUrlSwitchBlob";
+import { getValidImageUrl } from "@/utils/displayImageUrlSwitchBlob";
 
 const ChangeAreaInfoForm = ({
     data: areaData,
@@ -70,7 +70,7 @@ const ChangeAreaInfoForm = ({
                                 <Image
                                     width={300}
                                     height={300}
-                                    src={displayImageUrlSwitchBlob(formData?.image_url)}
+                                    src={getValidImageUrl(formData?.image_url)}
                                     alt="area image"
                                     unoptimized
                                 />

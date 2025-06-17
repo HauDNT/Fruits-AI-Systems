@@ -7,7 +7,7 @@ import CustomPagination from "@/components/common/CustomPagination";
 import ModelLayer from "@/components/common/ModelLayer";
 import CreateNewEmployeeForm from "@/components/forms/CreateNewEmployeeForm";
 import axiosInstance, { handleAxiosError } from "@/utils/axiosInstance";
-import EmployeeDetailForm from "@/components/forms/EmployeeDetailForm";
+import ChangeEmployeeInfoForm from "@/components/forms/ChangeEmployeeInfoForm";
 import { CustomTableData } from "@/interfaces/table";
 import { EmployeeDetailInterface, MetaPaginate } from "@/interfaces";
 
@@ -16,15 +16,14 @@ export default function Employees() {
     const [employeesData, setEmployeesData] = useState<CustomTableData>({
         columns: [],
         values: [],
-    })
-    const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 })
-    const [searchQuery, setSearchQuery] = useState<string>("")
+    });
+    const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
+    const [searchQuery, setSearchQuery] = useState<string>("");
     const searchFields: string = "fullname,employee_code,phone_number"
-    const [createFormState, setCreateFormState] = useState<boolean>(false)
-    const [employeeDetailData, setEmployeeDetailData] = useState<EmployeeDetailInterface>()
-    const [detailFormState, setDetailFormState] = useState<boolean>(false)
-    const toggleCreateFormState = () => setCreateFormState(prev => !prev)
-    const toggleDetailFormState = () => setDetailFormState(prev => !prev)
+    const [createFormState, setCreateFormState] = useState<boolean>(false);
+    const [employeeDetailData, setEmployeeDetailData] = useState<EmployeeDetailInterface>();
+    const [detailFormState, setDetailFormState] = useState<boolean>(false);
+    const toggleCreateFormState = () => setCreateFormState(prev => !prev);
 
     const handleNextPage = () => {
         if (meta.currentPage < meta.totalPages) {
@@ -92,12 +91,9 @@ export default function Employees() {
             }
             return false;
         } catch (error) {
-            const errorMessage = handleAxiosError(error);
-            console.log('Thêm nhân viên thất bại: ', error)
-
             toast({
                 title: "Thêm nhân viên thất bại",
-                description: errorMessage,
+                description: handleAxiosError(error),
                 variant: "destructive",
             })
 
@@ -142,12 +138,9 @@ export default function Employees() {
                 })
             }
         } catch (error) {
-            const errorMessage = handleAxiosError(error);
-            console.log("Xoá nhân viên thất bại")
-
             toast({
                 title: "Xoá nhân viên thất bại",
-                description: errorMessage,
+                description: handleAxiosError(error),
                 variant: "destructive",
             });
         }
@@ -173,8 +166,8 @@ export default function Employees() {
                     searchFields={searchFields}
                     handleCreate={toggleCreateFormState}
                     handleDetail={(item) => {
-                        toggleDetailFormState()
-                        setEmployeeDetailData(item as EmployeeDetailInterface)
+                        setDetailFormState(true);
+                        setEmployeeDetailData(item as EmployeeDetailInterface);
                     }}
                     handleDelete={(itemSelected) => deleteEmployees(itemSelected)}
                     handleSearch={(query) => setSearchQuery(query)}
@@ -209,7 +202,7 @@ export default function Employees() {
                 >
                     {
                         employeeDetailData &&
-                        <EmployeeDetailForm
+                        <ChangeEmployeeInfoForm
                             data={employeeDetailData}
                             onUpdateSuccess={async (newEmployeeProfile) => {
                                 setEmployeesData(prev => ({
