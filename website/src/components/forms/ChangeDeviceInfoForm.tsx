@@ -74,6 +74,7 @@ const ChangeDeviceInfoForm = ({
         }
       }
     } catch (error) {
+      console.log(error);
       toast({
         title: `Cập nhật thiết bị ${formData.device_code} thất bại`,
         variant: 'destructive',

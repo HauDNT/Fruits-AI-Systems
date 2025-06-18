@@ -9,6 +9,7 @@ import {
   Query,
   Put,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { extname } from 'path';
 import * as fs from 'fs/promises';
@@ -19,6 +20,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { TableMetaData } from '@/interfaces/table';
 import { DeviceClassificationFlat } from '@/interfaces';
 import { UpdateDeviceDto } from '@/modules/devices/dto/update-device.dto';
+import { DeleteResult } from 'typeorm';
+import { DeleteDeviceDto } from '@/modules/devices/dto/delete-device.dto';
 
 @Controller('devices')
 export class DevicesController {
@@ -138,5 +141,11 @@ export class DevicesController {
     }
 
     return await this.devicesService.updateDevice(device_id, updateDeviceDto, imageUrl);
+  }
+
+  @Delete('/delete')
+  async deleteDevices(@Body() data: DeleteDeviceDto): Promise<DeleteResult | any> {
+    const { deviceIds } = data;
+    return await this.devicesService.deleteDevices(deviceIds);
   }
 }

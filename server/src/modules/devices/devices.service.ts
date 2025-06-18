@@ -1,5 +1,6 @@
+import * as path from 'path';
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Device } from '@/modules/devices/entities/device.entity';
@@ -12,8 +13,9 @@ import { omitFields } from '@/utils/omitFields';
 import { GetDataWithQueryParamsDTO } from '@/modules/dtoCommons';
 import { DeviceClassificationFlat } from '@/interfaces';
 import { TableMetaData } from '@/interfaces/table';
-import { deleteFile } from '@/utils/handleFiles';
+import { deleteFile, deleteFilesInParallel } from '@/utils/handleFiles';
 import { UpdateDeviceDto } from '@/modules/devices/dto/update-device.dto';
+import { validateAndGetEntitiesByIds } from '@/utils/validateAndGetEntitiesByIds';
 
 @Injectable()
 export class DevicesService {
@@ -226,5 +228,15 @@ export class DevicesService {
       }
       throw e;
     }
+  }
+
+  async deleteDevices(deviceIds: string[]): Promise<DeleteResult | any> {
+    const devices = await validateAndGetEntitiesByIds(this.deviceRepository, deviceIds);
+
+    const saveDelete = await this.deviceRepository.delete(deviceIds);
+    const imageDevices = devices.map((device) => path.join(process.cwd(), device.image_url));
+    await deleteFilesInParallel(imageDevices);
+
+    return saveDelete;
   }
 }

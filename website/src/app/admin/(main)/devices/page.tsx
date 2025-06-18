@@ -102,6 +102,43 @@ export default function Devices() {
     }
   };
 
+  const deleteDevices = async (deviceIds: string[]): Promise<void> => {
+    try {
+      if (deviceIds.length > 0) {
+        await axiosInstance
+          .delete(`/devices/delete`, {
+            data: {
+              deviceIds,
+            },
+          })
+          .then((res) => {
+            if (res.data.affected > 0) {
+              toast({
+                title: 'Đã xoá thiết bị thành công',
+                variant: 'success',
+              });
+
+              setData((prevState) => ({
+                ...prevState,
+                values: prevState.values.filter((item) => !deviceIds.includes(item.id)),
+              }));
+            } else {
+              toast({
+                title: 'Vui lòng chọn ít nhất 1 thiết bị để xoá',
+                variant: 'warning',
+              });
+            }
+          });
+      }
+    } catch (error) {
+      toast({
+        title: 'Xoá loại thiết bị thất bại',
+        description: handleAxiosError(error),
+        variant: 'destructive',
+      });
+    }
+  };
+
   useEffect(() => {
     fetchDevicesByQueryParams(searchQuery, searchFields);
   }, [searchQuery, meta.currentPage]);
@@ -125,7 +162,7 @@ export default function Devices() {
             setDeviceData(item as DeviceDetail);
             setDetailFormState(true);
           }}
-          handleDelete={(itemSelected) => console.log(itemSelected)}
+          handleDelete={async (itemSelected) => await deleteDevices(itemSelected)}
           handleSearch={(query) => setSearchQuery(query)}
         />
 
