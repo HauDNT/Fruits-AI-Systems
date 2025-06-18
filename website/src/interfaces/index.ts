@@ -18,3 +18,4 @@ export * from '@/interfaces/customPaginationProps';
 export * from '@/interfaces/areaDetail';
 export * from '@/interfaces/imageFrame';
 export * from '@/interfaces/fruitType';
+export * from '@/interfaces/deviceDetail';
