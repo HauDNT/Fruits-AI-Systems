@@ -1,5 +1,5 @@
 export interface FormInterface<T = any> {
-    onSubmit: (formData: T) => Promise<boolean>;
-    className?: string;
-    onClose?: () => void;
+  onSubmit: (formData: T) => Promise<void>;
+  className?: string;
+  onClose?: () => void;
 }
