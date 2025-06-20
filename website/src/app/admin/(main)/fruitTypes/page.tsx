@@ -12,6 +12,7 @@ import CustomPagination from '@/components/common/CustomPagination';
 import { CustomTableData } from '@/interfaces/table';
 import { FruitType, MetaPaginate } from '@/interfaces';
 import ChangeFruitTypeForm from '@/components/forms/ChangeFruitTypeForm';
+import { usePaginate } from '@/hooks/usePaginate';
 
 export default function FruitTypes() {
   const { toast } = useToast();
@@ -26,6 +27,10 @@ export default function FruitTypes() {
   const [createFormState, setCreateFormState] = useState<boolean>(false);
   const [detailFormState, setDetailFormState] = useState<boolean>(false);
   const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
+  const { handlePrevPage, handleNextPage, handleClickPage } = usePaginate({
+    meta,
+    setMetaCallback: setMeta,
+  });
 
   const fetchFruitTypesByQuery = async (
     searchQuery: string,
@@ -149,18 +154,6 @@ export default function FruitTypes() {
     }
   };
 
-  const handleNextPage = () => {
-    if (meta.currentPage < meta.totalPages) {
-      setMeta({ ...meta, currentPage: +meta.currentPage + 1 });
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (meta.currentPage > 1) {
-      setMeta({ ...meta, currentPage: +meta.currentPage - 1 });
-    }
-  };
-
   useEffect(() => {
     fetchFruitTypesByQuery(searchQuery, searchFields);
   }, [searchQuery, meta.currentPage]);
@@ -192,14 +185,9 @@ export default function FruitTypes() {
       <CustomPagination
         currentPage={meta.currentPage}
         totalPages={meta.totalPages}
-        handlePreviousPage={() => handlePrevPage()}
-        handleNextPage={() => handleNextPage()}
-        handleClickPage={(page) =>
-          setMeta((prev) => ({
-            ...prev,
-            currentPage: page,
-          }))
-        }
+        handlePreviousPage={handlePrevPage}
+        handleNextPage={handleNextPage}
+        handleClickPage={handleClickPage}
       />
 
       <ModelLayer

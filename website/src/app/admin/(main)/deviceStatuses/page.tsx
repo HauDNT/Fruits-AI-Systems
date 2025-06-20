@@ -9,6 +9,7 @@ import axiosInstance, { handleAxiosError } from '@/utils/axiosInstance';
 import CreateNewDeviceStatusForm from '@/components/forms/CreateNewDeviceStatusForm';
 import { CustomTableData } from '@/interfaces/table';
 import { MetaPaginate } from '@/interfaces';
+import { usePaginate } from '@/hooks/usePaginate';
 
 export default function DeviceStatuses() {
   const { toast } = useToast();
@@ -21,6 +22,10 @@ export default function DeviceStatuses() {
   const searchFields: string = 'status_name';
   const [createFormState, setCreateFormState] = useState<boolean>(false);
   const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
+  const { handlePrevPage, handleNextPage, handleClickPage } = usePaginate({
+    meta,
+    setMetaCallback: setMeta,
+  });
 
   const fetchDeviceStatusesByQuery = async (
     searchQuery: string,
@@ -124,18 +129,6 @@ export default function DeviceStatuses() {
     }
   };
 
-  const handleNextPage = () => {
-    if (meta.currentPage < meta.totalPages) {
-      setMeta({ ...meta, currentPage: +meta.currentPage + 1 });
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (meta.currentPage > 1) {
-      setMeta({ ...meta, currentPage: +meta.currentPage - 1 });
-    }
-  };
-
   useEffect(() => {
     fetchDeviceStatusesByQuery(searchQuery, searchFields);
   }, [searchQuery, meta.currentPage]);
@@ -161,14 +154,9 @@ export default function DeviceStatuses() {
         <CustomPagination
           currentPage={meta.currentPage}
           totalPages={meta.totalPages}
-          handlePreviousPage={() => handlePrevPage()}
-          handleNextPage={() => handleNextPage()}
-          handleClickPage={(page) =>
-            setMeta((prev) => ({
-              ...prev,
-              currentPage: page,
-            }))
-          }
+          handlePreviousPage={handlePrevPage}
+          handleNextPage={handleNextPage}
+          handleClickPage={handleClickPage}
         />
 
         <ModelLayer
