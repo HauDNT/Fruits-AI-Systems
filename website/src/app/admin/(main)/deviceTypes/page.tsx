@@ -1,137 +1,92 @@
 'use client';
-import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import CustomTable from '@/components/table/CustomTable';
 import CustomPagination from '@/components/common/CustomPagination';
 import ModelLayer from '@/components/common/ModelLayer';
-import axiosInstance, { handleAxiosError } from '@/utils/axiosInstance';
+import { handleAxiosError } from '@/utils/axiosInstance';
 import CreateNewDeviceTypeForm from '@/components/forms/CreateNewDeviceTypeForm';
 import { CustomTableData } from '@/interfaces/table';
 import { MetaPaginate } from '@/interfaces';
-import { usePaginate } from '@/hooks/usePaginate';
+import {
+  useToast,
+  usePaginate,
+  useFetchResource,
+  useCreateResource,
+  useDeleteResource,
+} from '@/hooks';
 
 export default function DeviceTypes() {
   const { toast } = useToast();
+  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchFields: string = 'type_name';
+  const { data: cacheData } = useFetchResource({
+    resource: 'device-types',
+    page: meta.currentPage,
+    limit: meta.limit,
+    queryString: searchQuery,
+    searchFields,
+  });
   const [data, setData] = useState<CustomTableData>({
     columns: [],
     values: [],
   });
-  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const searchFields: string = 'type_name';
-  const [createFormState, setCreateFormState] = useState<boolean>(false);
-  const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
   const { handlePrevPage, handleNextPage, handleClickPage } = usePaginate({
     meta,
     setMetaCallback: setMeta,
   });
+  const [createFormState, setCreateFormState] = useState<boolean>(false);
+  const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
 
-  const fetchDeviceTypesByQuery = async (
-    searchQuery: string,
-    searchFields: string,
-  ): Promise<void> => {
-    try {
-      const resData = (
-        await axiosInstance.get('/device-types', {
-          params: {
-            page: meta.currentPage,
-            limit: meta.limit,
-            queryString: searchQuery,
-            searchFields: searchFields,
-          },
-        })
-      ).data;
-
-      setData({
-        columns: resData.columns,
-        values: resData.values,
-      });
-
-      setMeta({
-        ...meta,
-        currentPage: resData.meta.currentPage,
-        totalPages: resData.meta.totalPages,
-      });
-    } catch (e) {
+  const createNewDeviceType = useCreateResource(
+    'device-types',
+    'json',
+    () => {
+      toast({ title: 'Thêm loại thiết bị thành công', variant: 'success' });
+      setCreateFormState(false);
+    },
+    (error) => {
       toast({
-        title: 'Không thể tải lên danh sách loại thiết bị',
+        title: 'Thêm loại thiết bị thất bại',
+        description: handleAxiosError(error),
         variant: 'destructive',
       });
-    }
-  };
+    },
+  );
 
-  const createNewDeviceType = async (formData: FormData): Promise<boolean> => {
-    try {
-      const resData = await axiosInstance.post('/device-types/create-type', formData);
-
-      if (resData.status === 201) {
-        setCreateFormState(false);
-
-        setData((prev) => ({
-          ...prev,
-          values: [...prev.values, resData.data.data],
-        }));
-
-        toast({ title: 'Thêm loại thiết bị thành công', variant: 'success' });
-        return true;
-      }
-      return false;
-    } catch (error) {
-      const errorMessage = handleAxiosError(error);
-
+  const deleteDeviceTypes = useDeleteResource(
+    'device-types',
+    'typeIds',
+    () => {
       toast({
-        title: 'Thêm loại thiết bị mới thất bại',
-        description: errorMessage,
-        variant: 'destructive',
+        title: `Đã xoá loại thiết bị thành công`,
+        variant: 'success',
       });
-
-      return false;
-    }
-  };
-
-  const deleteDeviceTypes = async (typesSelected: string[]): Promise<void> => {
-    try {
-      if (typesSelected.length > 0) {
-        await axiosInstance
-          .delete('/device-types/delete-types', {
-            data: {
-              typeIds: typesSelected,
-            },
-          })
-          .then((res) => {
-            if (res.data.affected > 0) {
-              toast({
-                title: 'Đã xoá loại thiết bị thành công',
-                variant: 'success',
-              });
-
-              setData((prevState) => ({
-                ...prevState,
-                values: prevState.values.filter((item) => !typesSelected.includes(item.id)),
-              }));
-            } else {
-              toast({
-                title: 'Vui lòng chọn ít nhất 1 loại thiết bị để xoá',
-                variant: 'warning',
-              });
-            }
-          });
-      }
-    } catch (error) {
-      const errorMessage = handleAxiosError(error);
-
+    },
+    (error) => {
       toast({
         title: 'Xoá loại thiết bị thất bại',
-        description: errorMessage,
+        description: handleAxiosError(error),
         variant: 'destructive',
       });
-    }
-  };
+    },
+  );
 
   useEffect(() => {
-    fetchDeviceTypesByQuery(searchQuery, searchFields);
-  }, [searchQuery, meta.currentPage]);
+    if (cacheData) {
+      setData({
+        columns: cacheData.columns,
+        values: cacheData.values,
+      });
+
+      setMeta((prev) => ({
+        ...prev,
+        totalPages: cacheData.meta.totalPages,
+        currentPage: cacheData.meta.currentPage,
+      }));
+    }
+  }, [cacheData]);
 
   return (
     <>
@@ -147,7 +102,7 @@ export default function DeviceTypes() {
           search={true}
           searchFields={searchFields}
           handleCreate={toggleCreateFormState}
-          handleDelete={(itemSelected) => deleteDeviceTypes(itemSelected)}
+          handleDelete={async (itemSelected) => deleteDeviceTypes.mutateAsync(itemSelected)}
           handleSearch={(query) => setSearchQuery(query)}
         />
 
@@ -165,7 +120,7 @@ export default function DeviceTypes() {
           maxWidth="max-w-3xl"
         >
           <CreateNewDeviceTypeForm
-            onSubmit={(formData: FormData) => createNewDeviceType(formData)}
+            onSubmit={async (formData: FormData) => createNewDeviceType.mutateAsync(formData)}
             onClose={() => setCreateFormState(false)}
           />
         </ModelLayer>

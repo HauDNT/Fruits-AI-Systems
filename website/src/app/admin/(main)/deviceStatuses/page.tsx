@@ -1,137 +1,92 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import CustomTable from '@/components/table/CustomTable';
 import CustomPagination from '@/components/common/CustomPagination';
 import ModelLayer from '@/components/common/ModelLayer';
-import axiosInstance, { handleAxiosError } from '@/utils/axiosInstance';
+import { handleAxiosError } from '@/utils/axiosInstance';
 import CreateNewDeviceStatusForm from '@/components/forms/CreateNewDeviceStatusForm';
 import { CustomTableData } from '@/interfaces/table';
 import { MetaPaginate } from '@/interfaces';
-import { usePaginate } from '@/hooks/usePaginate';
+import {
+  useToast,
+  usePaginate,
+  useFetchResource,
+  useCreateResource,
+  useDeleteResource,
+} from '@/hooks';
 
 export default function DeviceStatuses() {
   const { toast } = useToast();
+  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchFields: string = 'status_name';
+  const { data: cacheData } = useFetchResource({
+    resource: 'device-status',
+    page: meta.currentPage,
+    limit: meta.limit,
+    queryString: searchQuery,
+    searchFields,
+  });
   const [data, setData] = useState<CustomTableData>({
     columns: [],
     values: [],
   });
-  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const searchFields: string = 'status_name';
-  const [createFormState, setCreateFormState] = useState<boolean>(false);
-  const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
   const { handlePrevPage, handleNextPage, handleClickPage } = usePaginate({
     meta,
     setMetaCallback: setMeta,
   });
+  const [createFormState, setCreateFormState] = useState<boolean>(false);
+  const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
 
-  const fetchDeviceStatusesByQuery = async (
-    searchQuery: string,
-    searchFields: string,
-  ): Promise<void> => {
-    try {
-      const resData = (
-        await axiosInstance.get('/device-status', {
-          params: {
-            page: meta.currentPage,
-            limit: meta.limit,
-            queryString: searchQuery,
-            searchFields: searchFields,
-          },
-        })
-      ).data;
-
-      setData({
-        columns: resData.columns,
-        values: resData.values,
-      });
-
-      setMeta({
-        ...meta,
-        currentPage: resData.meta.currentPage,
-        totalPages: resData.meta.totalPages,
-      });
-    } catch (e) {
+  const createNewDeviceStatus = useCreateResource(
+    'device-status',
+    'json',
+    () => {
+      toast({ title: 'Thêm trạng thái thiết bị thành công', variant: 'success' });
+      setCreateFormState(false);
+    },
+    (error) => {
       toast({
-        title: 'Không thể tải lên danh sách trạng thái thiết bị',
+        title: 'Thêm trạng thái thiết bị thất bại',
+        description: handleAxiosError(error),
         variant: 'destructive',
       });
-    }
-  };
+    },
+  );
 
-  const createNewDeviceStatus = async (formData: FormData): Promise<boolean> => {
-    try {
-      const resData = await axiosInstance.post('/device-status/create-status', formData);
-
-      if (resData.status === 201) {
-        setCreateFormState(false);
-
-        setData((prev) => ({
-          ...prev,
-          values: [...prev.values, resData.data.data],
-        }));
-
-        toast({ title: 'Thêm trạng thái mới thành công', variant: 'success' });
-        return true;
-      }
-      return false;
-    } catch (error) {
-      const errorMessage = handleAxiosError(error);
-
+  const deleteDeviceStatuses = useDeleteResource(
+    'device-status',
+    'statusIds',
+    () => {
       toast({
-        title: 'Thêm trạng thái mới thất bại',
-        description: errorMessage,
+        title: `Đã xoá trạng thái thiết bị thành công`,
+        variant: 'success',
+      });
+    },
+    (error) => {
+      toast({
+        title: 'Xoá trạng thái thiết bị thất bại',
+        description: handleAxiosError(error),
         variant: 'destructive',
       });
-
-      return false;
-    }
-  };
-
-  const deleteDeviceStatuses = async (statusesSelected: string[]): Promise<void> => {
-    try {
-      if (statusesSelected.length > 0) {
-        await axiosInstance
-          .delete('/device-status/delete-statuses', {
-            data: {
-              statusIds: statusesSelected,
-            },
-          })
-          .then((res) => {
-            if (res.data.affected > 0) {
-              toast({
-                title: 'Đã xoá trạng thái thành công',
-                variant: 'success',
-              });
-
-              setData((prevState) => ({
-                ...prevState,
-                values: prevState.values.filter((item) => !statusesSelected.includes(item.id)),
-              }));
-            } else {
-              toast({
-                title: 'Vui lòng chọn ít nhất 1 trạng thái để xoá',
-                variant: 'warning',
-              });
-            }
-          });
-      }
-    } catch (error) {
-      const errorMessage = handleAxiosError(error);
-
-      toast({
-        title: 'Xoá loại trạng thái thiết bị thất bại',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-  };
+    },
+  );
 
   useEffect(() => {
-    fetchDeviceStatusesByQuery(searchQuery, searchFields);
-  }, [searchQuery, meta.currentPage]);
+    if (cacheData) {
+      setData({
+        columns: cacheData.columns,
+        values: cacheData.values,
+      });
+
+      setMeta((prev) => ({
+        ...prev,
+        totalPages: cacheData.meta.totalPages,
+        currentPage: cacheData.meta.currentPage,
+      }));
+    }
+  }, [cacheData]);
 
   return (
     <>
@@ -147,7 +102,7 @@ export default function DeviceStatuses() {
           search={true}
           searchFields={searchFields}
           handleCreate={toggleCreateFormState}
-          handleDelete={(itemSelected) => deleteDeviceStatuses(itemSelected)}
+          handleDelete={async (itemSelected) => deleteDeviceStatuses.mutateAsync(itemSelected)}
           handleSearch={(query) => setSearchQuery(query)}
         />
 
@@ -165,7 +120,7 @@ export default function DeviceStatuses() {
           maxWidth="max-w-3xl"
         >
           <CreateNewDeviceStatusForm
-            onSubmit={(formData: FormData) => createNewDeviceStatus(formData)}
+            onSubmit={async (formData: FormData) => createNewDeviceStatus.mutateAsync(formData)}
             onClose={() => setCreateFormState(false)}
           />
         </ModelLayer>

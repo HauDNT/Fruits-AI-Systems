@@ -1,167 +1,97 @@
 'use client';
-import PageBreadcrumb from '@/components/common/PageBreadCrumb';
-import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import CustomTable from '@/components/table/CustomTable';
-import axiosInstance, { handleAxiosError } from '@/utils/axiosInstance';
+import { handleAxiosError } from '@/utils/axiosInstance';
 import CustomPagination from '@/components/common/CustomPagination';
 import ModelLayer from '@/components/common/ModelLayer';
 import CreateNewUserForm from '@/components/forms/CreateNewUserForm';
 import ChangeUserInfoForm from '@/components/forms/ChangeUserInfoForm';
-import { ChangeUserInfoBodyType, UserBodyType } from '@/schemas/user.schema';
+import { UserBodyType } from '@/schemas/user.schema';
 import { CustomTableData } from '@/interfaces/table';
 import { MetaPaginate } from '@/interfaces';
 import { UserInfo } from '@/interfaces';
-import { usePaginate } from '@/hooks/usePaginate';
+import {
+  useToast,
+  usePaginate,
+  useFetchResource,
+  useCreateResource,
+  useDeleteResource,
+} from '@/hooks';
 
 export default function Users() {
   const { toast } = useToast();
+  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchFields: string = 'username';
+  const { data: cacheData } = useFetchResource({
+    resource: 'user',
+    page: meta.currentPage,
+    limit: meta.limit,
+    queryString: searchQuery,
+    searchFields,
+  });
   const [data, setData] = useState<CustomTableData>({
     columns: [],
     values: [],
   });
-  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const searchFields: string = 'username';
-  const [userSelected, setUserSelected] = useState<UserInfo>();
-  const [createFormState, setCreateFormState] = useState<boolean>(false);
-  const [editFormState, setEditFormState] = useState<boolean>(false);
-  const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
   const { handlePrevPage, handleNextPage, handleClickPage } = usePaginate({
     meta,
     setMetaCallback: setMeta,
   });
+  const [userSelected, setUserSelected] = useState<UserInfo>();
+  const [createFormState, setCreateFormState] = useState<boolean>(false);
+  const [editFormState, setEditFormState] = useState<boolean>(false);
+  const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
 
-  const fetchUsersByQuery = async (searchQuery: string, searchFields: string) => {
-    try {
-      const resData = (
-        await axiosInstance.get('/user', {
-          params: {
-            page: meta.currentPage,
-            limit: meta.limit,
-            queryString: searchQuery,
-            searchFields: searchFields,
-          },
-        })
-      ).data;
-
-      setData({
-        columns: resData.columns,
-        values: resData.values,
-      });
-
-      setMeta({
-        ...meta,
-        currentPage: resData.meta.currentPage,
-        totalPages: resData.meta.totalPages,
-      });
-    } catch (e) {
-      toast({
-        title: 'Không thể tải lên danh sách tài khoản người dùng',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const createNewUser = async (formData: UserBodyType): Promise<boolean> => {
-    try {
-      const resData = await axiosInstance.post('user/create-user', formData);
-
-      if (resData.status === 201) {
-        setCreateFormState(false);
-
-        setData((prev) => ({
-          ...prev,
-          values: [...prev.values, resData.data.data],
-        }));
-
-        toast({ title: 'Thêm tài khoản thành công', variant: 'success' });
-        return true;
-      }
-
-      return false;
-    } catch (error) {
+  const createNewUser = useCreateResource(
+    'user',
+    'formdata',
+    () => {
+      toast({ title: 'Thêm tài khoản thành công', variant: 'success' });
+      setCreateFormState(false);
+    },
+    (error) => {
       toast({
         title: 'Thêm tài khoản thất bại',
         description: handleAxiosError(error),
         variant: 'destructive',
       });
+    },
+  );
 
-      return false;
-    }
-  };
-
-  const updateUserInfo = async (formData: ChangeUserInfoBodyType): Promise<boolean> => {
-    try {
-      const resData = await axiosInstance.put('user/update', formData);
-
-      if (resData.status === 200) {
-        toast({ title: 'Cập nhật tài khoản thành công', variant: 'success' });
-        setEditFormState(false);
-        return true;
-      }
-
-      return false;
-    } catch (error) {
+  const deleteUsers = useDeleteResource(
+    'user',
+    'userIds',
+    () => {
       toast({
-        title: 'Cập nhật tài khoản thất bại',
+        title: `Đã xoá tài khoản thành công`,
+        variant: 'success',
+      });
+    },
+    (error) => {
+      toast({
+        title: 'Xoá tài khoản thất bại',
         description: handleAxiosError(error),
         variant: 'destructive',
       });
-
-      return false;
-    }
-  };
-
-  const deleteUsers = async (usersSelected: string[]): Promise<void> => {
-    try {
-      if (usersSelected.length > 0) {
-        await axiosInstance
-          .delete('/user/delete-users', {
-            data: {
-              userIds: usersSelected,
-            },
-          })
-          .then((res) => {
-            if (res.data.affected > 0) {
-              if (res.data.affected < usersSelected.length) {
-                toast({
-                  title: `Đã xoá ${res.data.affected} / ${usersSelected.length} tài khoản`,
-                  variant: 'success',
-                });
-              } else {
-                toast({
-                  title: `Đã xoá tài khoản thành công`,
-                  variant: 'success',
-                });
-              }
-
-              setData((prevState) => ({
-                ...prevState,
-                values: prevState.values.filter((item) => !usersSelected.includes(item.id)),
-              }));
-            } else {
-              toast({
-                title: 'Vui lòng chọn ít nhất 1 tài khoản để xoá',
-                variant: 'warning',
-              });
-            }
-          });
-      }
-    } catch (error) {
-      const errorMessage = handleAxiosError(error);
-
-      toast({
-        title: 'Xoá trạng thái thất bại',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-    }
-  };
+    },
+  );
 
   useEffect(() => {
-    fetchUsersByQuery(searchQuery, searchFields);
-  }, [searchQuery, meta.currentPage]);
+    if (cacheData) {
+      setData({
+        columns: cacheData.columns,
+        values: cacheData.values,
+      });
+
+      setMeta((prev) => ({
+        ...prev,
+        totalPages: cacheData.meta.totalPages,
+        currentPage: cacheData.meta.currentPage,
+      }));
+    }
+  }, [cacheData]);
 
   return (
     <>
@@ -178,7 +108,7 @@ export default function Users() {
           search={true}
           searchFields={searchFields}
           handleCreate={toggleCreateFormState}
-          handleDelete={(itemSelected) => deleteUsers(itemSelected)}
+          handleDelete={async (itemSelected) => deleteUsers.mutateAsync(itemSelected)}
           handleDetail={(itemSelected) => {
             setUserSelected(itemSelected as UserInfo);
             setEditFormState(true);
@@ -199,7 +129,9 @@ export default function Users() {
           onClose={() => setCreateFormState(false)}
           maxWidth="max-w-3xl"
         >
-          <CreateNewUserForm onSubmit={(formData: UserBodyType) => createNewUser(formData)} />
+          <CreateNewUserForm
+            onSubmit={async (formData: UserBodyType) => createNewUser.mutateAsync(formData)}
+          />
         </ModelLayer>
 
         <ModelLayer
@@ -209,8 +141,15 @@ export default function Users() {
         >
           {userSelected && (
             <ChangeUserInfoForm
-              userData={userSelected}
-              onSubmit={(formData: ChangeUserInfoBodyType) => updateUserInfo(formData)}
+              data={userSelected}
+              onUpdateSuccess={async (newUserData) => {
+                setData((prev) => ({
+                  ...prev,
+                  values: prev.values.map((user) =>
+                    user.id === newUserData.id ? newUserData : user,
+                  ),
+                }));
+              }}
             />
           )}
         </ModelLayer>

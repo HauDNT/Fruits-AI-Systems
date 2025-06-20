@@ -47,7 +47,7 @@ export class DevicesController {
     return await this.devicesService.findAllRaspberry();
   }
 
-  @Post('create-device')
+  @Post('create')
   @UseInterceptors(
     FileInterceptor('device_image', {
       storage: diskStorage({

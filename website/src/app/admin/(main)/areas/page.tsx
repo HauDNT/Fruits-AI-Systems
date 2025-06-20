@@ -24,7 +24,8 @@ export default function Areas() {
   const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 3 });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchFields: string = 'area_code,area_desc';
-  const { data: cacheData, isLoading } = useFetchResource({
+  // const { data: cacheData, isLoading } = useFetchResource({            --> Triển khai loading sau
+  const { data: cacheData } = useFetchResource({
     resource: 'areas',
     page: meta.currentPage,
     limit: meta.limit,
@@ -48,12 +49,12 @@ export default function Areas() {
     'areas',
     'formdata',
     () => {
-      toast({ title: 'Thêm khu thành công', variant: 'success' });
+      toast({ title: 'Thêm khu phân loại thành công', variant: 'success' });
       setCreateFormState(false);
     },
     (error) => {
       toast({
-        title: 'Thêm khu thất bại',
+        title: 'Thêm khu phân loại thất bại',
         description: handleAxiosError(error),
         variant: 'destructive',
       });
@@ -71,7 +72,7 @@ export default function Areas() {
     },
     (error) => {
       toast({
-        title: 'Xoá trạng thái thất bại',
+        title: 'Xoá khu phân loại thất bại',
         description: handleAxiosError(error),
         variant: 'destructive',
       });

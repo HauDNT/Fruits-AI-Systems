@@ -2,142 +2,95 @@
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { useEffect, useState } from 'react';
 import CustomTable from '@/components/table/CustomTable';
-import { useToast } from '@/hooks/use-toast';
 import ModelLayer from '@/components/common/ModelLayer';
 import CreateNewFruitForm from '@/components/forms/CreateNewFruitForm';
-import axiosInstance, { handleAxiosError } from '@/utils/axiosInstance';
+import { handleAxiosError } from '@/utils/axiosInstance';
 import CustomPagination from '@/components/common/CustomPagination';
 import { CustomTableData } from '@/interfaces/table';
 import { MetaPaginate } from '@/interfaces';
 import { FruitDetailInterface } from '@/interfaces/fruitDetail';
 import ChangeFruitInfoForm from '@/components/forms/ChangeFruitInfoForm';
-import { usePaginate } from '@/hooks/usePaginate';
+import {
+  useToast,
+  usePaginate,
+  useFetchResource,
+  useCreateResource,
+  useDeleteResource,
+} from '@/hooks';
 
 export default function Fruits() {
   const { toast } = useToast();
+  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchFields: string = 'fruit_name,fruit_desc';
+  const { data: cacheData } = useFetchResource({
+    resource: 'fruits',
+    page: meta.currentPage,
+    limit: meta.limit,
+    queryString: searchQuery,
+    searchFields,
+  });
   const [data, setData] = useState<CustomTableData>({
     columns: [],
     values: [],
   });
-  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const searchFields: string = 'fruit_name,fruit_desc';
-  const [fruitDetailData, setFruitDetailData] = useState<FruitDetailInterface>();
-  const [createFormState, setCreateFormState] = useState<boolean>(false);
-  const [detailFormState, setDetailFormState] = useState<boolean>(false);
-  const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
   const { handlePrevPage, handleNextPage, handleClickPage } = usePaginate({
     meta,
     setMetaCallback: setMeta,
   });
+  const [fruitDetailData, setFruitDetailData] = useState<FruitDetailInterface>();
+  const [createFormState, setCreateFormState] = useState<boolean>(false);
+  const [detailFormState, setDetailFormState] = useState<boolean>(false);
+  const toggleCreateFormState = () => setCreateFormState((prev) => !prev);
 
-  const fetchFruitsByQuery = async (searchQuery: string, searchFields: string): Promise<void> => {
-    try {
-      const resData = (
-        await axiosInstance.get(`/fruits`, {
-          params: {
-            page: meta.currentPage,
-            limit: meta.limit,
-            queryString: searchQuery,
-            searchFields: searchFields,
-          },
-        })
-      ).data;
-
-      setData({
-        columns: resData.columns,
-        values: resData.values,
-      });
-
-      setMeta({
-        ...meta,
-        currentPage: resData.meta.currentPage,
-        totalPages: resData.meta.totalPages,
-      });
-    } catch (e) {
-      toast({
-        title: 'Xảy ra lỗi khi lấy thông tin',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const createNewFruits = async (formData: FormData): Promise<boolean> => {
-    try {
-      const resData = await axiosInstance.post('/fruits/create-fruit', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      if (resData.status === 201) {
-        setCreateFormState(false);
-
-        setData((prev) => ({
-          ...prev,
-          values: [...prev.values, resData.data.data],
-        }));
-
-        toast({ title: 'Thêm trái cây thành công', variant: 'success' });
-        return true;
-      }
-      return false;
-    } catch (error) {
+  const createNewFruit = useCreateResource(
+    'fruits',
+    'formdata',
+    () => {
+      toast({ title: 'Thêm trái cây thành công', variant: 'success' });
+      setCreateFormState(false);
+    },
+    (error) => {
       toast({
         title: 'Thêm trái cây thất bại',
         description: handleAxiosError(error),
         variant: 'destructive',
       });
+    },
+  );
 
-      return false;
-    }
-  };
-
-  const deleteFruits = async (fruitsSeleted: string[]): Promise<void> => {
-    try {
-      if (fruitsSeleted.length > 0) {
-        await axiosInstance
-          .delete('/fruits/delete-fruits', {
-            data: {
-              fruitIds: fruitsSeleted,
-            },
-          })
-          .then((res) => {
-            if (res.data.affected > 0) {
-              if (res.data.affected < fruitsSeleted.length) {
-                toast({
-                  title: `Đã xoá ${res.data.affected} / ${fruitsSeleted.length} trái cây`,
-                  variant: 'success',
-                });
-              } else {
-                toast({
-                  title: `Đã xoá trái cây thành công`,
-                  variant: 'success',
-                });
-              }
-
-              setData((prevState) => ({
-                ...prevState,
-                values: prevState.values.filter((item) => !fruitsSeleted.includes(item.id)),
-              }));
-            } else {
-              toast({
-                title: 'Vui lòng chọn ít nhất 1 trái cây để xoá',
-                variant: 'warning',
-              });
-            }
-          });
-      }
-    } catch (error) {
+  const deleteFruits = useDeleteResource(
+    'fruits',
+    'fruitIds',
+    () => {
       toast({
-        title: 'Xoá trạng thái thất bại',
-        description: 'Hãy thử lại sau',
+        title: `Đã xoá trái cây thành công`,
+        variant: 'success',
+      });
+    },
+    (error) => {
+      toast({
+        title: 'Xoá trái cây thất bại',
+        description: handleAxiosError(error),
         variant: 'destructive',
       });
-    }
-  };
+    },
+  );
 
   useEffect(() => {
-    fetchFruitsByQuery(searchQuery, searchFields);
-  }, [searchQuery, meta.currentPage]);
+    if (cacheData) {
+      setData({
+        columns: cacheData.columns,
+        values: cacheData.values,
+      });
+
+      setMeta((prev) => ({
+        ...prev,
+        totalPages: cacheData.meta.totalPages,
+        currentPage: cacheData.meta.currentPage,
+      }));
+    }
+  }, [cacheData]);
 
   return (
     <>
@@ -158,7 +111,7 @@ export default function Fruits() {
             setDetailFormState(true);
             setFruitDetailData(item as FruitDetailInterface);
           }}
-          handleDelete={(itemSelected) => deleteFruits(itemSelected)}
+          handleDelete={async (itemSelected) => deleteFruits.mutateAsync(itemSelected)}
           handleSearch={(query) => setSearchQuery(query)}
         />
 
@@ -175,7 +128,9 @@ export default function Fruits() {
           onClose={() => setCreateFormState(false)}
           maxWidth="max-w-3xl"
         >
-          <CreateNewFruitForm onSubmit={(formData: FormData) => createNewFruits(formData)} />
+          <CreateNewFruitForm
+            onSubmit={async (formData: FormData) => createNewFruit.mutateAsync(formData)}
+          />
         </ModelLayer>
 
         <ModelLayer

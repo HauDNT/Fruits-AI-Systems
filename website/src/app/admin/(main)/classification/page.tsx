@@ -1,64 +1,37 @@
 'use client';
-import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import CustomTable from '@/components/table/CustomTable';
 import CustomPagination from '@/components/common/CustomPagination';
 import ModelLayer from '@/components/common/ModelLayer';
-import axiosInstance from '@/utils/axiosInstance';
 import PreviewClassifyResult from '@/components/forms/PreviewClassifyResult';
 import { ClassifyResultInterface, MetaPaginate } from '@/interfaces';
 import { useSocketFruitClassify } from '@/hooks/useSocketFruitClassify';
 import { CustomTableData } from '@/interfaces/table';
-import { usePaginate } from '@/hooks/usePaginate';
+import { useToast, usePaginate, useFetchResource } from '@/hooks';
 
 export default function Classification() {
   const { toast } = useToast();
+  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 15 });
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchFields: string = 'fruit, areaBelong, confidence_level';
+  const { data: cacheData } = useFetchResource({
+    resource: 'fruit-classification',
+    page: meta.currentPage,
+    limit: meta.limit,
+    queryString: searchQuery,
+    searchFields,
+  });
   const [data, setData] = useState<CustomTableData>({
     columns: [],
     values: [],
   });
-  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 15 });
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const searchFields: string = 'fruit, areaBelong, confidence_level';
-  const [detailItemData, setDetailItemData] = useState<ClassifyResultInterface>();
-  const [detailFormState, setDetailFormState] = useState(false);
   const { handlePrevPage, handleNextPage, handleClickPage } = usePaginate({
     meta,
     setMetaCallback: setMeta,
   });
-
-  const fetchClassifiesByQuery = async (searchQuery: string, searchFields: string) => {
-    try {
-      const resData = (
-        await axiosInstance.get('/fruit-classification', {
-          params: {
-            page: meta.currentPage,
-            limit: meta.limit,
-            queryString: searchQuery,
-            searchFields: searchFields,
-          },
-        })
-      ).data;
-
-      setData({
-        columns: resData.columns,
-        values: resData.values,
-      });
-
-      setMeta({
-        ...meta,
-        currentPage: resData.meta.currentPage,
-        totalPages: resData.meta.totalPages,
-      });
-    } catch (e) {
-      console.log('Error: ', e);
-      toast({
-        title: 'Không thể tải lên danh sách kết quả phân loại',
-        variant: 'destructive',
-      });
-    }
-  };
+  const [detailItemData, setDetailItemData] = useState<ClassifyResultInterface>();
+  const [detailFormState, setDetailFormState] = useState(false);
 
   const handleDetail = (item: ClassifyResultInterface) => {
     setDetailItemData(item);
@@ -66,8 +39,19 @@ export default function Classification() {
   };
 
   useEffect(() => {
-    fetchClassifiesByQuery(searchQuery, searchFields);
-  }, [searchQuery, meta.currentPage]);
+    if (cacheData) {
+      setData({
+        columns: cacheData.columns,
+        values: cacheData.values,
+      });
+
+      setMeta((prev) => ({
+        ...prev,
+        totalPages: cacheData.meta.totalPages,
+        currentPage: cacheData.meta.currentPage,
+      }));
+    }
+  }, [cacheData]);
 
   useSocketFruitClassify((newResult: ClassifyResultInterface) => {
     toast({

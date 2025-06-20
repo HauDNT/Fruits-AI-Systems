@@ -36,7 +36,7 @@ export class FruitTypesController {
     return await this.fruitTypesService.getTypesOfFruit(fruit_id);
   }
 
-  @Post('create-type')
+  @Post('create')
   async create(@Body() createFruitTypeDto: CreateFruitTypeDto) {
     return await this.fruitTypesService.create(createFruitTypeDto);
   }
@@ -49,7 +49,7 @@ export class FruitTypesController {
     return await this.fruitTypesService.updateFruitType(type_id, data);
   }
 
-  @Delete('/delete-types')
+  @Delete('/delete')
   async deleteFruitTypes(@Body() data: DeleteFruitTypeDto): Promise<DeleteResult | any> {
     const { fruitTypeIds } = data;
     return await this.fruitTypesService.deleteFruitTypes(fruitTypeIds);
