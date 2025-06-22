@@ -6,6 +6,7 @@ export const TIME_FRAMES = ['Tuần', 'Tháng', 'Năm'];
 
 export function useDashboardData() {
   const queryClient = useQueryClient();
+  const queryStaleTime = 1 * 60 * 1000; // 1 minute
 
   const [classifyChartTab, setClassifyChartTab] = useState({
     fruit: undefined as string | undefined,
@@ -42,7 +43,7 @@ export function useDashboardData() {
         amountDeviceTypes: deviceTypes.data,
       };
     },
-    staleTime: 5 * 60 * 1000, // 5 phút
+    staleTime: queryStaleTime, // 5 phút
   });
 
   // Fetch useQuery 2: Fruit list
@@ -52,7 +53,7 @@ export function useDashboardData() {
       const res = await axiosInstance.get('/fruits/all');
       return res.data?.map((f: any) => f.fruit_name) ?? [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: queryStaleTime,
   });
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export function useDashboardData() {
       const res = await axiosInstance.get('/statistical/ratio-fruits');
       return res.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: queryStaleTime,
   });
 
   // Fetch useQuery 4: Employees each area
@@ -81,7 +82,7 @@ export function useDashboardData() {
       const res = await axiosInstance.get('/statistical/employees-each-area');
       return res.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: queryStaleTime,
   });
 
   // Fetch useQuery 5: Chart fruit & timeFrame
@@ -94,7 +95,7 @@ export function useDashboardData() {
       return res.data;
     },
     enabled: !!classifyChartTab.fruit, // không chạy nếu chưa có fruit
-    staleTime: 5 * 60 * 1000,
+    staleTime: queryStaleTime,
   });
 
   const onUpdateEventSocketListener = useCallback(async () => {

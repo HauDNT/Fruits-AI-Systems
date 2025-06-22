@@ -1,131 +1,128 @@
-'use client'
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+'use client';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-    CreditCard,
-    ShoppingCart,
-    Heart,
-    BookmarkCheck,
-    BookOpen,
-    LifeBuoy,
-    LogOut,
-    Settings,
-    User,
-} from "lucide-react"
+  CreditCard,
+  ShoppingCart,
+  Heart,
+  BookmarkCheck,
+  BookOpen,
+  LifeBuoy,
+  LogOut,
+  Settings,
+  User,
+} from 'lucide-react';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuPortal,
-    DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import axiosInstance from "@/utils/axiosInstance"
-import {useSelector, useDispatch} from 'react-redux';
-import {RootState} from '@/redux/store';
-import {removeReduxAuthToken} from '@/redux/authSlice';
-import {useToast} from "@/hooks/use-toast";
-import {useRouter} from "next/navigation";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import axiosInstance from '@/utils/axiosInstance';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { removeReduxAuthToken } from '@/redux/authSlice';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
-const HeaderAvatar = ({uri}: { uri?: string }) => {
-    const defaultAvatar = "https://img.freepik.com/premium-vector/businessman-avatar-illustration-cartoon-user-portrait-user-profile-icon_118339-5502.jpg?w=740";
-    const {user, token} = useSelector((state: RootState) => state.auth)
-    const dispatch = useDispatch()
-    const {toast} = useToast()
-    const router = useRouter()
+const HeaderAvatar = ({ uri }: { uri?: string }) => {
+  const defaultAvatar =
+    'https://img.freepik.com/premium-vector/businessman-avatar-illustration-cartoon-user-portrait-user-profile-icon_118339-5502.jpg?w=740';
+  const { user, token } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const { toast } = useToast();
+  const router = useRouter();
 
-    const handleLogout = async () => {
-        if (!user) return;
-        
-        const userIdentifier = user['username'] || user['email'];
-        const userRole = user['role'];
+  const handleLogout = async () => {
+    if (!user) return;
 
-        const logoutResult = await axiosInstance.post(
-            '/auth/logout',
-            {
-                userIdentifier,
-            }
-        );
+    try {
+      const logoutResult = await axiosInstance.post('/auth/logout', {}, { withCredentials: true });
 
-        if (logoutResult.status === 200) {
-            dispatch(removeReduxAuthToken());
-            router.push('/admin/login');
-        } else {
-            toast({
-                title: "Đăng xuất thất bại",
-                description: "Vui lòng thử lại sau",
-                variant: "destructive",
-            });
-        }
+      if (logoutResult.status === 201) {
+        dispatch(removeReduxAuthToken());
+        router.push('/admin/login');
+      }
+    } catch (error) {
+      toast({
+        title: 'Đăng xuất thất bại',
+        description: 'Vui lòng thử lại sau',
+        variant: 'destructive',
+      });
+
+      console.error('Logout error:', error);
     }
+  };
 
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Avatar>
-                    <AvatarImage src={uri || defaultAvatar} alt="User Avatar"/>
-                    <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mt-1 mr-2 z-999999">
-                <DropdownMenuLabel>Tuỳ chọn</DropdownMenuLabel>
-                <DropdownMenuSeparator/>
-                <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                        <User/>
-                        <span>Tài khoản</span>
-                        {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <ShoppingCart/>
-                        <span>Giỏ hàng của bạn</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <CreditCard/>
-                        <span>Lịch sử mua hàng</span>
-                    </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuGroup>
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            <BookOpen/>
-                            <span>Khoá học</span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                            <DropdownMenuSubContent>
-                                <DropdownMenuItem>
-                                    <Heart/>
-                                    <span>Yêu thích</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <BookmarkCheck/>
-                                    <span>Đã lưu</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                    </DropdownMenuSub>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator/>
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Avatar>
+          <AvatarImage src={uri || defaultAvatar} alt="User Avatar" />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 mt-1 mr-2 z-999999">
+        <DropdownMenuLabel>Tuỳ chọn</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem>
+            <User />
+            <span>Tài khoản</span>
+            {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <ShoppingCart />
+            <span>Giỏ hàng của bạn</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <CreditCard />
+            <span>Lịch sử mua hàng</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuGroup>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <BookOpen />
+              <span>Khoá học</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
                 <DropdownMenuItem>
-                    <LifeBuoy/>
-                    <span>Hỗ trợ</span>
+                  <Heart />
+                  <span>Yêu thích</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                    <Settings/>
-                    <span>Cài đặt</span>
+                  <BookmarkCheck />
+                  <span>Đã lưu</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator/>
-                <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut color={'red'}/>
-                    <span className='text-error-600'>Đăng xuất</span>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    )
-}
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <LifeBuoy />
+          <span>Hỗ trợ</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Settings />
+          <span>Cài đặt</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut color={'red'} />
+          <span className="text-error-600">Đăng xuất</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
-export default HeaderAvatar
+export default HeaderAvatar;
