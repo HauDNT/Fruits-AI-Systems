@@ -1,5 +1,6 @@
 import { join } from 'path';
 import * as express from 'express';
+import * as cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -11,6 +12,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const port = configService.get('SERVER_PORT');
+
+  // Cookie parse
+  app.use(cookieParser());
 
   // Config CORS
   app.enableCors({
@@ -39,7 +43,7 @@ async function bootstrap() {
   swaggerConfig(app);
 
   await app.listen(port ?? 8082, '0.0.0.0', () => {
-    console.log(`Server is running on port ${process.env.SERVER_PORT || 8082}`);
+    console.log(`Server is running on port ${port || 8082}`);
   });
 }
 

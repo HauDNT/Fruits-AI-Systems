@@ -10,6 +10,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -22,8 +23,10 @@ import { CreateEmployeeDto } from '@/modules/employees/dto/create-employee.dto';
 import { DeleteResult } from 'typeorm';
 import { DeleteEmployeeDto } from '@/modules/employees/dto/delete-employee.dto';
 import { UpdateEmployeeDto } from '@/modules/employees/dto/update-employee.dto';
+import { JWTGuard } from '@/authentication/jwt/jwt-guard';
 
 @Controller('employees')
+@UseGuards(JWTGuard)
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 

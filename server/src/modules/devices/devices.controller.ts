@@ -10,6 +10,7 @@ import {
   Put,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { extname } from 'path';
 import * as fs from 'fs/promises';
@@ -22,8 +23,10 @@ import { DeviceClassificationFlat } from '@/interfaces';
 import { UpdateDeviceDto } from '@/modules/devices/dto/update-device.dto';
 import { DeleteResult } from 'typeorm';
 import { DeleteDeviceDto } from '@/modules/devices/dto/delete-device.dto';
+import { JWTGuard } from '@/authentication/jwt/jwt-guard';
 
 @Controller('devices')
+@UseGuards(JWTGuard)
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 

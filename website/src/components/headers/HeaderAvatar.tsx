@@ -34,18 +34,23 @@ import { useRouter } from 'next/navigation';
 const HeaderAvatar = ({ uri }: { uri?: string }) => {
   const defaultAvatar =
     'https://img.freepik.com/premium-vector/businessman-avatar-illustration-cartoon-user-portrait-user-profile-icon_118339-5502.jpg?w=740';
-  const { user, token } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const { toast } = useToast();
   const router = useRouter();
 
   const handleLogout = async () => {
-    if (!user) return;
+    if (!user) {
+      await axiosInstance.post('/auth/logout', {}, { withCredentials: true });
+      dispatch(removeReduxAuthToken());
+      router.push('/admin/login');
+      return;
+    }
 
     try {
       const logoutResult = await axiosInstance.post('/auth/logout', {}, { withCredentials: true });
 
-      if (logoutResult.status === 201) {
+      if (logoutResult.status === 200) {
         dispatch(removeReduxAuthToken());
         router.push('/admin/login');
       }
@@ -55,8 +60,6 @@ const HeaderAvatar = ({ uri }: { uri?: string }) => {
         description: 'Vui lòng thử lại sau',
         variant: 'destructive',
       });
-
-      console.error('Logout error:', error);
     }
   };
 
@@ -75,7 +78,6 @@ const HeaderAvatar = ({ uri }: { uri?: string }) => {
           <DropdownMenuItem>
             <User />
             <span>Tài khoản</span>
-            {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
           </DropdownMenuItem>
           <DropdownMenuItem>
             <ShoppingCart />

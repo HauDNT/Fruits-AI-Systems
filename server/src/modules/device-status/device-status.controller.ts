@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Body, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Query, UseGuards } from '@nestjs/common';
 import { DeviceStatusService } from './device-status.service';
 import { CreateDeviceStatusDto } from './dto/create-device-status.dto';
 import { DeviceStatus } from '@/modules/device-status/entities/device-status.entity';
 import { DeleteResult } from 'typeorm';
 import { DeleteDeviceStatusDto } from '@/modules/device-status/dto/delete-device-status.dto';
 import { TableMetaData } from '@/interfaces/table';
+import { JWTGuard } from '@/authentication/jwt/jwt-guard';
 
 @Controller('device-status')
+@UseGuards(JWTGuard)
 export class DeviceStatusController {
   constructor(private readonly deviceStatusService: DeviceStatusService) {}
 

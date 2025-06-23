@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query, Put, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { TableMetaData } from '@/interfaces/table';
@@ -6,8 +6,10 @@ import { User } from '@/modules/user/entities/user.entity';
 import { DeleteResult } from 'typeorm';
 import { DeleteUserDto } from '@/modules/user/dto/delete-user.dto';
 import { UpdateUserDto } from '@/modules/user/dto/update-user.dto';
+import { JWTGuard } from '@/authentication/jwt/jwt-guard';
 
 @Controller('user')
+@UseGuards(JWTGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   Put,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -22,8 +23,10 @@ import { DeleteFruitDto } from './dto/delete-fruit.dto';
 import { DeleteResult } from 'typeorm';
 import * as fs from 'fs/promises';
 import { UpdateFruitDto } from '@/modules/fruits/dto/update-fruit.dto';
+import { JWTGuard } from '@/authentication/jwt/jwt-guard';
 
 @Controller('fruits')
+@UseGuards(JWTGuard)
 export class FruitsController {
   constructor(private readonly fruitsService: FruitsService) {}
 

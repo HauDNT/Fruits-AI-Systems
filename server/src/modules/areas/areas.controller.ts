@@ -13,6 +13,7 @@ import {
   UploadedFile,
   BadRequestException,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AreasService } from './areas.service';
@@ -21,8 +22,10 @@ import { TableMetaData } from '@/interfaces/table';
 import { Area } from '@/modules/areas/entities/area.entity';
 import { DeleteAreaDto } from '@/modules/areas/dto/delete-area.dto';
 import { UpdateAreaDto } from '@/modules/areas/dto/update-area.dto';
+import { JWTGuard } from '@/authentication/jwt/jwt-guard';
 
 @Controller('areas')
+@UseGuards(JWTGuard)
 export class AreasController {
   constructor(private readonly areasService: AreasService) {}
 

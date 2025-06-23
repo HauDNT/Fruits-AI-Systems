@@ -46,7 +46,7 @@ export default function Users() {
 
   const createNewUser = useCreateResource(
     'user',
-    'formdata',
+    'json',
     () => {
       toast({ title: 'Thêm tài khoản thành công', variant: 'success' });
       setCreateFormState(false);

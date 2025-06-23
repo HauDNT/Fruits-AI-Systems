@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Delete, Query, Param, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Query, Param, Put, UseGuards } from '@nestjs/common';
 import { FruitTypesService } from './fruit-types.service';
 import { CreateFruitTypeDto } from './dto/create-fruit-type.dto';
 import { TableMetaData } from '@/interfaces/table';
@@ -6,8 +6,10 @@ import { FruitType } from '@/modules/fruit-types/entities/fruit-type.entity';
 import { DeleteFruitTypeDto } from '@/modules/fruit-types/dto/delete-fruit-type.dto';
 import { DeleteResult } from 'typeorm';
 import { UpdateFruitTypeDto } from '@/modules/fruit-types/dto/update-fruit-type.dto';
+import { JWTGuard } from '@/authentication/jwt/jwt-guard';
 
 @Controller('fruit-types')
+@UseGuards(JWTGuard)
 export class FruitTypesController {
   constructor(private readonly fruitTypesService: FruitTypesService) {}
 

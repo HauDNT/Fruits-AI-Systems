@@ -63,7 +63,7 @@ const AdminLoginForm: React.FC = () => {
           JSON.stringify({
             userId: result.payload.userId,
             username: result.payload.username,
-            role: result.payload.role,
+            // role: result.payload.role,
           }),
         );
 
@@ -72,18 +72,16 @@ const AdminLoginForm: React.FC = () => {
             userId: result.payload.userId,
             username: result.payload.username,
             accessToken: result.payload.accessToken,
-            role: Number(result.payload.role),
+            // role: Number(result.payload.role),
           }),
         );
 
         router.push('/admin/dashboard');
       }
     } catch (error) {
-      const errorMessage = handleAxiosError(error);
-
       toast({
         title: 'Đăng nhập thất bại',
-        description: errorMessage,
+        description: handleAxiosError(error),
         variant: 'destructive',
       });
     }

@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getCookie } from '@/utils/cookieManage';
@@ -18,7 +17,7 @@ export const AuthReduxProvider: React.FC = () => {
           dispatch(setReduxAuthToken(parsed));
         }
       } catch (err) {
-        console.error('Lỗi khi parse cookie user info:', err);
+        console.error('Lỗi khi parse cookie:', err);
       }
     };
 
