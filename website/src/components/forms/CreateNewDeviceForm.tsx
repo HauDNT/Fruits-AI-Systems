@@ -97,7 +97,7 @@ const CreateNewDeviceForm = ({ className, onSubmit, onClose }: FormInterface<For
                         <SelectValue placeholder="Chọn loại thiết bị" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className={'text-black'}>
+                    <SelectContent>
                       {deviceTypes.map((type, index) => (
                         <SelectItem key={index} className={'cursor-pointer'} value={type.id + ''}>
                           {type.type_name}

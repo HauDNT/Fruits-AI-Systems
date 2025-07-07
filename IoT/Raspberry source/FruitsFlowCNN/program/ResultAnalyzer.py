@@ -5,11 +5,6 @@ class ResultAnalyzer:
         self.standard_threshold = standard_threshold
         
     def analyze_results(self, results: list[Dict]) -> Dict:
-        """
-        results: list of dicts, each with keys: label, confidence, webcam_name, image_path
-        Trả về dict có các keys tương tự, nhưng là kết quả cuối cùng duy nhất được chọn.
-        """
-        
         result_1, result_2 = results
         
         if result_1['confidence'] >= self.standard_threshold and result_2['confidence'] >= self.standard_threshold:

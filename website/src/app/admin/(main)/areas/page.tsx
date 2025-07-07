@@ -21,7 +21,7 @@ import {
 
 export default function Areas() {
   const { toast } = useToast();
-  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 3 });
+  const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 10 });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchFields: string = 'area_code,area_desc';
   // const { data: cacheData, isLoading } = useFetchResource({            --> Triển khai loading sau

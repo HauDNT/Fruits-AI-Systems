@@ -110,7 +110,7 @@ const ChangeDeviceInfoForm = ({
   return (
     <div>
       <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-        Thông tin khu phân loại
+        Thông tin thiết bị
       </h3>
       <div className="space-y-6">
         <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">

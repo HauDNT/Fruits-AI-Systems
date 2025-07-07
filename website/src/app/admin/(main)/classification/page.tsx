@@ -14,7 +14,7 @@ export default function Classification() {
   const { toast } = useToast();
   const [meta, setMeta] = useState<MetaPaginate>({ totalPages: 1, currentPage: 1, limit: 15 });
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const searchFields: string = 'fruit, areaBelong, confidence_level';
+  const searchFields: string = 'fruit,areaClassify';
   const { data: cacheData } = useFetchResource({
     resource: 'fruit-classification',
     page: meta.currentPage,

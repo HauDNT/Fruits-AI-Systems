@@ -16,7 +16,6 @@ class MQTT_Handler:
         self.is_connected = False
         
     def connect_mqtt(self):
-        """Kết nối với broker"""
         try:
             self.client.connect(self.broker, self.port, self.keep_alive)
             self.client.loop_start()
@@ -26,26 +25,20 @@ class MQTT_Handler:
             self.is_connected = False
             
     def connect_mqtt_callback(self, client, data, flags, rc):
-        """Callback khi kết nối MQTT Broker thành công"""
         if rc == 0:
             print("[MQTT] Đã kết nối đến MQTT broker")
             self.is_connected = True
-            
-            # Subcribe vào 1 topic thử nghiệm
             self.subscribe(MQTT_TOPIC_FRUITS_RESULT)
         else:
             print(f"[MQTT] Kết nối thất bại với mã lỗi: {rc}")
             self.is_connected = False
     
     def disconnect_mqtt_callback(self, client, data, rc):
-        """Callback khi kết nối MQTT Broker thất bại"""
         print("[MQTT] Kết nối đến MQTT Broker thất bại")
         self.is_connected = False
-        
         self.reconnect()
                  
     def publish(self, topic = MQTT_TOPIC_FRUITS_RESULT, message = ""):
-        """Publish message tới topic"""
         if not self.client.is_connected():
             print("[MQTT] Không kết nối được đến broker, chờ kết nối lại...")
             self.reconnect()
@@ -66,7 +59,6 @@ class MQTT_Handler:
             print(f"[MQTT] Không thể subscribe vào {topic}, chưa kết nối")
         
     def reconnect(self):
-        """Kết nối lại với MQTT Broker"""
         max_reconnect_turns = 10
         turn = 1
         while not self.is_connected and turn <= max_reconnect_turns:

@@ -22,7 +22,7 @@ import { SocketGateway } from '@/gateway/socketGateway';
 import { JWTGuard } from '@/authentication/jwt/jwt-guard';
 
 @Controller('fruit-classification')
-@UseGuards(JWTGuard)
+// @UseGuards(JWTGuard)
 export class FruitClassificationController {
   constructor(
     private readonly fruitClassificationService: FruitClassificationService,

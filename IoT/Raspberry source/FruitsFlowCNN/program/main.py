@@ -9,7 +9,6 @@ import RaspberryConfig
 from SocketClient import SocketClient
 from RecognitionRunner import RecognitionRunner
 
-# Cấu hình logger
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -17,13 +16,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Cập nhật cấu hình mới nhất cho Raspberry từ Server
 asyncio.run(RaspberryConfig.load_remote_config_from_server_and_update())
 
-# Lấy cấu hình
 raspberry_config = RaspberryConfig.load_raspberry_config_in_memory()
 
-# Hàm cập nhật cấu hình động với Socket
 def hot_update_config(recogRunner, loop, data=None):
     print(f"[RPI] Đã nhận cấu hình mới qua Socket! Tiến hành cập nhật...\n")
     
@@ -37,7 +33,6 @@ def hot_update_config(recogRunner, loop, data=None):
             if isinstance(config_data['labels'], list):
                 config_data['labels'] = json.dumps(config_data['labels'])
             
-            # Tải mô hình nếu model_path có thay đổi
             if 'model_path' in config_data and config_data['model_path'] != raspberry_config.get('model_path'):
                 print("[RPI] Đang tải mô hình mới...")
                 
@@ -51,16 +46,7 @@ def hot_update_config(recogRunner, loop, data=None):
                 
                 if hotDownloadModelSuccess:
                     print("[RPI] Tải mô hình hoàn tất!")
-                    
                     config_data['model_path'] = local_model_path
-                    model_files = sorted(
-                        filter(lambda x: "default.tflite" not in x, os.listdir(local_model_dir)),
-                        key=lambda x: os.path.getmtime(os.path.join(local_model_dir, x))
-                    )
-                    while len(model_files) > 3:
-                        file_to_delete = model_files.pop(0)
-                        file_path = os.path.join(local_model_dir, file_to_delete)
-                        os.remove(file_path)
                 else:
                     logger.warning("Tải mô hình thất bại, giữ model_path hiện tại.")
                     config_data['model_path'] = raspberry_config.get('model_path', '')

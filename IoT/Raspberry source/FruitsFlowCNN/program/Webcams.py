@@ -67,7 +67,6 @@ def save_image(webcam_image, webcam_name, label):
     print(f"Đã lưu ảnh {webcam_name}: {image_path}", flush=True)
     return image_path
 
-
 def delete_image(image_path):
     try:
         if not os.path.isfile(image_path):

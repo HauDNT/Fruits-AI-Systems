@@ -35,7 +35,6 @@ class RecognitionRunner:
         self.mqtt_handle = None
 
     async def _run_main_loop(self):
-        # Khởi tạo tài nguyên (Cấu hình Raspberry, MQTT, mô hình học máy, API caller, cảm biến, webcams)
         self.raspberry_config = RaspberryConfig.load_raspberry_config_in_memory()
         self.labels = json.loads(self.raspberry_config["labels"])
         
@@ -201,7 +200,7 @@ class RecognitionRunner:
 
     async def run(self):
         while self.running:
-            self.should_restart = False  # Reset flag
+            self.should_restart = False
             await self._run_main_loop()
             
             if not self.should_restart:

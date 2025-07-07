@@ -13,7 +13,7 @@ def process_recognition(webcam, webcam_name, interpreter, labels):
 
 def hot_download_model(model_url, local_path):
     try:
-        response = requests.get(model_url, timeout=10)  # Không cần header
+        response = requests.get(model_url, timeout=10)
         if response.status_code == 200:
             with open(local_path, 'wb') as f:
                 f.write(response.content)

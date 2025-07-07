@@ -7,7 +7,6 @@ RobotArm robot_arm;
 bool isControlClassifyRobotic = false;
 unsigned long timeToMoveAtTheEndConvey = 9000;
 
-// Hàng đợi xử lý tuần tự kết quả phân loại
 struct Node {
   String fruitClass;
   unsigned long timestamp;
